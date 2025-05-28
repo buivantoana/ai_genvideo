@@ -5,6 +5,8 @@ import NotFound from "../components/NotFound";
 import HomeController from "../pages/home/HomeController";
 import IdeaController from "../pages/idea/IdeaController";
 import ScriptController from "../pages/script/ScriptController";
+import CreateImageController from "../pages/create_image/CreateImageController";
+import CreateVideoController from "../pages/create_video/CreateVideoController";
 
 const Router = () => {
   const context: any = useCoursesContext();
@@ -14,6 +16,8 @@ const Router = () => {
         <Route path='' element={<HomeController />} />
         <Route path='/idea' element={<IdeaController />} />
         <Route path='/script' element={<ScriptController />} />
+        <Route path='/create-image' element={<CreateImageController />} />
+        <Route path='/create-video' element={<CreateVideoController />} />
       </Route>
       {/* <Route path='/admin' element={<LayoutAdmin />}>
         <Route path='' element={<DashBoardController />} />

@@ -11,9 +11,15 @@ const steps = [
 
 const StepComponent = () => {
   return (
-    <Box display="flex" alignItems="center" justifyContent={"center"}mb={2} bgcolor="#0D0C2B" width={"100%"} >
+    <Box
+      display='flex'
+      alignItems='center'
+      justifyContent={"center"}
+      mb={2}
+      bgcolor='#0D0C2B'
+      width={"100%"}>
       {steps.map((step, index) => (
-        <Box key={index} display="flex" alignItems="top">
+        <Box key={index} display='flex' alignItems='top'>
           {/* Step Box + Label */}
           <Box
             sx={{
@@ -21,13 +27,12 @@ const StepComponent = () => {
               flexDirection: "column",
               alignItems: "center",
               gap: "6px",
-            }}
-          >
+            }}>
             {/* Step Box */}
             <Box
               sx={{
-                width: 36,
-                height: 36,
+                width: 44,
+                height: 44,
                 borderRadius: "8px",
                 background:
                   step.status === "completed"
@@ -40,15 +45,16 @@ const StepComponent = () => {
                 justifyContent: "center",
                 color: "#fff",
                 fontWeight: "bold",
-                
+
                 boxShadow:
                   step.status === "completed"
                     ? "0px 0px 0px 5px rgba(0, 206, 124, 0.2)"
-                    :step.status === "active" ? "0px 0px 0px 8px rgba(157, 0, 255, 0.2)" : "none",
-              }}
-            >
-              <Typography sx={{fontSize: 12,}}>
-              {step.status === "completed" ? "✓" : index + 1}
+                    : step.status === "active"
+                    ? "0px 0px 0px 8px rgba(157, 0, 255, 0.2)"
+                    : "none",
+              }}>
+              <Typography sx={{ fontSize: 16 }}>
+                {step.status === "completed" ? "✓" : index + 1}
               </Typography>
             </Box>
 
@@ -63,8 +69,7 @@ const StepComponent = () => {
                     : "#8F91A5",
                 fontWeight: step.status === "active" ? 600 : 400,
                 fontSize: 13,
-              }}
-            >
+              }}>
               {step.label}
             </Typography>
           </Box>
@@ -73,8 +78,8 @@ const StepComponent = () => {
           {index < steps.length - 1 && (
             <Box
               sx={{
-                width: 50,
-                height: 18,
+                width: 60,
+                height: 22,
                 mx: 2,
                 borderBottom:
                   steps[index + 1].status === "pending"

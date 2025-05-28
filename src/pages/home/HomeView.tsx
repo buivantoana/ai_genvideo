@@ -6,7 +6,7 @@ type Props = {};
 
 const HomeView = (props: Props) => {
   return (
-    <Box>
+    <Box p={3}>
       <ProjectList />
     </Box>
   );
