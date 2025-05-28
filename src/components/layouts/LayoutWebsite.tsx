@@ -15,7 +15,7 @@ const LayoutWebsite = () => {
         isOpen={isSidebarOpen}
         onToggle={() => setSidebarOpen(!isSidebarOpen)}
       />
-      <Box component='main' sx={{ flexGrow: 2, p: 3 }}>
+      <Box component='main' sx={{ flexGrow: 2 }}>
         <Outlet />
       </Box>
     </Box>

@@ -35,6 +35,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
   return (
     <Drawer
       variant='permanent'
+      className="hidden-add-voice"
       sx={{
         width: isOpen ? 300 : 90,
         flexShrink: 0,
@@ -101,7 +102,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
                     sx={{
                       span: {
                         fontWeight:
-                          selectedIndex === index ? "500 !important" : "100",
+                          selectedIndex === index ? "600 !important" : "300",
                         color: selectedIndex === index ? "white" : "#F8F8F8",
                       },
                     }}
