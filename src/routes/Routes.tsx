@@ -7,6 +7,8 @@ import IdeaController from "../pages/idea/IdeaController";
 import ScriptController from "../pages/script/ScriptController";
 import CreateImageController from "../pages/create_image/CreateImageController";
 import CreateVideoController from "../pages/create_video/CreateVideoController";
+import NarratorController from "../pages/narrtor/NarratorController";
+import SubController from "../pages/sub/SubController";
 
 const Router = () => {
   const context: any = useCoursesContext();
@@ -18,6 +20,8 @@ const Router = () => {
         <Route path='/script' element={<ScriptController />} />
         <Route path='/create-image' element={<CreateImageController />} />
         <Route path='/create-video' element={<CreateVideoController />} />
+        <Route path='/narrator' element={<NarratorController />} />
+        <Route path='/sub' element={<SubController />} />
       </Route>
       {/* <Route path='/admin' element={<LayoutAdmin />}>
         <Route path='' element={<DashBoardController />} />
@@ -29,3 +33,6 @@ const Router = () => {
 };
 
 export default Router;
+
+
+
