@@ -12,6 +12,7 @@ import SubController from "../pages/sub/SubController";
 import SuccessController from "../pages/success/SuccessController";
 import LoginController from "../pages/login/LoginController";
 import AccountController from "../pages/account/AccountController";
+import ProjectManagerController from "../pages/project_manager/ProjectManagerController";
 
 const Router = () => {
   const context: any = useCoursesContext();
@@ -27,6 +28,7 @@ const Router = () => {
         <Route path='/sub' element={<SubController />} />
         <Route path='/success' element={<SuccessController />} />
         <Route path='/account' element={<AccountController />} />
+        <Route path='/project-manager' element={<ProjectManagerController />} />
       </Route>
       {/* <Route path='/admin' element={<LayoutAdmin />}>
         <Route path='' element={<DashBoardController />} />
@@ -38,6 +40,3 @@ const Router = () => {
 };
 
 export default Router;
-
-
-
