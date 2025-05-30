@@ -11,6 +11,7 @@ import {
   useMediaQuery,
   useTheme,
   Switch,
+  Card,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import StepComponent from "../../components/StepComponent";
@@ -217,7 +218,8 @@ const SubtitleSettings = () => {
           </Typography>
 
           <Box sx={{ mt: 2 }}>
-            <AudioPanel />
+            {/* <AudioPanel /> */}
+            <MusicPromptUI />
           </Box>
 
           <Box
@@ -301,7 +303,7 @@ const Settings = () => {
                   key={i}
                   sx={{
                     width: "24%",
-                    height: 125,
+                    height: 150,
                     borderRadius: 2,
                     border: i === 1 ? "2px solid #00ffae" : "unset",
                     bgcolor: "rgba(55, 55, 104, 1)",
@@ -313,7 +315,7 @@ const Settings = () => {
                   <Box
                     sx={{
                       width: "80%",
-                      height: 10,
+                      height: "2vh",
                       bgcolor: "rgba(152, 152, 219, 1)",
                       borderRadius: 1,
                       position: "absolute",
@@ -737,3 +739,175 @@ const RadioControl = ({
     </RadioGroup>
   </Box>
 );
+
+
+import { CloudUpload } from '@mui/icons-material';
+import { styled } from '@mui/system';
+
+const Container = styled('div')(({ theme }) => ({
+  backgroundColor: '#1a1a2e',
+  color: '#fff',
+  padding: '1rem',
+  borderRadius: '12px',
+  maxWidth: '400px',
+  margin: 'auto',
+  [theme.breakpoints.down('sm')]: {
+    maxWidth: '100%',
+    padding: '0.5rem',
+  },
+}));
+
+const TabGroup = styled('div')({
+  display: 'flex',
+  borderRadius: '9999px',
+  backgroundColor: '#2d2d5a',
+  padding: '4px',
+  marginBottom: '1rem',
+});
+
+const TabButton = styled('button')(({ active }) => ({
+  flex: 1,
+  padding: '6px 12px',
+  fontSize: '12px',
+  borderRadius: '9999px',
+  border: 'none',
+  backgroundColor: active ? '#6C63FF' : 'transparent',
+  color: active ? '#fff' : '#aaa',
+  cursor: 'pointer',
+  transition: 'background-color 0.3s ease',
+}));
+
+const CustomCard = styled(Card)({
+  backgroundColor: '#222244',
+  borderRadius: '16px',
+  padding: '1rem',
+});
+
+function MusicPromptUI() {
+  const [tab, setTab] = React.useState(0);
+
+  return (
+    <Container>
+      <TabGroup>
+        <TabButton active={tab === 0} onClick={() => setTab(0)}>Prompt</TabButton>
+        <TabButton active={tab === 1} onClick={() => setTab(1)}>Tải nhạc lên</TabButton>
+      </TabGroup>
+
+      {tab === 0 && (
+        <>
+          <FormControl fullWidth margin="normal">
+            <Select
+              value="Suno API"
+              displayEmpty
+              sx={{ backgroundColor: '#2d2d5a', color: '#fff', borderRadius: '8px' }}
+            >
+              <MenuItem value="Suno API">Suno API</MenuItem>
+            </Select>
+          </FormControl>
+
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              bgcolor: "#1b1c34",
+              borderRadius: 2,
+              p: 1,
+              justifyContent: "space-between",
+            }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <IconButton
+                size='small'
+                sx={{
+                  color: "white",
+                  background: "rgba(89, 50, 234, 1)",
+                  width: 24,
+                  height: 24,
+                }}>
+                <PlayArrow fontSize='13' />
+              </IconButton>
+              <Box display={"flex"} flexDirection={"column"} gap={"10px"}>
+                <Box
+                  width={100}
+                  sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography fontSize={10} color='rgba(130, 130, 130, 1)'>
+                    00:00
+                  </Typography>
+                  <Typography fontSize={10} color='rgba(130, 130, 130, 1)'>
+                    00:30
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    height: 4,
+                    width: 100,
+                    bgcolor: "rgba(217, 217, 217, 1)",
+
+                    borderRadius: 2,
+                    position: "relative",
+                  }}>
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      height: "100%",
+                      width: "30%",
+                      bgcolor: "rgba(89, 50, 234, 1)",
+                      borderRadius: 2,
+                    }}
+                  />
+                </Box>
+              </Box>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <IconButton size='small' sx={{ color: "white" }}>
+                <VolumeUp />
+              </IconButton>
+            </Box>
+          </Box>
+
+          <TextField
+            placeholder="Hãy viết mô tả Prompt của bài nhạc"
+            variant="outlined"
+            multiline
+            rows={3}
+            fullWidth
+            margin="normal"
+            sx={{ backgroundColor: '#2d2d5a', borderRadius: '8px', color: 'white', '& .MuiInputBase-input': { color: 'white' } }}
+          />
+
+          <TextField
+            placeholder="Nhập số giây"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            sx={{ backgroundColor: '#2d2d5a', borderRadius: '8px', color: 'white', '& .MuiInputBase-input': { color: 'white' } }}
+          />
+        </>
+      )}
+
+      {tab === 1 && (
+        <Box mt={2} display="flex" flexDirection="column" alignItems="center" justifyContent="center" p={2} border="1px dashed #444" borderRadius={2}>
+          <CloudUpload sx={{ fontSize: 40, color: '#888' }} />
+          <Typography mt={1} variant="body2" color="gray">Kéo và thả hoặc bấm để tải tệp lên</Typography>
+          <Button variant="contained" sx={{ mt: 2, backgroundColor: '#6C63FF', borderRadius: '12px' }}>Chọn tệp</Button>
+        </Box>
+      )}
+
+      <Box display="flex" justifyContent="space-between" mt={2}>
+        <Button
+          variant="contained"
+          sx={{ backgroundColor: '#6C63FF', borderRadius: '12px', px: 4 }}
+        >
+          Tạo nhạc nền
+        </Button>
+        <Button
+          variant="contained"
+          sx={{ backgroundColor: '#2d2d5a', borderRadius: '12px', px: 4 }}
+        >
+          Xóa
+        </Button>
+      </Box>
+    </Container>
+  );
+}
