@@ -126,45 +126,49 @@ function AccountManager() {
 
           <Collapse in={expanded === user.id}>
             <Box mt={2} display="flex" flexDirection="column" gap={2}>
-              <Box>
-                <Box>
+              <Box display={"flex"} justifyContent={"space-between"}>
+                <Box width={"47%"}>
                   <Typography>Địa chỉ email</Typography>
-                  <Field fullWidth label="" placeholder="Example123" />
+                  <Field fullWidth placeholder="Example123" />
                 </Box>
-                <Box>
+                <Box width={"47%"}>
                   <Typography>Mật khẩu cũ</Typography>
-                  <Field fullWidth label="" placeholder="Example123" />
+                  <Field fullWidth placeholder="Example123" />
                 </Box>
               </Box>
-              <Box>
-                <Box>
-                  <Typography>Địa chỉ email</Typography>
-                  <Field fullWidth label="" placeholder="Example123" />
+              <Box display={"flex"} justifyContent={"space-between"}>
+                <Box width={"47%"}>
+                  <Typography>Mật khẩu mới</Typography>
+                  <Field fullWidth placeholder="Example123" />
                 </Box>
-                <Box>
-                  <Typography>Mật khẩu cũ</Typography>
-                  <Field fullWidth label="" placeholder="Example123" />
+                <Box width={"47%"}>
+                  <Typography>Mật khẩu mới</Typography>
+                  <Field fullWidth placeholder="Example123" />
+                </Box>
+              </Box>
+              <Box display={"flex"} justifyContent={"space-between"}>
+                <Box width={"47%"}>
+                  <Select
+                    fullWidth
+                    defaultValue={user.role}
+                    sx={{ backgroundColor: '#1f1f3a', color: '#fff', borderRadius: '8px' }}
+                  >
+                    <MenuItem value="Admin">Admin</MenuItem>
+                    <MenuItem value="Editor">Editor</MenuItem>
+                    <MenuItem value="Viewer">Viewer</MenuItem>
+                  </Select>
+                </Box>
+                <Box width={"47%"}>
+                  <Button
+                    variant="contained"
+                    sx={{ backgroundColor: '#6C63FF', borderRadius: '12px', alignSelf: 'flex-end' }}
+                  >
+                    Cập nhật thông tin
+                  </Button>
                 </Box>
               </Box>
 
-              <Field fullWidth label="Mật khẩu cũ" placeholder="Ít nhất 8 ký tự" type="password" />
-              <Field fullWidth label="Mật khẩu mới" placeholder="Example@email.com" type="password" />
-              <Field fullWidth label="Xác nhận mật khẩu" placeholder="Example@email.com" type="password" />
-              <Select
-                fullWidth
-                defaultValue={user.role}
-                sx={{ backgroundColor: '#1f1f3a', color: '#fff', borderRadius: '8px' }}
-              >
-                <MenuItem value="Admin">Admin</MenuItem>
-                <MenuItem value="Editor">Editor</MenuItem>
-                <MenuItem value="Viewer">Viewer</MenuItem>
-              </Select>
-              <Button
-                variant="contained"
-                sx={{ backgroundColor: '#6C63FF', borderRadius: '12px', alignSelf: 'flex-end' }}
-              >
-                Cập nhật thông tin
-              </Button>
+
             </Box>
           </Collapse>
         </UserCard>
