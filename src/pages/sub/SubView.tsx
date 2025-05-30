@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Typography,
@@ -14,6 +14,7 @@ import {
   Card,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
+
 import StepComponent from "../../components/StepComponent";
 import EditIcon from "@mui/icons-material/Edit";
 import group from "../../images/Group 13.png";
@@ -155,7 +156,7 @@ import { RiPlayFill } from "react-icons/ri";
 
 const SubtitleSettings = () => {
   const isMobile = useMediaQuery("(max-width:768px)");
-
+  const [on, setOn] = useState(false)
   return (
     <Box
       sx={{
@@ -218,8 +219,35 @@ const SubtitleSettings = () => {
           </Typography>
 
           <Box sx={{ mt: 2 }}>
-            {/* <AudioPanel /> */}
-            <MusicPromptUI />
+            <Box
+              display={"flex"}
+              alignItems={"center"}
+              sx={{ mb: 1, p: 1, borderRadius: 1 }}
+              bgcolor={"rgba(29, 29, 65, 1)"}
+              justifyContent={"space-between"}>
+              <Typography variant='body2'>00:06</Typography>
+              <Box
+                sx={{
+                  height: 6,
+                  borderRadius: 3,
+                  bgcolor: "rgba(217, 217, 217, 1)",
+
+                  position: "relative",
+                  width: "80%",
+                }}>
+                <Box
+                  sx={{
+                    width: "5%",
+                    height: "100%",
+                    borderRadius: 3,
+                    bgcolor: "rgba(89, 50, 234, 1)",
+                  }}
+                />
+              </Box>
+              <Typography variant='body2'>01:06</Typography>
+            </Box>
+            {!on ? <AudioPanel setOn={setOn} /> :
+              <MusicPromptUI setOn={setOn} />}
           </Box>
 
           <Box
@@ -266,8 +294,8 @@ const SubtitleSettings = () => {
 };
 
 import { Radio, RadioGroup, FormControlLabel, FormLabel } from "@mui/material";
-import { Delete, ExpandMore, PlayArrow, VolumeUp } from "@mui/icons-material";
-
+import { ArrowDropUp, Delete, ExpandMore, PlayArrow, VolumeUp } from "@mui/icons-material";
+import ExpandLessIcon from '@mui/icons-material/ExpandLess';
 const Settings = () => {
   const isMobile = useMediaQuery("(max-width:768px)");
 
@@ -610,35 +638,9 @@ const subtitleBoxStyle = (active) => ({
   color: "white",
 });
 
-const AudioPanel = () => (
+const AudioPanel = ({ setOn }) => (
   <Box>
-    <Box
-      display={"flex"}
-      alignItems={"center"}
-      sx={{ mb: 1, p: 1, borderRadius: 1 }}
-      bgcolor={"rgba(29, 29, 65, 1)"}
-      justifyContent={"space-between"}>
-      <Typography variant='body2'>00:06</Typography>
-      <Box
-        sx={{
-          height: 6,
-          borderRadius: 3,
-          bgcolor: "rgba(217, 217, 217, 1)",
 
-          position: "relative",
-          width: "80%",
-        }}>
-        <Box
-          sx={{
-            width: "5%",
-            height: "100%",
-            borderRadius: 3,
-            bgcolor: "rgba(89, 50, 234, 1)",
-          }}
-        />
-      </Box>
-      <Typography variant='body2'>01:06</Typography>
-    </Box>
     <Typography variant='h6' sx={{ my: 3 }}>
       Nhạc nền số 1
     </Typography>
@@ -703,7 +705,7 @@ const AudioPanel = () => (
         <IconButton size='small' sx={{ color: "white" }}>
           <Delete />
         </IconButton>
-        <IconButton size='small' sx={{ color: "white" }}>
+        <IconButton onClick={() => setOn(true)} size='small' sx={{ color: "white" }}>
           <ExpandMore />
         </IconButton>
       </Box>
@@ -759,22 +761,23 @@ const Container = styled('div')(({ theme }) => ({
 
 const TabGroup = styled('div')({
   display: 'flex',
-  borderRadius: '9999px',
-  backgroundColor: '#2d2d5a',
+  borderRadius: '5px',
   padding: '4px',
   marginBottom: '1rem',
+  border: "1px solid #6C63FF"
 });
 
 const TabButton = styled('button')(({ active }) => ({
   flex: 1,
-  padding: '6px 12px',
-  fontSize: '12px',
-  borderRadius: '9999px',
+  padding: '7px 12px',
+  fontSize: '14px',
+  borderRadius: '5px',
   border: 'none',
   backgroundColor: active ? '#6C63FF' : 'transparent',
   color: active ? '#fff' : '#aaa',
   cursor: 'pointer',
   transition: 'background-color 0.3s ease',
+  maxWidth: "max-content"
 }));
 
 const CustomCard = styled(Card)({
@@ -782,26 +785,85 @@ const CustomCard = styled(Card)({
   borderRadius: '16px',
   padding: '1rem',
 });
-
-function MusicPromptUI() {
+const styleOptions = ["Thuyết minh", "Có hội thoại"];
+function MusicPromptUI({ setOn }) {
   const [tab, setTab] = React.useState(0);
 
   return (
-    <Container>
-      <TabGroup>
-        <TabButton active={tab === 0} onClick={() => setTab(0)}>Prompt</TabButton>
-        <TabButton active={tab === 1} onClick={() => setTab(1)}>Tải nhạc lên</TabButton>
-      </TabGroup>
+    <Box sx={{ background: "#1D1D41", p: 3, borderRadius: 2, position: "relative" }}>
+      <Box sx={{ position: "absolute", top: "30px", right: "30px" }}>
+        <IconButton size='small' onClick={() => setOn(false)} sx={{ color: "white" }}>
+          <ExpandLessIcon />
+        </IconButton>
+      </Box>
+      <Box display={"flex"} justifyContent={"center"}>
+        <Box width={"max-content"} >
+          <TabGroup>
+            <TabButton active={tab === 0} onClick={() => setTab(0)}>Prompt</TabButton>
+            <TabButton active={tab === 1} onClick={() => setTab(1)}>Tải nhạc lên</TabButton>
+          </TabGroup>
+
+        </Box>
+
+      </Box>
 
       {tab === 0 && (
         <>
-          <FormControl fullWidth margin="normal">
+          <FormControl
+            variant='outlined'
+            size='small'
+            sx={{ borderRadius: 2, width: "100%" }}>
+
             <Select
-              value="Suno API"
-              displayEmpty
-              sx={{ backgroundColor: '#2d2d5a', color: '#fff', borderRadius: '8px' }}
-            >
-              <MenuItem value="Suno API">Suno API</MenuItem>
+              defaultValue='Thuyết minh'
+              IconComponent={ArrowDropDownIcon}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    backgroundColor: "#2A274B", // nền của dropdown list
+                    color: "#fff",
+                    borderRadius: 2,
+                    mt: 1,
+                    "& .MuiMenuItem-root": {
+                      "&:hover": {
+                        backgroundColor: "#3A375F", // màu hover
+                        borderRadius: 1,
+                      },
+                      "&.Mui-selected": {
+                        backgroundColor: "#4B3A79", // màu selected
+                        borderRadius: 1,
+                      },
+                    },
+                  },
+                },
+              }}
+              sx={{
+                background: "transparent",
+                color: "#fff",
+                borderRadius: 2,
+                height: "50px", // 👈 Chiều cao mong muốn
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: "1px solid",
+                  borderColor: "white", // 👈 Viền mặc định
+                },
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  border: "1px solid",
+                  borderColor: "white", // 👈 Viền khi focus
+                },
+                "& .MuiSelect-select": {
+                  display: "flex",
+                  alignItems: "center",
+                  height: "100%", // Chiếm hết chiều cao wrapper
+                  padding: "0 14px",
+                },
+                ".MuiSelect-icon": { color: "#fff" },
+
+              }}>
+              {styleOptions.map((style) => (
+                <MenuItem key={style} value={style}>
+                  {style}
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
 
@@ -813,6 +875,70 @@ function MusicPromptUI() {
               borderRadius: 2,
               p: 1,
               justifyContent: "space-between",
+              my: 2,
+              border: "1px solid rgba(89, 50, 234, 1)"
+            }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <IconButton
+                size='small'
+                sx={{
+                  color: "white",
+                  background: "rgba(89, 50, 234, 1)",
+                  width: 24,
+                  height: 24,
+                }}>
+                <PlayArrow fontSize='13' />
+              </IconButton>
+              <Box display={"flex"} flexDirection={"column"} gap={"10px"}>
+                <Box
+                  width={100}
+                  sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography fontSize={10} color='rgba(130, 130, 130, 1)'>
+                    00:00
+                  </Typography>
+                  <Typography fontSize={10} color='rgba(130, 130, 130, 1)'>
+                    00:30
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    height: 4,
+                    width: 100,
+                    bgcolor: "rgba(217, 217, 217, 1)",
+
+                    borderRadius: 2,
+                    position: "relative",
+                  }}>
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      height: "100%",
+                      width: "30%",
+                      bgcolor: "rgba(89, 50, 234, 1)",
+                      borderRadius: 2,
+                    }}
+                  />
+                </Box>
+              </Box>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <IconButton size='small' sx={{ color: "white" }}>
+                <VolumeUp />
+              </IconButton>
+            </Box>
+          </Box>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              bgcolor: "#1b1c34",
+              borderRadius: 2,
+              p: 1,
+              justifyContent: "space-between",
+              my: 2,
+              opacity: .8
             }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <IconButton
@@ -873,15 +999,26 @@ function MusicPromptUI() {
             rows={3}
             fullWidth
             margin="normal"
-            sx={{ backgroundColor: '#2d2d5a', borderRadius: '8px', color: 'white', '& .MuiInputBase-input': { color: 'white' } }}
-          />
+            sx={{
+              borderRadius: '8px', color: 'white', '& .MuiInputBase-input': { color: 'white' }, "& .MuiOutlinedInput-notchedOutline": {
+                border: "1px solid",
+                borderColor: "white",
+              },
+            }}
 
+          />
+          <Typography variant="h6" fontWeight={"500"} my={1}>Nhập số giây</Typography>
           <TextField
             placeholder="Nhập số giây"
             variant="outlined"
             fullWidth
             margin="normal"
-            sx={{ backgroundColor: '#2d2d5a', borderRadius: '8px', color: 'white', '& .MuiInputBase-input': { color: 'white' } }}
+            sx={{
+              borderRadius: '8px', color: 'white', '& .MuiInputBase-input': { color: 'white' }, "& .MuiOutlinedInput-notchedOutline": {
+                border: "1px solid",
+                borderColor: "white",
+              },
+            }}
           />
         </>
       )}
@@ -894,7 +1031,7 @@ function MusicPromptUI() {
         </Box>
       )}
 
-      <Box display="flex" justifyContent="space-between" mt={2}>
+      <Box display="flex" justifyContent="end" gap={3} mt={2}>
         <Button
           variant="contained"
           sx={{ backgroundColor: '#6C63FF', borderRadius: '12px', px: 4 }}
@@ -908,6 +1045,209 @@ function MusicPromptUI() {
           Xóa
         </Button>
       </Box>
-    </Container>
+    </Box>
+  );
+}
+
+
+function AddMusicPromptUI({ setOn }) {
+  const [tab, setTab] = React.useState(0);
+
+  return (
+    <Box sx={{ background: "#1D1D41", p: 3, borderRadius: 2, position: "relative" }}>
+      <Box sx={{ position: "absolute", top: "30px", right: "30px" }}>
+        <IconButton size='small' onClick={() => setOn(false)} sx={{ color: "white" }}>
+          <ExpandLessIcon />
+        </IconButton>
+      </Box>
+      <Box display={"flex"} justifyContent={"center"}>
+        <Box width={"max-content"} >
+          <TabGroup>
+            <TabButton active={tab === 0} onClick={() => setTab(0)}>Prompt</TabButton>
+            <TabButton active={tab === 1} onClick={() => setTab(1)}>Tải nhạc lên</TabButton>
+          </TabGroup>
+
+        </Box>
+
+      </Box>
+
+      {tab === 0 && (
+        <>
+          <FormControl
+            variant='outlined'
+            size='small'
+            sx={{ borderRadius: 2, width: "100%" }}>
+
+            <Select
+              defaultValue='Thuyết minh'
+              IconComponent={ArrowDropDownIcon}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    backgroundColor: "#2A274B", // nền của dropdown list
+                    color: "#fff",
+                    borderRadius: 2,
+                    mt: 1,
+                    "& .MuiMenuItem-root": {
+                      "&:hover": {
+                        backgroundColor: "#3A375F", // màu hover
+                        borderRadius: 1,
+                      },
+                      "&.Mui-selected": {
+                        backgroundColor: "#4B3A79", // màu selected
+                        borderRadius: 1,
+                      },
+                    },
+                  },
+                },
+              }}
+              sx={{
+                background: "transparent",
+                color: "#fff",
+                borderRadius: 2,
+                height: "50px", // 👈 Chiều cao mong muốn
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: "1px solid",
+                  borderColor: "white", // 👈 Viền mặc định
+                },
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  border: "1px solid",
+                  borderColor: "white", // 👈 Viền khi focus
+                },
+                "& .MuiSelect-select": {
+                  display: "flex",
+                  alignItems: "center",
+                  height: "100%", // Chiếm hết chiều cao wrapper
+                  padding: "0 14px",
+                },
+                ".MuiSelect-icon": { color: "#fff" },
+
+              }}>
+              {styleOptions.map((style) => (
+                <MenuItem key={style} value={style}>
+                  {style}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              bgcolor: "#1b1c34",
+              borderRadius: 2,
+              p: 1,
+              justifyContent: "space-between",
+              my: 2,
+              border: "1px solid rgba(89, 50, 234, 1)"
+            }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <IconButton
+                size='small'
+                sx={{
+                  color: "white",
+                  background: "rgba(89, 50, 234, 1)",
+                  width: 24,
+                  height: 24,
+                }}>
+                <PlayArrow fontSize='13' />
+              </IconButton>
+              <Box display={"flex"} flexDirection={"column"} gap={"10px"}>
+                <Box
+                  width={100}
+                  sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography fontSize={10} color='rgba(130, 130, 130, 1)'>
+                    00:00
+                  </Typography>
+                  <Typography fontSize={10} color='rgba(130, 130, 130, 1)'>
+                    00:30
+                  </Typography>
+                </Box>
+                <Box
+                  sx={{
+                    height: 4,
+                    width: 100,
+                    bgcolor: "rgba(217, 217, 217, 1)",
+
+                    borderRadius: 2,
+                    position: "relative",
+                  }}>
+                  <Box
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      height: "100%",
+                      width: "30%",
+                      bgcolor: "rgba(89, 50, 234, 1)",
+                      borderRadius: 2,
+                    }}
+                  />
+                </Box>
+              </Box>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <IconButton size='small' sx={{ color: "white" }}>
+                <VolumeUp />
+              </IconButton>
+            </Box>
+          </Box>
+          
+
+          <TextField
+            placeholder="Hãy viết mô tả Prompt của bài nhạc"
+            variant="outlined"
+            multiline
+            rows={3}
+            fullWidth
+            margin="normal"
+            sx={{
+              borderRadius: '8px', color: 'white', '& .MuiInputBase-input': { color: 'white' }, "& .MuiOutlinedInput-notchedOutline": {
+                border: "1px solid",
+                borderColor: "white",
+              },
+            }}
+
+          />
+          <Typography variant="h6" fontWeight={"500"} my={1}>Nhập số giây</Typography>
+          <TextField
+            placeholder="Nhập số giây"
+            variant="outlined"
+            fullWidth
+            margin="normal"
+            sx={{
+              borderRadius: '8px', color: 'white', '& .MuiInputBase-input': { color: 'white' }, "& .MuiOutlinedInput-notchedOutline": {
+                border: "1px solid",
+                borderColor: "white",
+              },
+            }}
+          />
+        </>
+      )}
+
+      {tab === 1 && (
+        <Box mt={2} display="flex" flexDirection="column" alignItems="center" justifyContent="center" p={2} border="1px dashed #444" borderRadius={2}>
+          <CloudUpload sx={{ fontSize: 40, color: '#888' }} />
+          <Typography mt={1} variant="body2" color="gray">Kéo và thả hoặc bấm để tải tệp lên</Typography>
+          <Button variant="contained" sx={{ mt: 2, backgroundColor: '#6C63FF', borderRadius: '12px' }}>Chọn tệp</Button>
+        </Box>
+      )}
+
+      <Box display="flex" justifyContent="end" gap={3} mt={2}>
+        <Button
+          variant="contained"
+          sx={{ backgroundColor: '#6C63FF', borderRadius: '12px', px: 4 }}
+        >
+          Tạo nhạc nền
+        </Button>
+        <Button
+          variant="contained"
+          sx={{ backgroundColor: '#2d2d5a', borderRadius: '12px', px: 4 }}
+        >
+          Xóa
+        </Button>
+      </Box>
+    </Box>
   );
 }
