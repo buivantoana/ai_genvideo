@@ -9,6 +9,9 @@ import CreateImageController from "../pages/create_image/CreateImageController";
 import CreateVideoController from "../pages/create_video/CreateVideoController";
 import NarratorController from "../pages/narrtor/NarratorController";
 import SubController from "../pages/sub/SubController";
+import SuccessController from "../pages/success/SuccessController";
+import LoginController from "../pages/login/LoginController";
+import AccountController from "../pages/account/AccountController";
 
 const Router = () => {
   const context: any = useCoursesContext();
@@ -22,11 +25,13 @@ const Router = () => {
         <Route path='/create-video' element={<CreateVideoController />} />
         <Route path='/narrator' element={<NarratorController />} />
         <Route path='/sub' element={<SubController />} />
+        <Route path='/success' element={<SuccessController />} />
+        <Route path='/account' element={<AccountController />} />
       </Route>
       {/* <Route path='/admin' element={<LayoutAdmin />}>
         <Route path='' element={<DashBoardController />} />
       </Route> */}
-      {/* <Route path='reset-password' element={<ResetPasswordController />} /> */}
+      <Route path='login' element={<LoginController />} />
       <Route path='*' element={<NotFound />} />
     </Routes>
   );
