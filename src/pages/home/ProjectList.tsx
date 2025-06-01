@@ -16,10 +16,20 @@ const ProjectList = () => {
     <Box>
       <Typography
         variant='h5'
-        sx={{ color: "white", mb: 3, fontWeight: "600" }}>
+        sx={{
+          color: "white",
+          mb: 3,
+          fontWeight: "600",
+          fontSize: { xs: "1.25rem", md: "1.5rem" },
+        }}>
         Danh sách dự án
       </Typography>
-      <Box sx={{ display: "flex", gap: 2 }}>
+      <Box
+        sx={{
+          display: "flex",
+          gap: 2,
+          flexDirection: { xs: "column", md: "row" },
+        }}>
         {projects.map((project, index) => (
           <Card
             key={index}

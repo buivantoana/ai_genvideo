@@ -17,6 +17,7 @@ import {
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import StepComponent from "../../components/StepComponent";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import ResponsiveBox from "../../components/ResponsiveBox";
 const modelOptions = ["ChatGPT", "Qwen", "DeepSeek"];
 const styleOptions = ["Thuyết minh", "Có hội thoại"];
 
@@ -29,18 +30,18 @@ const IdeaView = () => {
       className='hidden-add-voice'
       sx={{
         bgcolor: "#0D0C2B",
-        p: isMobile ? 4 : 6,
+        p: isMobile ? 1.5 : 6,
 
         color: "white",
         display: "flex",
         flexDirection: "column",
-        gap: 4,
+        gap: isMobile ? 2 : 4,
         overflowY: "scroll",
         height: "100vh",
       }}>
       <StepComponent />
       {/* Toggle Tabs */}
-      <Box display={"flex"} justifyContent={"center"}>
+      {/* <Box display={"flex"} justifyContent={"center"}>
         <Box
           sx={{
             display: "flex",
@@ -121,20 +122,24 @@ const IdeaView = () => {
             </Typography>
           </Box>
         </Box>
-      </Box>
-      <Typography color='#FDB52A'>
+      </Box> */}
+      <ResponsiveBox />
+      <Typography color='#FDB52A' fontSize={{ xs: ".8rem", md: "1rem" }}>
         Lưu ý rằng AI phân biệt giữa chữ hoa và chữ thường ( yêu cầu nhập đúng
         chính tả ) <br />
         Ví dụ: nhập 'ai' thì sẽ đọc là 'ai' nhưng nếu nhập 'AI' thì sẽ đọc là
         'ây ai'
       </Typography>
-      <Typography variant='h4' fontWeight={"600"}>
+      <Typography
+        variant='h4'
+        sx={{ fontSize: { xs: "1.5rem", md: "2.125rem" } }}
+        fontWeight={"600"}>
         Chọn mô hình tạo Prompt
       </Typography>
       {/* Model Dropdown */}
       <FormControl
         variant='outlined'
-        sx={{ width: isMobile ? "100%" : 200 }}
+        sx={{ width: isMobile ? "50%" : 200 }}
         size='small'>
         <Select
           defaultValue='ChatGPT'
@@ -142,7 +147,7 @@ const IdeaView = () => {
             background: "transparent",
             color: "#fff",
             borderRadius: 2,
-            height: "48px", // 👈 Chiều cao mong muốn
+            height: isMobile ? "38px" : "48px", // 👈 Chiều cao mong muốn
             "& .MuiOutlinedInput-notchedOutline": {
               borderColor: "#3A375F", // 👈 Viền mặc định
             },
@@ -187,7 +192,10 @@ const IdeaView = () => {
           ))}
         </Select>
       </FormControl>
-      <Typography variant='h6' fontWeight={"600"}>
+      <Typography
+        variant='h6'
+        sx={{ fontSize: isMobile ? "1rem" : "1.25rem" }}
+        fontWeight={"600"}>
         Tên dự án
       </Typography>
       {/* Project Name */}
@@ -201,7 +209,7 @@ const IdeaView = () => {
           borderRadius: 2,
           input: { color: "white" },
           "& .MuiOutlinedInput-root": {
-            height: "72px", // 👈 Đặt ở đây mới ăn
+            height: isMobile ? "40px" : "72px", // 👈 Đặt ở đây mới ăn
             alignItems: "center", // Canh giữa input text
           },
           "& .MuiOutlinedInput-notchedOutline": {
@@ -210,7 +218,10 @@ const IdeaView = () => {
           },
         }}
       />
-      <Typography variant='h6' fontWeight={"600"}>
+      <Typography
+        variant='h6'
+        sx={{ fontSize: isMobile ? "1rem" : "1.25rem" }}
+        fontWeight={"600"}>
         Nhập nội dung mong muốn -Tối đa 4000 ký tự
       </Typography>
       {/* Prompt Text Area */}
@@ -261,7 +272,11 @@ const IdeaView = () => {
           gap: 2,
         }}>
         <Box sx={{ flex: 1 }}>
-          <Typography variant='h6' mb={1} fontWeight={"600"}>
+          <Typography
+            variant='h6'
+            sx={{ fontSize: isMobile ? "1rem" : "1.25rem" }}
+            mb={1}
+            fontWeight={"600"}>
             Nhập số phân cảnh cần biên kịch
           </Typography>
           <TextField
@@ -274,7 +289,7 @@ const IdeaView = () => {
               borderRadius: 2,
               input: { color: "white" },
               "& .MuiOutlinedInput-root": {
-                height: "72px", // 👈 Đặt ở đây mới ăn
+                height: isMobile ? "40px" : "72px", // 👈 Đặt ở đây mới ăn
                 alignItems: "center", // Canh giữa input text
               },
               "& .MuiOutlinedInput-notchedOutline": {
@@ -290,7 +305,11 @@ const IdeaView = () => {
           variant='outlined'
           size='small'
           sx={{ flex: 1, borderRadius: 2 }}>
-          <Typography variant='h6' mb={1} fontWeight={"600"}>
+          <Typography
+            variant='h6'
+            sx={{ fontSize: isMobile ? "1rem" : "1.25rem" }}
+            mb={1}
+            fontWeight={"600"}>
             Chọn kiểu
           </Typography>
           <Select
@@ -320,7 +339,7 @@ const IdeaView = () => {
               background: "transparent",
               color: "#fff",
               borderRadius: 2,
-              height: "72px", // 👈 Chiều cao mong muốn
+              height: isMobile ? "40px" : "72px", // 👈 Chiều cao mong muốn
               "& .MuiOutlinedInput-notchedOutline": {
                 border: "2px solid",
                 borderColor: "#414188", // 👈 Viền mặc định
@@ -333,7 +352,7 @@ const IdeaView = () => {
                 display: "flex",
                 alignItems: "center",
                 height: "100%", // Chiếm hết chiều cao wrapper
-                padding: "0 14px",
+                padding: isMobile ? "0 8px" : "0 14px",
               },
               ".MuiSelect-icon": { color: "#fff" },
             }}>
@@ -366,7 +385,7 @@ const IdeaView = () => {
               background: "#5900cc",
             },
             height: 50,
-            fontSize: "18px",
+            fontSize: isMobile ? "15px" : "18px",
           }}>
           Xác nhận tạo kịch bản từ Prompt
         </Button>
@@ -383,7 +402,7 @@ const IdeaView = () => {
               background: "linear-gradient(90deg, #e86e00 0%, #e13400 100%)",
             },
             height: 50,
-            fontSize: "18px",
+            fontSize: isMobile ? "15px" : "18px",
           }}>
           Tự động tạo toàn bộ
         </Button>

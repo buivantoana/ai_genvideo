@@ -27,7 +27,7 @@ const ScriptView = () => {
       className='hidden-add-voice'
       sx={{
         bgcolor: "#0D0C2B",
-        p: isMobile ? 4 : 6,
+        p: isMobile ? 1.5 : 6,
 
         color: "white",
         display: "flex",
@@ -38,88 +38,7 @@ const ScriptView = () => {
       }}>
       <StepComponent />
       {/* Toggle Tabs */}
-      <Box display={"flex"} justifyContent={"center"}>
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            bgcolor: "#1A1836",
-            width: "max-content",
-            p: 1.5,
-            borderRadius: 2,
-            gap: 2,
-          }}>
-          <Box
-            sx={{
-              bgcolor: "#2A274B",
-              px: 4,
-              py: 2,
-              borderRadius: 1,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              justifyContent: "center",
-              minWidth: 150,
-            }}>
-            <Box
-              sx={{ width: 22, height: 22, bgcolor: "#fff", borderRadius: 0.5 }}
-            />
-            <Typography sx={{ fontSize: 16, color: "#fff", fontWeight: "600" }}>
-              Tạo video img - img
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              px: 4,
-              py: 2,
-              borderRadius: 1,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              justifyContent: "center",
-              minWidth: 150,
-            }}>
-            <Box
-              sx={{
-                width: 22,
-                height: 22,
-                bgcolor: "#A6A6C2",
-                borderRadius: 0.5,
-              }}
-            />
-            <Typography
-              sx={{ fontSize: 16, color: "#A6A6C2", fontWeight: "600" }}>
-              Tạo video img - video
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              px: 4,
-              py: 2,
-              borderRadius: 1,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              justifyContent: "center",
-              minWidth: 150,
-            }}>
-            <Box
-              sx={{
-                width: 22,
-                height: 22,
-                bgcolor: "#A6A6C2",
-                borderRadius: 0.5,
-              }}
-            />
-            <Typography
-              sx={{ fontSize: 16, color: "#A6A6C2", fontWeight: "600" }}>
-              Kiểu 04
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
+      <ResponsiveBox />
       <PromptEditorUI />
     </Box>
   );
@@ -129,6 +48,7 @@ export default ScriptView;
 
 import { IconButton } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
+import ResponsiveBox from "../../components/ResponsiveBox";
 
 const scenes = [
   {
@@ -155,7 +75,11 @@ const PromptEditorUI = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   return (
-    <Box px={isMobile ? 2 : 6} py={4} bgcolor='#0D0C2B' color='#fff'>
+    <Box
+      px={isMobile ? 1.5 : 6}
+      py={isMobile ? 2 : 4}
+      bgcolor='#0D0C2B'
+      color='#fff'>
       <FormControl
         variant='outlined'
         sx={{ width: isMobile ? "100%" : 200 }}
@@ -320,13 +244,14 @@ const PromptEditorUI = () => {
             background: "#6E00FF",
             textTransform: "none",
             borderRadius: 1,
-            width: "48%",
+            width: isMobile ? "100%" : "48%",
             fontWeight: 600,
             "&:hover": {
               background: "#5900cc",
             },
             height: 50,
-            fontSize: "18px",
+            fontSize: isMobile ? "15px" : "18px",
+            display: isMobile ? "none" : "block",
           }}>
           Xác nhận tạo kịch bản
         </Button>
@@ -359,7 +284,7 @@ const PromptEditorUI = () => {
             background: "transparent",
             color: "#fff",
             borderRadius: 2,
-            width: "48%",
+            width: isMobile ? "100%" : "48%",
             height: "50px", // 👈 Chiều cao mong muốn
             "& .MuiOutlinedInput-notchedOutline": {
               border: "2px solid",
@@ -383,13 +308,30 @@ const PromptEditorUI = () => {
             </MenuItem>
           ))}
         </Select>
+        <Button
+          variant='contained'
+          sx={{
+            background: "#6E00FF",
+            textTransform: "none",
+            borderRadius: 1,
+            width: isMobile ? "100%" : "48%",
+            fontWeight: 600,
+            "&:hover": {
+              background: "#5900cc",
+            },
+            height: 50,
+            fontSize: isMobile ? "15px" : "18px",
+            display: isMobile ? "block" : "none",
+          }}>
+          Xác nhận tạo kịch bản
+        </Button>
       </Box>
       <Box
         sx={{
           display: "flex",
           flexDirection: isMobile ? "column" : "row",
           gap: 2,
-          mt: 4,
+          mt: isMobile ? 2 : 4,
           justifyContent: "center",
         }}>
         <Button
@@ -398,14 +340,14 @@ const PromptEditorUI = () => {
             background: "rgba(89, 50, 234, 0.3)",
             textTransform: "none",
             borderRadius: 1,
-            width: "48%",
+            width: isMobile ? "100%" : "48%",
             fontWeight: 600,
             border: "2px dashed rgba(89, 50, 234, 1)",
             "&:hover": {
               background: "#5900cc",
             },
             height: 50,
-            fontSize: "18px",
+            fontSize: isMobile ? "15px" : "18px",
           }}>
           Tạo lại kịch bản khác
         </Button>

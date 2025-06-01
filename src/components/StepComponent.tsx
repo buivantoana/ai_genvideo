@@ -13,9 +13,10 @@ const StepComponent = () => {
   return (
     <Box
       display='flex'
-      alignItems='center'
+      alignItems={{ xs: "start", md: "center" }}
       justifyContent={"center"}
       mb={2}
+      mt={{ xs: 2, md: 0 }}
       bgcolor='#0D0C2B'
       width={"100%"}>
       {steps.map((step, index) => (
@@ -31,8 +32,8 @@ const StepComponent = () => {
             {/* Step Box */}
             <Box
               sx={{
-                width: 44,
-                height: 44,
+                width: { xs: 22, md: 44 },
+                height: { xs: 22, md: 44 },
                 borderRadius: "8px",
                 background:
                   step.status === "completed"
@@ -68,7 +69,7 @@ const StepComponent = () => {
                     ? "#FFFFFF"
                     : "#8F91A5",
                 fontWeight: step.status === "active" ? 600 : 400,
-                fontSize: 13,
+                fontSize: { xs: 10, md: 13 },
               }}>
               {step.label}
             </Typography>
@@ -78,9 +79,9 @@ const StepComponent = () => {
           {index < steps.length - 1 && (
             <Box
               sx={{
-                width: 60,
-                height: 22,
-                mx: 2,
+                width: { xs: 22, md: 60 },
+                height: 11,
+                mx: { xs: 1, md: 2 },
                 borderBottom:
                   steps[index + 1].status === "pending"
                     ? "2.3px dashed #4A4C6B"
