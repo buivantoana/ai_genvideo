@@ -38,182 +38,109 @@ const SuccessView = () => {
       className='hidden-add-voice'
       sx={{
         bgcolor: "#0D0C2B",
-        p: isMobile ? 4 : 6,
+        p: isMobile ? 1.5 : 6,
 
         color: "white",
         display: "flex",
         flexDirection: "column",
-        gap: 4,
+        gap: isMobile ? 2 : 4,
         overflowY: "scroll",
         height: "100vh",
       }}>
       <StepComponent />
       {/* Toggle Tabs */}
-      <Box display={"flex"} justifyContent={"center"}>
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            bgcolor: "#1A1836",
-            width: "max-content",
-            p: 1.5,
-            borderRadius: 2,
-            gap: 2,
-          }}>
-          <Box
-            sx={{
-              bgcolor: "#2A274B",
-              px: 4,
-              py: 2,
-              borderRadius: 1,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              justifyContent: "center",
-              minWidth: 150,
-            }}>
-            <Box
-              sx={{ width: 22, height: 22, bgcolor: "#fff", borderRadius: 0.5 }}
-            />
-            <Typography sx={{ fontSize: 16, color: "#fff", fontWeight: "600" }}>
-              Tạo video img - img
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              px: 4,
-              py: 2,
-              borderRadius: 1,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              justifyContent: "center",
-              minWidth: 150,
-            }}>
-            <Box
-              sx={{
-                width: 22,
-                height: 22,
-                bgcolor: "#A6A6C2",
-                borderRadius: 0.5,
-              }}
-            />
-            <Typography
-              sx={{ fontSize: 16, color: "#A6A6C2", fontWeight: "600" }}>
-              Tạo video img - video
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              px: 4,
-              py: 2,
-              borderRadius: 1,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              justifyContent: "center",
-              minWidth: 150,
-            }}>
-            <Box
-              sx={{
-                width: 22,
-                height: 22,
-                bgcolor: "#A6A6C2",
-                borderRadius: 0.5,
-              }}
-            />
-            <Typography
-              sx={{ fontSize: 16, color: "#A6A6C2", fontWeight: "600" }}>
-              Kiểu 04
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
+      <ResponsiveBox />
       <VideoProjectUI />
-
     </Box>
   );
 };
 
 export default SuccessView;
 
-
-import { CardMedia, Avatar } from '@mui/material';
-import { styled } from '@mui/system';
-import FileCopyIcon from '@mui/icons-material/FileCopyOutlined';
-import CloudUploadIcon from '@mui/icons-material/CloudUploadOutlined';
+import { CardMedia, Avatar } from "@mui/material";
+import { styled } from "@mui/system";
+import FileCopyIcon from "@mui/icons-material/FileCopyOutlined";
+import CloudUploadIcon from "@mui/icons-material/CloudUploadOutlined";
 import { RiPlayFill } from "react-icons/ri";
+import ResponsiveBox from "../../components/ResponsiveBox";
 
 const Container = styled(Box)(({ theme }) => ({
-  backgroundColor: '#1a1a2e',
-  color: 'white',
-  padding: '2rem',
-  borderRadius: '12px',
-  maxWidth: '900px',
-  margin: 'auto',
-  [theme.breakpoints.down('sm')]: {
-    padding: '1rem',
+  backgroundColor: "#1a1a2e",
+  color: "white",
+  padding: "2rem",
+  borderRadius: "12px",
+  maxWidth: "900px",
+  margin: "auto",
+  [theme.breakpoints.down("sm")]: {
+    padding: "1rem",
   },
 }));
 
 const VideoCard = styled(Card)({
-  borderRadius: '16px',
-  overflow: 'hidden',
-  position: 'relative',
+  borderRadius: "16px",
+  overflow: "hidden",
+  position: "relative",
 });
 
 const SideInfo = styled(Box)(({ theme }) => ({
-  backgroundColor: '#222244',
-  borderRadius: '12px',
-  padding: '1rem',
-  marginLeft: '1rem',
-  height:"max-content",
+  backgroundColor: "#222244",
+  borderRadius: "12px",
+  padding: "1rem",
+  marginLeft: "1rem",
+  height: "max-content",
 
-  [theme.breakpoints.down('sm')]: {
+  [theme.breakpoints.down("sm")]: {
     marginLeft: 0,
-    marginTop: '1rem',
+    marginTop: "1rem",
   },
 }));
 
 const MetaRow = ({ label, value }) => (
-  <Box display="flex" justifyContent="space-between" alignItems="center" mt={1}>
+  <Box display='flex' justifyContent='space-between' alignItems='center' mt={1}>
     <Box display={"flex"}>
-
-      <Typography variant="body2" sx={{ color: '#bbb' }}>{label}</Typography>
-      <Typography variant="body2" sx={{ color: 'white' }}>{value}</Typography>
+      <Typography variant='body2' sx={{ color: "#bbb" }}>
+        {label}
+      </Typography>
+      <Typography variant='body2' sx={{ color: "white" }}>
+        {value}
+      </Typography>
     </Box>
-    <Box display="flex" alignItems="center" gap={1}>
-
-      <FileCopyIcon sx={{ fontSize: 16, color: '#888' }} />
+    <Box display='flex' alignItems='center' gap={1}>
+      <FileCopyIcon sx={{ fontSize: 16, color: "#888" }} />
     </Box>
   </Box>
 );
 
 const ActionButton = styled(Button)(({ theme }) => ({
-  padding: '10px 24px',
-  borderRadius: '12px',
-  fontWeight: '500',
-  fontSize: '14px',
-  textTransform: 'none',
+  padding: "10px 24px",
+  borderRadius: "12px",
+  fontWeight: "500",
+  fontSize: "14px",
+  textTransform: "none",
 }));
 
 function VideoProjectUI() {
-  const isMobile = useMediaQuery('(max-width:600px)');
+  const isMobile = useMediaQuery("(max-width:600px)");
 
   return (
     <Box>
-      <Typography variant="h5" my={4} fontWeight={600} gutterBottom>
+      <Typography
+        variant='h5'
+        fontSize={isMobile ? "1.2rem" : "1.5rem"}
+        my={4}
+        fontWeight={600}
+        gutterBottom>
         Dự án: Cuộc phiêu lưu cùng những người bạn
       </Typography>
 
-      <Box display={isMobile ? 'block' : 'flex'} justifyContent={"space-between"}>
+      <Box
+        display={isMobile ? "block" : "flex"}
+        justifyContent={"space-between"}>
         <Box
           sx={{
             margin: "0px 0 !important",
             position: "relative",
-            width: "60%",
+            width: isMobile ? "100%" : "60%",
             borderRadius: 1,
             overflow: "hidden",
           }}>
@@ -252,32 +179,40 @@ function VideoProjectUI() {
             height={"100%"}
             alt=''
           />
-         
         </Box>
 
-        <SideInfo sx={{ width: "30%" }}>
+        <SideInfo sx={{ width: isMobile ? "90%" : "30%" }}>
           <Box display={"flex"} flexDirection={"column"} gap={2}>
-            <Typography variant="h6" fontWeight={600}>Tiêu đề: Phiêu lưu</Typography>
-            <MetaRow label="Tên file:" value="Phieu-luu.mp4" />
-            <MetaRow label="Key word:" value="Phiêu lưu" />
-            <MetaRow label="Mô tả:" value="Có 2 người bạn" />
-            <MetaRow label="Tag/Hashtag:" value="phieu luu, tham hiem" />
-            <MetaRow label="Ảnh thumbnail:" value="" />
-
+            <Typography variant='h6' fontWeight={600}>
+              Tiêu đề: Phiêu lưu
+            </Typography>
+            <MetaRow label='Tên file:' value='Phieu-luu.mp4' />
+            <MetaRow label='Key word:' value='Phiêu lưu' />
+            <MetaRow label='Mô tả:' value='Có 2 người bạn' />
+            <MetaRow label='Tag/Hashtag:' value='phieu luu, tham hiem' />
+            <MetaRow label='Ảnh thumbnail:' value='' />
           </Box>
         </SideInfo>
       </Box>
 
-      <Box mt={4} display="flex" flexDirection={isMobile ? 'column' : 'row'} gap={2}>
-            <ActionButton variant="contained" fullWidth={!isMobile} sx={{ backgroundColor: '#6C63FF' }}>
-              Tải video xuống
-            </ActionButton>
-            <ActionButton variant="contained" fullWidth={!isMobile} sx={{ backgroundColor: '#fff', color: '#5932EA' }}>
-              Upload lên Driver
-            </ActionButton>
-          </Box>
-
-      
+      <Box
+        mt={4}
+        display='flex'
+        flexDirection={isMobile ? "column" : "row"}
+        gap={2}>
+        <ActionButton
+          variant='contained'
+          fullWidth={!isMobile}
+          sx={{ backgroundColor: "#6C63FF" }}>
+          Tải video xuống
+        </ActionButton>
+        <ActionButton
+          variant='contained'
+          fullWidth={!isMobile}
+          sx={{ backgroundColor: "#fff", color: "#5932EA" }}>
+          Upload lên Driver
+        </ActionButton>
+      </Box>
     </Box>
   );
 }

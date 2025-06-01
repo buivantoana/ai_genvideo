@@ -33,99 +33,18 @@ const CreateVideoView = () => {
       className='hidden-add-voice'
       sx={{
         bgcolor: "#0D0C2B",
-        p: isMobile ? 4 : 6,
+        p: isMobile ? 1.5 : 6,
 
         color: "white",
         display: "flex",
         flexDirection: "column",
-        gap: 4,
+        gap: isMobile ? 2 : 4,
         overflowY: "scroll",
         height: "100vh",
       }}>
       <StepComponent />
       {/* Toggle Tabs */}
-      <Box display={"flex"} justifyContent={"center"}>
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            bgcolor: "#1A1836",
-            width: "max-content",
-            p: 1.5,
-            borderRadius: 2,
-            gap: 2,
-          }}>
-          <Box
-            sx={{
-              bgcolor: "#2A274B",
-              px: 4,
-              py: 2,
-              borderRadius: 1,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              justifyContent: "center",
-              minWidth: 150,
-            }}>
-            <Box
-              sx={{ width: 22, height: 22, bgcolor: "#fff", borderRadius: 0.5 }}
-            />
-            <Typography sx={{ fontSize: 16, color: "#fff", fontWeight: "600" }}>
-              Tạo video img - img
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              px: 4,
-              py: 2,
-              borderRadius: 1,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              justifyContent: "center",
-              minWidth: 150,
-            }}>
-            <Box
-              sx={{
-                width: 22,
-                height: 22,
-                bgcolor: "#A6A6C2",
-                borderRadius: 0.5,
-              }}
-            />
-            <Typography
-              sx={{ fontSize: 16, color: "#A6A6C2", fontWeight: "600" }}>
-              Tạo video img - video
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              px: 4,
-              py: 2,
-              borderRadius: 1,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              justifyContent: "center",
-              minWidth: 150,
-            }}>
-            <Box
-              sx={{
-                width: 22,
-                height: 22,
-                bgcolor: "#A6A6C2",
-                borderRadius: 0.5,
-              }}
-            />
-            <Typography
-              sx={{ fontSize: 16, color: "#A6A6C2", fontWeight: "600" }}>
-              Kiểu 04
-            </Typography>
-          </Box>
-        </Box>
-      </Box>
+      <ResponsiveBox />
       <Box display={"flex"} gap={3}>
         <FormControl variant='outlined' size='small'>
           <Select
@@ -235,7 +154,7 @@ const CreateVideoView = () => {
         </FormControl>
       </Box>
 
-      <Box display={"flex"} alignItems={"center"} gap={"20px"}>
+      {/* <Box display={"flex"} alignItems={"center"} gap={"20px"}>
         <Typography variant='h5' fontWeight={"bold"}>
           Tạo phân cảnh
         </Typography>
@@ -247,7 +166,7 @@ const CreateVideoView = () => {
           }}>
           Tạo toàn bộ ảnh từ phân cảnh
         </Button>
-      </Box>
+      </Box> */}
       <SceneEditor />
     </Box>
   );
@@ -259,8 +178,13 @@ import { IconButton, Card, CardMedia, Grid, Stack } from "@mui/material";
 import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { RiPlayFill, RiRefreshLine } from "react-icons/ri";
+import ResponsiveBox from "../../components/ResponsiveBox";
+import { useNavigate } from "react-router-dom";
 
 const SceneCard = ({ sceneNumber, imageUrl, narrationText, dialogText }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
     <Box
       sx={{
@@ -322,8 +246,14 @@ const SceneCard = ({ sceneNumber, imageUrl, narrationText, dialogText }) => {
             borderRadius: 1,
             overflow: "hidden",
           }}>
-          <Box sx={{ position: "absolute", bottom: 15, right: 15 }}>
-            <img src={download} alt='' />
+          <Box
+            sx={{
+              position: "absolute",
+              bottom: 15,
+              right: 15,
+              width: isMobile ? "25px" : "unset",
+            }}>
+            <img src={download} width={isMobile ? "100%" : "unset"} alt='' />
           </Box>
           <Box
             sx={{
@@ -380,7 +310,7 @@ const SceneCard = ({ sceneNumber, imageUrl, narrationText, dialogText }) => {
 
 function SceneEditor() {
   const isMobile = useMediaQuery("(max-width:600px)");
-
+  const navigate = useNavigate();
   return (
     <Box sx={{ minHeight: "100vh", pb: 3 }}>
       <SceneCard
@@ -408,17 +338,18 @@ function SceneEditor() {
           }}>
           <Button
             variant='contained'
+            onClick={() => navigate("/narrator")}
             sx={{
               background: "#6E00FF",
               textTransform: "none",
               borderRadius: 1,
-              width: "38%",
+              width: isMobile ? "100%" : "38%",
               fontWeight: 600,
               "&:hover": {
                 background: "#5900cc",
               },
               height: 50,
-              fontSize: "18px",
+              fontSize: isMobile ? "15px" : "18px",
             }}>
             Xác nhận tạo xong
           </Button>
@@ -429,13 +360,13 @@ function SceneEditor() {
               background: "white",
               textTransform: "none",
               borderRadius: 1,
-              width: "38%",
+              width: isMobile ? "100%" : "38%",
               fontWeight: 600,
               "&:hover": {
                 background: "white",
               },
               height: 50,
-              fontSize: "18px",
+              fontSize: isMobile ? "15px" : "18px",
               color: "black",
             }}>
             Tải hàng loạt (2)

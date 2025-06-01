@@ -289,6 +289,7 @@ import AddPhotoAlternateIcon from "@mui/icons-material/AddPhotoAlternate";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { RiRefreshLine } from "react-icons/ri";
 import ResponsiveBox from "../../components/ResponsiveBox";
+import { useNavigate } from "react-router-dom";
 
 const SceneCard = ({ sceneNumber, imageUrl, narrationText, dialogText }) => {
   const theme = useTheme();
@@ -444,7 +445,7 @@ const SceneCard = ({ sceneNumber, imageUrl, narrationText, dialogText }) => {
 
 function SceneEditor() {
   const isMobile = useMediaQuery("(max-width:600px)");
-
+  const navigate = useNavigate();
   return (
     <Box sx={{ minHeight: "100vh", pb: 3 }}>
       <SceneCard
@@ -498,6 +499,7 @@ function SceneEditor() {
           }}>
           <Button
             variant='contained'
+            onClick={() => navigate("/create-video")}
             sx={{
               background: "#6E00FF",
               textTransform: "none",

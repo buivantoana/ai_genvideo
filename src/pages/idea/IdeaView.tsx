@@ -18,13 +18,14 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import StepComponent from "../../components/StepComponent";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ResponsiveBox from "../../components/ResponsiveBox";
+import { useNavigate } from "react-router-dom";
 const modelOptions = ["ChatGPT", "Qwen", "DeepSeek"];
 const styleOptions = ["Thuyết minh", "Có hội thoại"];
 
 const IdeaView = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
+  const navigate = useNavigate();
   return (
     <Box
       className='hidden-add-voice'
@@ -375,6 +376,7 @@ const IdeaView = () => {
         }}>
         <Button
           variant='contained'
+          onClick={() => navigate("/script")}
           sx={{
             background: "#6E00FF",
             textTransform: "none",

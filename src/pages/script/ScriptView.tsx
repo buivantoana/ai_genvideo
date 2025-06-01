@@ -49,6 +49,7 @@ export default ScriptView;
 import { IconButton } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import ResponsiveBox from "../../components/ResponsiveBox";
+import { useNavigate } from "react-router-dom";
 
 const scenes = [
   {
@@ -73,10 +74,10 @@ const scenes = [
 const PromptEditorUI = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
+  const navigate = useNavigate();
   return (
     <Box
-      px={isMobile ? 1.5 : 6}
+      px={isMobile ? 1.5 : 0}
       py={isMobile ? 2 : 4}
       bgcolor='#0D0C2B'
       color='#fff'>
@@ -310,6 +311,7 @@ const PromptEditorUI = () => {
         </Select>
         <Button
           variant='contained'
+          onClick={() => navigate("/create-image")}
           sx={{
             background: "#6E00FF",
             textTransform: "none",

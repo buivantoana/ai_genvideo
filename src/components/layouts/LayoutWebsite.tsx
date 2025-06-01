@@ -11,7 +11,7 @@ const LayoutWebsite = () => {
 
   return (
     <Box
-      pb={{ xs: "120px", md: 0 }}
+      pb={{ xs: "150px", md: 0 }}
       sx={{
         display: "flex",
         height: "100vh",

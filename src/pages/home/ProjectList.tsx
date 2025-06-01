@@ -6,12 +6,14 @@ import {
   CardMedia,
 } from "@mui/material";
 import img from "../../images/snapedit_1733996450113.png";
+import { useNavigate } from "react-router-dom";
 const projects = [
   { name: "Thêm Dự án +", image: null },
   { name: "Dự án 2", image: img },
 ];
 
 const ProjectList = () => {
+  const navigate = useNavigate();
   return (
     <Box>
       <Typography
@@ -32,6 +34,7 @@ const ProjectList = () => {
         }}>
         {projects.map((project, index) => (
           <Card
+            onClick={() => navigate("/idea")}
             key={index}
             sx={{
               width: 324,

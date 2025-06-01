@@ -36,12 +36,12 @@ const AccountView = () => {
       className='hidden-add-voice'
       sx={{
         bgcolor: "#0D0C2B",
-        p: isMobile ? 4 : 6,
+        p: isMobile ? 1.5 : 6,
 
         color: "white",
         display: "flex",
         flexDirection: "column",
-        gap: 4,
+        gap: isMobile ? 2 : 4,
         overflowY: "scroll",
         height: "100vh",
       }}>
@@ -140,7 +140,10 @@ function AccountManager({ setAction, setOpen }) {
         </Button>
       </Box>
 
-      <Box bgcolor={"rgba(29, 29, 65, 1)"} p={3} sx={{ borderRadius: 2 }}>
+      <Box
+        bgcolor={"rgba(29, 29, 65, 1)"}
+        p={isMobile ? 1 : 3}
+        sx={{ borderRadius: 2 }}>
         <Typography variant='h6' mb={2}>
           Quản lý tài khoản
         </Typography>
