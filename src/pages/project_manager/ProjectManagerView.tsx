@@ -32,14 +32,13 @@ const ProjectManagerView = () => {
       className='hidden-add-voice'
       sx={{
         bgcolor: "#0D0C2B",
-        p: isMobile ? 4 : 6,
+        p: isMobile ? 1.5 : 6,
 
         color: "white",
         display: "flex",
         flexDirection: "column",
-        gap: 4,
-        overflowY: "scroll",
-        height: "100vh",
+        gap: isMobile?2:4,
+        
       }}>
       <ProjectList />
     </Box>
@@ -70,6 +69,8 @@ const projects = [
 const ProjectList = () => {
   const [open, setOpen] = React.useState(false);
   const [openDetail, setOpenDetail] = React.useState(false);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleDelete = () => {
     // Xử lý xóa tài khoản
@@ -83,10 +84,10 @@ const ProjectList = () => {
   };
   return (
     <Box>
-      <Typography variant='h5' fontWeight='bold' mb={3}>
+      <Typography variant='h5' fontSize={isMobile?"1.2rem":"1.5rem"} fontWeight='bold' mb={isMobile?1:3}>
         Quản lý dự án
       </Typography>
-      <Grid container mt={2} spacing={3}>
+      <Grid container mt={isMobile?1:2} spacing={3}>
         {projects.map((project) => (
           <Grid key={project.id} item xs={12} sm={6}>
             <ProjectCard
@@ -125,16 +126,19 @@ const ProjectCard = ({
   setOpen,
   setOpenDetail,
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
     <Card
       sx={{
         backgroundColor: "rgba(29, 29, 65, 1)",
         color: "#fff",
         borderRadius: "16px",
-        p: 2,
+        p: isMobile?.5:2,
       }}>
       <CardContent>
-        <Typography variant='h6' fontWeight='bold' gutterBottom>
+        <Typography variant='h6' fontSize={isMobile?"1rem":"1.25rem"} fontWeight='bold' gutterBottom>
           {title}
         </Typography>
         <Typography variant='body2' sx={{ opacity: 0.7 }} gutterBottom>
@@ -142,7 +146,7 @@ const ProjectCard = ({
         </Typography>
 
         <Box
-          mt={4}
+          mt={isMobile?2:4}
           display='flex'
           alignItems='center'
           justifyContent='space-between'>
@@ -204,10 +208,10 @@ const Member = ({ open, onClose, onConfirm }) => {
           color: "#fff",
           borderRadius: "16px",
           padding: 2,
-          minWidth: 900,
+          minWidth: { xs: '90vw', sm: 600, md: 800, lg: 900 }
         },
       }}>
-      <DialogContent>
+      <DialogContent sx={{p:{xs:.5,md:"unset"}}}>
         <AccountManager />
       </DialogContent>
     </Dialog>
@@ -224,11 +228,11 @@ const DetailProject = ({ open, onClose, onConfirm }) => {
           backgroundColor: "rgba(29, 29, 65, 1)",
           color: "#fff",
           borderRadius: "16px",
-          padding: 2,
-          minWidth: 900,
+          padding: {xs:.5,md:2},
+          minWidth: { xs: '90vw', sm: 600, md: 800, lg: 900 }
         },
       }}>
-      <DialogContent>
+      <DialogContent sx={{p:{xs:.5,md:"unset"}}}>
         <DetailProjectManager />
       </DialogContent>
     </Dialog>
@@ -274,7 +278,7 @@ function AccountManager({ setAction, setOpen }) {
   return (
     <Box>
       <Box display='flex' justifyContent='space-between' gap={2} mb={2}>
-        <Typography variant='h6' mb={2}>
+        <Typography variant='h6' fontSize={isMobile ? "1rem" : "1.25rem"} mb={2}>
           Thành viên dự án
         </Typography>
         <Button
@@ -292,14 +296,15 @@ function AccountManager({ setAction, setOpen }) {
       </Box>
 
       <Box bgcolor={"rgba(29, 29, 65, 1)"} sx={{ borderRadius: 2 }}>
-        <Box
+      <Box
           display='flex'
           justifyContent='space-between'
           alignItems='center'
+          px={isMobile ? "8px" : "16px"}
           mb={1}>
-          <Typography width={"20%"}>Tên đăng nhập</Typography>
-          <Typography width={"20%"}>Vai trò</Typography>
-          <Typography width={"20%"}>Địa chỉ mail</Typography>
+          <Typography width={isMobile ? "25%" : "20%"} fontSize={isMobile ? ".7rem" : "1rem"}>Tên đăng nhập</Typography>
+          <Typography width={isMobile ? "25%" : "20%"} fontSize={isMobile ? ".7rem" : "1rem"}>Vai trò</Typography>
+          <Typography width={isMobile ? "25%" : "20%"} fontSize={isMobile ? ".7rem" : "1rem"}>Địa chỉ mail</Typography>
           <IconButton
             sx={{ display: "flex", gap: "10px", width: "20%" }}></IconButton>
         </Box>
@@ -310,14 +315,14 @@ function AccountManager({ setAction, setOpen }) {
               justifyContent='space-between'
               alignItems='center'
               mb={1}>
-              <Typography width={"20%"}>{user.username}</Typography>
-              <Typography width={"20%"}>{user.role}</Typography>
-              <Typography width={"20%"}>{user.email}</Typography>
+              <Typography width={isMobile?"25%":"20%"} fontSize={isMobile ? ".7rem" : "1rem"}>{user.username}</Typography>
+              <Typography width={isMobile?"25%":"20%"} fontSize={isMobile ? ".7rem" : "1rem"}>{user.role}</Typography>
+              <Typography width={isMobile?"25%":"20%"} fontSize={isMobile ? ".7rem" : "1rem"}>{user.email}</Typography>
               <Box
                 sx={{
-                  width: "20%",
+                  width: isMobile?"25%":"20%",
                   display: "flex",
-                  gap: "10px",
+                  gap:isMobile?"5px": "10px",
                   alignItems: "center",
                   justifyContent: "end",
                 }}>
@@ -337,9 +342,11 @@ function AccountManager({ setAction, setOpen }) {
                 <Box
                   display={"flex"}
                   justifyContent={"space-between"}
+                  flexDirection={isMobile?"column":"row"}
+                  gap={isMobile?1:0}
                   alignItems={"end"}>
-                  <Box width={"47%"}>
-                    <Typography mb={1}>Phân quyền dự án</Typography>
+                  <Box width={isMobile?"100%":"47%"}>
+                    <Typography fontSize={isMobile ? ".7rem" : "1rem"} mb={1}>Phân quyền dự án</Typography>
                     <Select
                       fullWidth
                       defaultValue={user.role}
@@ -366,7 +373,7 @@ function AccountManager({ setAction, setOpen }) {
                       sx={{
                         backgroundColor: "rgba(29, 29, 65, 1)",
                         color: "#fff",
-                        height: "45px",
+                        height:isMobile?"35px": "45px",
                         borderRadius: "8px",
                         "& .MuiOutlinedInput-notchedOutline": {
                           border: "2px solid",
@@ -383,14 +390,14 @@ function AccountManager({ setAction, setOpen }) {
                       <MenuItem value='Viewer'>Viewer</MenuItem>
                     </Select>
                   </Box>
-                  <Box width={"47%"} textAlign={"end"}>
+                  <Box width={isMobile?"100%":"47%"} textAlign={"end"}>
                     <Button
                       variant='contained'
                       sx={{
                         backgroundColor: "rgba(89, 50, 234, 1)",
                         borderRadius: "12px",
                         alignSelf: "flex-end",
-                        height: "45px",
+                        height: isMobile?"35px": "45px",
                       }}>
                       Cập nhật thông tin
                     </Button>
@@ -428,7 +435,7 @@ function DetailProjectManager({ setAction, setOpen }) {
   return (
     <Box>
       <Box display='flex' justifyContent='space-between' gap={2} mb={2}>
-        <Typography variant='h6' mb={2}>
+        <Typography variant='h6' fontSize={isMobile?"1rem":"1.25rem"} mb={2}>
           Chi tiết dự án
         </Typography>
         <Button
@@ -438,8 +445,8 @@ function DetailProjectManager({ setAction, setOpen }) {
           sx={{
             color: "white",
             background: "rgba(89, 50, 234, 1)",
-
             borderRadius: 1,
+            height:isMobile?"33px":"unset"
           }}>
           Thêm thành viên
         </Button>
@@ -450,24 +457,25 @@ function DetailProjectManager({ setAction, setOpen }) {
           display='flex'
           justifyContent='space-between'
           alignItems='center'
+          sx={{p: { xs: 1, md: 2 } }}
           mb={1}>
-          <Typography width={"20%"}>Tên đăng nhập</Typography>
-          <Typography width={"20%"}>Vai trò</Typography>
-          <Typography width={"20%"}>Tiến độ dự án </Typography>
-          <Typography width={"20%"}>Địa chỉ mail</Typography>
+          <Typography  width={isMobile ? "25%" : "20%"} fontSize={isMobile?".7rem":"1rem"}>Tên đăng nhập</Typography>
+         {!isMobile&& <Typography  width={isMobile ? "25%" : "20%"} fontSize={isMobile?".7rem":"1rem"}>Vai trò</Typography>}
+          <Typography  width={isMobile ? "25%" : "20%"} fontSize={isMobile?".7rem":"1rem"}>Tiến độ dự án </Typography>
+          <Typography  width={isMobile ? "25%" : "20%"} fontSize={isMobile?".7rem":"1rem"}>Địa chỉ mail</Typography>
           <IconButton
             sx={{ display: "flex", gap: "10px", width: "20%" }}></IconButton>
         </Box>
         {users.map((user) => (
-          <UserCard key={user.id}>
+          <UserCard sx={{ p: { xs: 1, md: 2 } }} key={user.id}>
             <Box
               display='flex'
               justifyContent='space-between'
               alignItems='center'
               mb={1}>
-              <Typography width={"20%"}>{user.username}</Typography>
-              <Typography width={"20%"}>{user.role}</Typography>
-              <Box width={"20%"}>
+              <Typography  width={isMobile ? "25%" : "20%"} fontSize={isMobile?".7rem":"1rem"}>{user.username}</Typography>
+              {!isMobile&&  <Typography  width={isMobile ? "25%" : "20%"} fontSize={isMobile?".7rem":"1rem"}>{user.role}</Typography>}
+             {!isMobile&& <Box  width={isMobile ? "25%" : "20%"}>
                 <Typography
                   sx={{
                     position: "relative",
@@ -490,14 +498,25 @@ function DetailProjectManager({ setAction, setOpen }) {
                   }}>
                   Hoàn thành
                 </Typography>
-              </Box>
-
-              <Typography width={"20%"}>{user.email}</Typography>
+              </Box>}
+              {isMobile&&<Typography
+                   width={isMobile ? "25%" : "20%"}
+                  sx={{
+                    position: "relative",
+                    color: "green",
+                    fontSize: "13px",
+                    width: "max-content",
+            
+                
+                  }}>
+                  Hoàn thành
+                </Typography>}
+              <Typography width={isMobile ? "25%" : "20%"} fontSize={isMobile?".7rem":"1rem"}>{user.email}</Typography>
               <Box
                 sx={{
                   width: "20%",
                   display: "flex",
-                  gap: "10px",
+                  gap: isMobile?0:"10px",
                   alignItems: "center",
                   justifyContent: "end",
                 }}>
@@ -517,9 +536,11 @@ function DetailProjectManager({ setAction, setOpen }) {
                 <Box
                   display={"flex"}
                   justifyContent={"space-between"}
+                  flexDirection={isMobile?"column":"row"}
+                  gap={isMobile?1:0}
                   alignItems={"end"}>
-                  <Box width={"47%"}>
-                    <Typography mb={1}>Tiến độ dự án</Typography>
+                  <Box width={isMobile?"100%":"47%"}>
+                    <Typography fontSize={isMobile?".7rem":"1rem"} mb={isMobile?.5:1}>Tiến độ dự án</Typography>
                     <Select
                       fullWidth
                       defaultValue={user.role}
@@ -529,7 +550,7 @@ function DetailProjectManager({ setAction, setOpen }) {
                             backgroundColor: "#2A274B", // nền của dropdown list
                             color: "#fff",
                             borderRadius: 2,
-                            mt: 1,
+                            mt: isMobile?.5:1,
                             "& .MuiMenuItem-root": {
                               "&:hover": {
                                 backgroundColor: "#3A375F", // màu hover
@@ -546,7 +567,7 @@ function DetailProjectManager({ setAction, setOpen }) {
                       sx={{
                         backgroundColor: "rgba(29, 29, 65, 1)",
                         color: "#fff",
-                        height: "45px",
+                        height: isMobile?"35px":"45px",
                         borderRadius: "8px",
                         "& .MuiOutlinedInput-notchedOutline": {
                           border: "2px solid",
@@ -557,12 +578,13 @@ function DetailProjectManager({ setAction, setOpen }) {
                           borderColor: "#414188", // 👈 Viền khi focus
                         },
                         ".MuiSelect-icon": { color: "#fff" },
+                        fontSize:isMobile?"12px":"unset"
                       }}>
                       <MenuItem value='Admin'>Đang tiến hành</MenuItem>
                     </Select>
                   </Box>
-                  <Box width={"47%"}>
-                    <Typography mb={1}>Phân quyền</Typography>
+                  <Box width={isMobile?"100%":"47%"}>
+                    <Typography fontSize={isMobile?".7rem":"1rem"} mb={isMobile?.5:1}>Phân quyền</Typography>
                     <Select
                       fullWidth
                       defaultValue={user.role}
@@ -572,7 +594,7 @@ function DetailProjectManager({ setAction, setOpen }) {
                             backgroundColor: "#2A274B", // nền của dropdown list
                             color: "#fff",
                             borderRadius: 2,
-                            mt: 1,
+                            mt: isMobile?.5:1,
                             "& .MuiMenuItem-root": {
                               "&:hover": {
                                 backgroundColor: "#3A375F", // màu hover
@@ -589,7 +611,7 @@ function DetailProjectManager({ setAction, setOpen }) {
                       sx={{
                         backgroundColor: "rgba(29, 29, 65, 1)",
                         color: "#fff",
-                        height: "45px",
+                        height: isMobile?"35px":"45px",
                         borderRadius: "8px",
                         "& .MuiOutlinedInput-notchedOutline": {
                           border: "2px solid",
@@ -600,6 +622,7 @@ function DetailProjectManager({ setAction, setOpen }) {
                           borderColor: "#414188", // 👈 Viền khi focus
                         },
                         ".MuiSelect-icon": { color: "#fff" },
+                        fontSize:isMobile?"12px":"unset"
                       }}>
                       <MenuItem value='Admin'>Admin</MenuItem>
                       <MenuItem value='Editor'>Editor</MenuItem>
@@ -614,7 +637,7 @@ function DetailProjectManager({ setAction, setOpen }) {
                       backgroundColor: "rgba(89, 50, 234, 1)",
                       borderRadius: "12px",
                       alignSelf: "flex-end",
-                      height: "45px",
+                      height: isMobile?"35px":"45px",
                     }}>
                     Cập nhật thông tin
                   </Button>
@@ -634,6 +657,7 @@ function DetailProjectManager({ setAction, setOpen }) {
 }
 
 const AddMemberModal = ({ open, onClose, onConfirm }) => {
+  const isMobile = useMediaQuery("(max-width:600px)");
   return (
     <Dialog
       open={open}
@@ -643,11 +667,11 @@ const AddMemberModal = ({ open, onClose, onConfirm }) => {
           backgroundColor: "rgba(29, 29, 65, 1)",
           color: "#fff",
           borderRadius: "16px",
-          padding: 2,
-          minWidth: 900,
+          padding: {xs:.5,md:2},
+          minWidth: { xs: '90vw', sm: 600, md: 800, lg: 900 }
         },
       }}>
-      <DialogTitle sx={{ position: "relative", fontWeight: "bold" }}>
+      <DialogTitle sx={{ position: "relative", fontWeight: "bold", fontSize:isMobile?"1rem":"1.25rem" }}>
         Thêm thành viên
         <IconButton
           aria-label='close'
@@ -671,12 +695,14 @@ const AddMemberModal = ({ open, onClose, onConfirm }) => {
         <Box
           display={"flex"}
           justifyContent={"space-between"}
+          flexDirection={isMobile?"column":"row"}
+          gap={isMobile?1:0}
           alignItems={"end"}>
-          <Box width={"47%"}>
+          <Box width={isMobile?"100%": "47%"}>
             <Typography mb={1}>Tên đăng nhập</Typography>
             <Field fullWidth placeholder='Example123' />
           </Box>
-          <Box width={"47%"}>
+          <Box width={isMobile?"100%": "47%"}>
             <Typography mb={1}>Phân quyền cho dự án</Typography>
             <Select
               fullWidth

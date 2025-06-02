@@ -28,102 +28,17 @@ const IdeaView = () => {
   const navigate = useNavigate();
   return (
     <Box
-      className='hidden-add-voice'
+       className='hidden-add-voice'
       sx={{
         bgcolor: "#0D0C2B",
         p: isMobile ? 1.5 : 6,
-
         color: "white",
         display: "flex",
         flexDirection: "column",
         gap: isMobile ? 2 : 4,
-        overflowY: "scroll",
-        height: "100vh",
+       
       }}>
       <StepComponent />
-      {/* Toggle Tabs */}
-      {/* <Box display={"flex"} justifyContent={"center"}>
-        <Box
-          sx={{
-            display: "flex",
-            flexWrap: "wrap",
-            bgcolor: "#1A1836",
-            width: "max-content",
-            p: 1.5,
-            borderRadius: 2,
-            gap: 2,
-          }}>
-          <Box
-            sx={{
-              bgcolor: "#2A274B",
-              px: 4,
-              py: 2,
-              borderRadius: 1,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              justifyContent: "center",
-              minWidth: 150,
-            }}>
-            <Box
-              sx={{ width: 22, height: 22, bgcolor: "#fff", borderRadius: 0.5 }}
-            />
-            <Typography sx={{ fontSize: 16, color: "#fff", fontWeight: "600" }}>
-              Tạo video img - img
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              px: 4,
-              py: 2,
-              borderRadius: 1,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              justifyContent: "center",
-              minWidth: 150,
-            }}>
-            <Box
-              sx={{
-                width: 22,
-                height: 22,
-                bgcolor: "#A6A6C2",
-                borderRadius: 0.5,
-              }}
-            />
-            <Typography
-              sx={{ fontSize: 16, color: "#A6A6C2", fontWeight: "600" }}>
-              Tạo video img - video
-            </Typography>
-          </Box>
-
-          <Box
-            sx={{
-              px: 4,
-              py: 2,
-              borderRadius: 1,
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              justifyContent: "center",
-              minWidth: 150,
-            }}>
-            <Box
-              sx={{
-                width: 22,
-                height: 22,
-                bgcolor: "#A6A6C2",
-                borderRadius: 0.5,
-              }}
-            />
-            <Typography
-              sx={{ fontSize: 16, color: "#A6A6C2", fontWeight: "600" }}>
-              Kiểu 04
-            </Typography>
-          </Box>
-        </Box>
-      </Box> */}
       <ResponsiveBox />
       <Typography color='#FDB52A' fontSize={{ xs: ".8rem", md: "1rem" }}>
         Lưu ý rằng AI phân biệt giữa chữ hoa và chữ thường ( yêu cầu nhập đúng

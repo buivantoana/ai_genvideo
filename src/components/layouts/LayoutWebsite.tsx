@@ -11,23 +11,26 @@ const LayoutWebsite = () => {
 
   return (
     <Box
-      pb={{ xs: "150px", md: 0 }}
+     
       sx={{
         display: "flex",
-        height: "100vh",
+        // height: "100vh",
         bgcolor: "#0f0e26",
-        flexDirection:{xs:"column",md:"row"}
+        flexDirection:{xs:"column",md:"row"},
+       
       }}>
-        {/* <Hidden smUp>
-          <Box py={1} display={"flex"} justifyContent={"center"}>
-            <img width={129} height={36} src={icon1} alt='logo' />
-          </Box>
-        </Hidden> */}
+       
       <Sidebar
         isOpen={isSidebarOpen}
         onToggle={() => setSidebarOpen(!isSidebarOpen)}
       />
-      <Box width={"100%"}>
+      <Box width={"100%"} className='hidden-add-voice'  sx={{ overflowY: "scroll",
+        height: {xs:"92vh", md:"100vh"}}}>
+           <Hidden smUp>
+          <Box py={1} display={"flex"} justifyContent={"center"}>
+            <img width={129} height={36} src={icon1} alt='logo' />
+          </Box>
+        </Hidden>
         <Outlet />
       </Box>
     </Box>

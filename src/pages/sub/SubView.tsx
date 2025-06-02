@@ -43,9 +43,7 @@ const SubView = () => {
         color: "white",
         display: "flex",
         flexDirection: "column",
-        gap: 4,
-        overflowY: "scroll",
-        height: "100vh",
+        gap:isMobile?2: 4,
       }}>
       <StepComponent />
       {/* Toggle Tabs */}

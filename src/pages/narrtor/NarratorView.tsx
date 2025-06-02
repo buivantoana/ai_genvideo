@@ -39,8 +39,7 @@ const NarratorView = () => {
         display: "flex",
         flexDirection: "column",
         gap: isMobile ? 2 : 4,
-        overflowY: "scroll",
-        height: "100vh",
+       
       }}>
       <StepComponent />
       {/* Toggle Tabs */}
@@ -164,7 +163,7 @@ const SettingsPanel = () => {
       sx={{
         height: "fit-content",
         color: "white",
-        px: { xs: 0, md: 4 },
+        px: { xs: 1.5, md: 4 },
       }}>
       <Typography
         variant='h6'
@@ -372,9 +371,9 @@ function VideoEditorPage() {
   const isMobile = useMediaQuery("(max-width:768px)");
   const navigate = useNavigate();
   return (
-    <Box sx={{ py: { xs: 2, md: 5 } }}>
+    <Box sx={{ py: { xs: 2, md: 5 }  }}>
       <Stack direction={isMobile ? "column" : "row"} spacing={4}>
-        <Box flex={1}>
+        <Box flex={1} px={isMobile?1.5:0}>
           <VideoCard
             sceneNumber={1}
             imageUrl={image}

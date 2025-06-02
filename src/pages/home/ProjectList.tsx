@@ -31,6 +31,7 @@ const ProjectList = () => {
           display: "flex",
           gap: 2,
           flexDirection: { xs: "column", md: "row" },
+          alignItems:"center"
         }}>
         {projects.map((project, index) => (
           <Card

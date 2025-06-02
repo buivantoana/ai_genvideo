@@ -44,8 +44,7 @@ const SuccessView = () => {
         display: "flex",
         flexDirection: "column",
         gap: isMobile ? 2 : 4,
-        overflowY: "scroll",
-        height: "100vh",
+       
       }}>
       <StepComponent />
       {/* Toggle Tabs */}

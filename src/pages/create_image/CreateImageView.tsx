@@ -39,8 +39,6 @@ const CreateImageView = () => {
         display: "flex",
         flexDirection: "column",
         gap: { xs: 2, md: 4 },
-        overflowY: "scroll",
-        height: "100vh",
       }}>
       <StepComponent />
       {/* Toggle Tabs */}
