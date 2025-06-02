@@ -239,6 +239,7 @@ const PromptEditorUI = () => {
         }}>
         <Button
           variant='contained'
+          onClick={() => navigate("/create-image")}
           sx={{
             background: "#6E00FF",
             textTransform: "none",
