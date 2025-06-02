@@ -16,17 +16,18 @@ const LayoutWebsite = () => {
         display: "flex",
         height: "100vh",
         bgcolor: "#0f0e26",
+        flexDirection:{xs:"column",md:"row"}
       }}>
+        {/* <Hidden smUp>
+          <Box py={1} display={"flex"} justifyContent={"center"}>
+            <img width={129} height={36} src={icon1} alt='logo' />
+          </Box>
+        </Hidden> */}
       <Sidebar
         isOpen={isSidebarOpen}
         onToggle={() => setSidebarOpen(!isSidebarOpen)}
       />
       <Box width={"100%"}>
-        <Hidden smUp>
-          <Box py={1} display={"flex"} justifyContent={"center"}>
-            <img width={129} height={36} src={icon1} alt='logo' />
-          </Box>
-        </Hidden>
         <Outlet />
       </Box>
     </Box>
