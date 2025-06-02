@@ -161,6 +161,9 @@ const MobileSidebar = ({ selectedIndex, onChange }) => {
         right: 0,
         zIndex: 1300,
         p: 0,
+        paddingBottom: "env(safe-area-inset-bottom)",
+        backdropFilter: "none", 
+        height:"10vh"
       }}
       elevation={3}>
       <BottomNavigation

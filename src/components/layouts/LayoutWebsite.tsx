@@ -25,7 +25,7 @@ const LayoutWebsite = () => {
         onToggle={() => setSidebarOpen(!isSidebarOpen)}
       />
       <Box width={"100%"} className='hidden-add-voice'  sx={{ overflowY: "scroll",
-        height: {xs:"92vh", md:"100vh"}}}>
+        height: {xs:"90vh", md:"100vh"}}}>
            <Hidden smUp>
           <Box py={1} display={"flex"} justifyContent={"center"}>
             <img width={129} height={36} src={icon1} alt='logo' />
