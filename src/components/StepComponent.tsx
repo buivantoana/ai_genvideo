@@ -80,7 +80,7 @@ const StepComponent = () => {
             <Box
               sx={{
                 width: { xs: 22, md: 60 },
-                height: 11,
+                height: { xs: 11, md: 22 },
                 mx: { xs: 1, md: 2 },
                 borderBottom:
                   steps[index + 1].status === "pending"
