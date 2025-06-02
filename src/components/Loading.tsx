@@ -1,5 +1,5 @@
 import { Box, CircularProgress } from "@mui/material";
-import logo from "../images/loading-lines-6747317-5601928.webp";
+import logo from "../images/Spin@1x-1.0s-200px-200px.gif";
 const Loading = (props: any) => {
   return (
     <Box
@@ -12,11 +12,11 @@ const Loading = (props: any) => {
         left: 0,
         justifyContent: "center",
         alignItems: "center",
-        background: "rgba(255,255,255,.8)",
+        background: "rgba(0,0,0,.8)",
         zIndex: 10000,
       }}>
       <Box>
-        <img src={logo} width={"100px"} alt='' />
+        <img src={logo} width={"60px"} alt='' />
       </Box>
     </Box>
   );

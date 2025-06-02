@@ -1,13 +1,13 @@
 import { Box } from "@mui/material";
-import React from "react";
+import React, { useState } from "react";
 import ProjectList from "./ProjectList";
 
 type Props = {};
 
-const HomeView = (props: Props) => {
+const HomeView = ({ project }: any) => {
   return (
     <Box p={3}>
-      <ProjectList />
+      <ProjectList project={project} />
     </Box>
   );
 };

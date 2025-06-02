@@ -1,22 +1,18 @@
-import axios from 'axios';
-
-const instance = axios.create({
-  baseURL: 'http://localhost:4000',
+import axios from "axios";
+import { url_video } from "../config";
+const api = axios.create({
+  baseURL: url_video, // Thay thế bằng API của bạn
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
-instance.defaults.withCredentials = true;
 
-instance.interceptors.request.use(
+// Thêm interceptor cho request để tự động gắn token
+api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('user');
+    const token = localStorage.getItem("token");
     if (token) {
-      const parsedToken = JSON.parse(token);
-      if (Object.keys(parsedToken).length > 0) {
-        if (config.url === '/auth/refeshtoken') {
-          config.headers.Authorization = `Bearer ${parsedToken.refeshToken}`;
-        } else {
-          config.headers.Authorization = `Bearer ${parsedToken.token}`;
-        }
-      }
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },
@@ -25,41 +21,16 @@ instance.interceptors.request.use(
   }
 );
 
-instance.interceptors.response.use(
-  (response) => {
-    const { data } = response;
-    return data;
-  },
-  async (error) => {
-    const originalRequest = error.config;
-    if (error.response.status === 403 && !originalRequest._retry) {
-      originalRequest._retry = true;
-      const token = localStorage.getItem('user');
-      if (token) {
-        const parsedToken = JSON.parse(token);
-        try {
-          const response = await axios.get('http://localhost:4000/auth/refeshtoken', {
-            headers: {
-              Authorization: `Bearer ${parsedToken.refeshToken}`,
-            },
-          });
-          if (response.data.status === 0) {
-            localStorage.setItem('user', JSON.stringify({
-              ...parsedToken,
-              token: response.data.accessToken,
-            }));
-            instance.defaults.headers.common['Authorization'] = 'Bearer ' + response.data.accessToken;
-            originalRequest.headers['Authorization'] = 'Bearer ' + response.data.accessToken;
-            return instance(originalRequest);
-          }
-        } catch (e) {
-        
-          return Promise.reject(error);
-        }
-      }
+// Thêm interceptor cho response để kiểm tra lỗi 401
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      localStorage.removeItem("token");
+      window.location.href = "/login"; // Chuyển hướng về trang chủ
     }
     return Promise.reject(error);
   }
 );
 
-export default instance;
+export default api;

@@ -44,7 +44,13 @@ const StyledTextField = styled(TextField)({
   height: "72px",
 });
 
-export default function LoginView() {
+export default function LoginView({
+  setPassword,
+  setEmail,
+  email,
+  password,
+  handleLogin,
+}: any) {
   const isMobile = useMediaQuery("(max-width:600px)");
 
   return (
@@ -70,6 +76,8 @@ export default function LoginView() {
           placeholder='Example@email.com'
           fullWidth
           margin='normal'
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
         />
         <Typography color='#BCBCE0' fontWeight={"500"}>
           Mật khẩu
@@ -80,6 +88,8 @@ export default function LoginView() {
           type='password'
           fullWidth
           margin='normal'
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
         />
 
         <Box textAlign='right' mt={1} mb={3}>
@@ -94,6 +104,7 @@ export default function LoginView() {
         <Button
           fullWidth
           variant='contained'
+          onClick={handleLogin}
           sx={{
             backgroundColor: "#6C63FF",
             borderRadius: "12px",

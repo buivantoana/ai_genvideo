@@ -7,15 +7,13 @@ import {
 } from "@mui/material";
 import img from "../../images/snapedit_1733996450113.png";
 import { useNavigate } from "react-router-dom";
-const projects = [
-  { name: "Thêm Dự án +", image: null },
-  { name: "Dự án 2", image: img },
-];
+const projects = [{ name: "Thêm Dự án +", image: null }];
 
-const ProjectList = () => {
+const ProjectList = ({ project }: any) => {
+  console.log("img", project);
   const navigate = useNavigate();
   return (
-    <Box >
+    <Box>
       <Typography
         variant='h5'
         sx={{
@@ -31,14 +29,15 @@ const ProjectList = () => {
           display: "flex",
           gap: 2,
           flexDirection: { xs: "column", md: "row" },
-          alignItems:"center"
+          alignItems: "center",
+          flexWrap: "wrap",
         }}>
         {projects.map((project, index) => (
           <Card
             onClick={() => navigate("/idea")}
             key={index}
             sx={{
-              width: 324,
+              width: { xs: "100%", md: "23%" },
               backgroundImage: `url(${project.image})`,
               backgroundRepeat: "no-repeat",
               backgroundSize: "120%",
@@ -61,6 +60,41 @@ const ProjectList = () => {
             </Typography>
           </Card>
         ))}
+        {project.map((item, index) => {
+          return (
+            <Card
+              onClick={() => {
+                localStorage.setItem("update_project", JSON.stringify(item));
+                setTimeout(() => {
+                  navigate(`/idea?id=${item.id}`);
+                }, 1000);
+              }}
+              key={index}
+              sx={{
+                width: { xs: "100%", md: "23%" },
+                backgroundImage: `url(${img})`,
+                backgroundRepeat: "no-repeat",
+                backgroundSize: "120%",
+                backgroundPosition: "20% 20%",
+                height: "180px",
+                bgcolor: "#1b1835",
+                color: "white",
+                border: "2px solid #3D3D79",
+                padding: 0,
+                borderRadius: "16px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+              }}>
+              <Typography
+                fontSize={"24px"}
+                fontWeight={"700"}
+                sx={{ WebkitTextStroke: "1px #2b2b85" }}>
+                {item.name}
+              </Typography>
+            </Card>
+          );
+        })}
       </Box>
     </Box>
   );

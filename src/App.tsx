@@ -6,7 +6,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { ThemeProvider } from "@mui/material";
 import theme from "./theme";
-import { getInfo } from "./service/voice";
+
 import { I18nextProvider } from "react-i18next";
 import i18n from "./translation/i18n";
 import { BrowserRouter } from "react-router-dom";
@@ -58,27 +58,27 @@ const App = () => {
   });
   let user = localStorage.getItem("user");
 
-  useEffect(() => {
-    if (user) {
-      (async () => {
-        let infor = await getInfo({
-          user_id: JSON.parse(user).phone
-            ? JSON.parse(user).phone
-            : JSON.parse(user).user_id,
-        });
-        if (infor.code == 0) {
-          console.log("AAAA USER====", { ...JSON.parse(user), ...infor.data });
-          dispatch({
-            type: "LOGIN",
-            payload: {
-              ...state,
-              user: { ...JSON.parse(user), ...infor.data },
-            },
-          });
-        }
-      })();
-    }
-  }, [user]);
+  // useEffect(() => {
+  //   if (user) {
+  //     (async () => {
+  //       let infor = await getInfo({
+  //         user_id: JSON.parse(user).phone
+  //           ? JSON.parse(user).phone
+  //           : JSON.parse(user).user_id,
+  //       });
+  //       if (infor.code == 0) {
+  //         console.log("AAAA USER====", { ...JSON.parse(user), ...infor.data });
+  //         dispatch({
+  //           type: "LOGIN",
+  //           payload: {
+  //             ...state,
+  //             user: { ...JSON.parse(user), ...infor.data },
+  //           },
+  //         });
+  //       }
+  //     })();
+  //   }
+  // }, [user]);
   console.log("AAAA state ====", state);
   return (
     <div>

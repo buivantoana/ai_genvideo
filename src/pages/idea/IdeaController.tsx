@@ -1,12 +1,18 @@
-import React from 'react'
-import IdeaView from './IdeaView'
+import React, { useState } from "react";
+import IdeaView from "./IdeaView";
+import Loading from "../../components/Loading";
 
-type Props = {}
+type Props = {};
 
 const IdeaController = (props: Props) => {
-  return (
-    <IdeaView/>
-  )
-}
+  const [loading, setLoading] = useState(false);
 
-export default IdeaController
+  return (
+    <>
+      {loading && <Loading />}
+      <IdeaView setLoading={setLoading} />
+    </>
+  );
+};
+
+export default IdeaController;

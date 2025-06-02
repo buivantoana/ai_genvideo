@@ -20,7 +20,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 const modelOptions = ["ChatGPT", "Qwen", "DeepSeek"];
 const styleOptions = ["Thuyết minh", "Có hội thoại"];
 
-const AccountView = () => {
+const AccountView = ({ setLoading, users }: any) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [action, setAction] = useState("manage");
@@ -45,10 +45,12 @@ const AccountView = () => {
         overflowY: "scroll",
         height: "100vh",
       }}>
-      {action == "reset" && <ResetPassword />}
-      {action == "add" && <AddUser />}
+      {action == "reset" && <ResetPassword setAction={setAction} />}
+      {action == "add" && (
+        <AddUser setLoading={setLoading} setAction={setAction} />
+      )}
       {action == "manage" && (
-        <AccountManager setOpen={setOpen} setAction={setAction} />
+        <AccountManager setOpen={setOpen} users={users} setAction={setAction} />
       )}
       <DeleteAccountModal
         open={open}
@@ -65,7 +67,11 @@ import { useState } from "react";
 import { Collapse } from "@mui/material";
 import { border, styled } from "@mui/system";
 import { ExpandMore, Delete, Edit } from "@mui/icons-material";
-import { RiAddCircleLine, RiDeleteBin5Line } from "react-icons/ri";
+import {
+  RiAddCircleLine,
+  RiArrowLeftLine,
+  RiDeleteBin5Line,
+} from "react-icons/ri";
 
 const Container = styled(Box)(({ theme }) => ({
   backgroundColor: "#1a1a2e",
@@ -98,15 +104,11 @@ const Field = styled(TextField)({
   },
 });
 
-function AccountManager({ setAction, setOpen }) {
+function AccountManager({ setAction, setOpen, users }) {
   const [expanded, setExpanded] = useState(null);
   const isMobile = useMediaQuery("(max-width:600px)");
 
-  const users = [
-    { id: 1, username: "ABC123", role: "Admin", email: "ABC@gmail.com" },
-    { id: 2, username: "XYZ456", role: "Editor", email: "XYZ@gmail.com" },
-    { id: 3, username: "LMN789", role: "Viewer", email: "LMN@gmail.com" },
-  ];
+ 
 
   const handleExpand = (id) => {
     setExpanded(expanded === id ? null : id);
@@ -353,10 +355,88 @@ function AccountManager({ setAction, setOpen }) {
   );
 }
 
-function AddUser() {
+function AddUser({ setLoading, setAction }: any) {
   const isMobile = useMediaQuery("(max-width:600px)");
+
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState("admin");
+
+  // Error states
+  const [errors, setErrors] = useState({
+    username: "",
+    password: "",
+    email: "",
+  });
+
+  const validate = () => {
+    const newErrors = {
+      username: "",
+      password: "",
+      email: "",
+    };
+    let isValid = true;
+
+    if (!username.trim()) {
+      newErrors.username = "Tên tài khoản là bắt buộc";
+      isValid = false;
+    }
+
+    if (!password) {
+      newErrors.password = "Mật khẩu là bắt buộc";
+      isValid = false;
+    } else if (password.length < 8) {
+      newErrors.password = "Mật khẩu phải từ 8 ký tự trở lên";
+      isValid = false;
+    } else if (password.length > 16) {
+      newErrors.password = "Mật khẩu không vượt quá 16 ký tự";
+      isValid = false;
+    }
+
+    if (!email.trim()) {
+      newErrors.email = "Email là bắt buộc";
+      isValid = false;
+    }
+
+    setErrors(newErrors);
+    return isValid;
+  };
+
+  const handleRegister = async () => {
+    if (!validate()) return;
+    setLoading(true);
+    const userData = {
+      username,
+      password,
+      email,
+      role,
+    };
+    try {
+      let result = await Register(userData);
+      if (result && result.message) {
+        toast.success(result.message);
+      } else {
+        toast.warning(result.detail);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+    setLoading(false);
+  };
+
   return (
     <Box>
+      <Box
+        onClick={() => setAction("manage")}
+        display={"flex"}
+        alignItems={"center"}
+        gap={"5px"}
+        sx={{ cursor: "pointer" }}>
+        <RiArrowLeftLine />
+        <Typography>Quay lại</Typography>
+      </Box>
       <Typography
         variant='h5'
         my={3}
@@ -364,6 +444,7 @@ function AddUser() {
         fontWeight={"bold"}>
         Thêm người dùng
       </Typography>
+
       <Box
         display={"flex"}
         my={2}
@@ -376,25 +457,36 @@ function AddUser() {
           </Typography>
           <Field
             fullWidth
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            error={!!errors.username}
+            helperText={errors.username}
             sx={{
               "& .MuiInputBase-root": { height: { xs: "35px", md: "45px" } },
             }}
             placeholder='Example123'
           />
         </Box>
+
         <Box width={isMobile ? "100%" : "47%"}>
           <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
-            Mật khẩu{" "}
+            Mật khẩu
           </Typography>
           <Field
             fullWidth
+            type='password'
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            error={!!errors.password}
+            helperText={errors.password}
             sx={{
               "& .MuiInputBase-root": { height: { xs: "35px", md: "45px" } },
             }}
-            placeholder='Ít nhất 8 ký tự'
+            placeholder='8-16 ký tự'
           />
         </Box>
       </Box>
+
       <Box
         display={"flex"}
         gap={isMobile ? 1 : 0}
@@ -407,33 +499,39 @@ function AddUser() {
           </Typography>
           <Field
             fullWidth
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            error={!!errors.email}
+            helperText={errors.email}
             sx={{
               "& .MuiInputBase-root": { height: { xs: "35px", md: "45px" } },
             }}
-            placeholder='Example123'
+            placeholder='example@example.com'
           />
         </Box>
+
         <Box width={isMobile ? "100%" : "47%"}>
           <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
             Vai trò
           </Typography>
           <Select
             fullWidth
-            defaultValue={"Admin"}
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
             MenuProps={{
               PaperProps: {
                 sx: {
-                  backgroundColor: "#2A274B", // nền của dropdown list
+                  backgroundColor: "#2A274B",
                   color: "#fff",
                   borderRadius: 2,
                   mt: 1,
                   "& .MuiMenuItem-root": {
                     "&:hover": {
-                      backgroundColor: "#3A375F", // màu hover
+                      backgroundColor: "#3A375F",
                       borderRadius: 1,
                     },
                     "&.Mui-selected": {
-                      backgroundColor: "#4B3A79", // màu selected
+                      backgroundColor: "#4B3A79",
                       borderRadius: 1,
                     },
                   },
@@ -447,23 +545,23 @@ function AddUser() {
               borderRadius: "8px",
               "& .MuiOutlinedInput-notchedOutline": {
                 border: "2px solid",
-                borderColor: "#414188", // 👈 Viền mặc định
+                borderColor: "#414188",
               },
               "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                border: "2px solid",
-                borderColor: "#414188", // 👈 Viền khi focus
+                borderColor: "#414188",
               },
               ".MuiSelect-icon": { color: "#fff" },
             }}>
-            <MenuItem value='Admin'>Admin</MenuItem>
-            <MenuItem value='Editor'>Editor</MenuItem>
-            <MenuItem value='Viewer'>Viewer</MenuItem>
+            <MenuItem value='admin'>Admin</MenuItem>
+            <MenuItem value='editor'>Editor</MenuItem>
           </Select>
         </Box>
       </Box>
+
       <Box textAlign={"center"} my={4}>
         <Button
           variant='contained'
+          onClick={handleRegister}
           sx={{
             backgroundColor: "rgba(89, 50, 234, 1)",
             borderRadius: "12px",
@@ -478,10 +576,19 @@ function AddUser() {
   );
 }
 
-function ResetPassword() {
+function ResetPassword({ setAction }) {
   const isMobile = useMediaQuery("(max-width:600px)");
   return (
     <Box>
+      <Box
+        onClick={() => setAction("manage")}
+        display={"flex"}
+        alignItems={"center"}
+        gap={"5px"}
+        sx={{ cursor: "pointer" }}>
+        <RiArrowLeftLine />
+        <Typography>Quay lại</Typography>
+      </Box>
       <Typography
         variant='h5'
         my={3}
@@ -552,6 +659,8 @@ import {
   DialogActions,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { Register } from "../../service/auth";
+import { toast } from "react-toastify";
 
 const DeleteAccountModal = ({ open, onClose, onConfirm }) => {
   return (
