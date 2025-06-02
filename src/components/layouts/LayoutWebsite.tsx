@@ -20,12 +20,12 @@ const LayoutWebsite = () => {
        
       }}>
        
-      {/* <Sidebar
+      <Sidebar
         isOpen={isSidebarOpen}
         onToggle={() => setSidebarOpen(!isSidebarOpen)}
-      /> */}
-      <Box width={"100%"} className='hidden-add-voice'  sx={{ overflowY: "scroll",
-        height: {xs:"90vh", md:"100vh"}}}>
+      />
+      <Box width={"100%"} className='hidden-add-voice'  sx={{ overflowY: {xs:"unset", md:"scroll"},
+        height: {xs:"unset", md:"100vh"},paddingBottom:{xs:"10vh",md:0}}}>
            <Hidden smUp>
           <Box py={1} display={"flex"} justifyContent={"center"}>
             <img width={129} height={36} src={icon1} alt='logo' />
