@@ -15,7 +15,7 @@ const projects = [
 const ProjectList = () => {
   const navigate = useNavigate();
   return (
-    <Box>
+    <Box >
       <Typography
         variant='h5'
         sx={{

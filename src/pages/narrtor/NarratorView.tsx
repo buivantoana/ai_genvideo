@@ -403,6 +403,7 @@ function VideoEditorPage() {
             px: 4,
             py: 1.5,
             width: isMobile ? "100%" : "30%",
+            height: isMobile?40 :50,
           }}>
           Bước tiếp theo
         </Button>

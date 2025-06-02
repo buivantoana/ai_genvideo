@@ -18,28 +18,53 @@ import {
   Settings,
 } from "@mui/icons-material";
 import icon1 from "../images/Frame 25.png";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const menuItems = [
-  { icon: <AddBox />, label: "Tạo dự án" },
-  { icon: <ListAlt />, label: "Danh sách dự án" },
+  { icon: <AddBox />, label: "Tạo dự án" ,path:"/"},
+  { icon: <ListAlt />, label: "Danh sách dự án" ,path:"/project-manager"},
   { icon: <RecordVoiceOver />, label: "Cấu hình giọng nói" },
-  { icon: <Settings />, label: "Cài đặt tài khoản" },
+  { icon: <Settings />, label: "Cài đặt tài khoản" ,path:"/account"},
 ];
-
+const menuItemsMobile = [
+  { icon: <AddBox />, label: "Tạo dự án",path:"/" },
+  { icon: <ListAlt />, label: "Dự án" ,path:"/project-manager"},
+  { icon: <RecordVoiceOver />, label: " Giọng nói" },
+  { icon: <Settings />, label: "Tài khoản" ,path:"/account"},
+];
 const Sidebar = ({ isOpen, onToggle }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const location = useLocation();
+  useEffect(()=>{
+    if(location&& location.pathname){
+      switch (location.pathname) {
+        case "/account":
+          setSelectedIndex(3)
+          break;
+        case "/project-manager":
+          setSelectedIndex(1)
+          break;
+      
+        default:
+          setSelectedIndex(0)
+          break;
+      }
+    }
 
+  },[location.pathname])
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // dưới 600px
-
-  const handleListItemClick = (index) => {
-    setSelectedIndex(index);
+  const navigate = useNavigate()
+  const handleListItemClick = (item) => {
+    navigate(item.path)
+    // setSelectedIndex(index);
     if (isMobile) setMobileOpen(false); // auto đóng drawer trên mobile
   };
-  const handleMenuChange = (index) => {
-    setSelectedIndex(index);
+  const handleMenuChange = (item) => {
+    let path:any = menuItemsMobile.find((ix,index)=>index == item)?.path
+     navigate(path)
     // TODO: Điều hướng hoặc xử lý action tại đây
   };
   const drawerContent = (
@@ -70,7 +95,7 @@ const Sidebar = ({ isOpen, onToggle }) => {
             placement='right'>
             <ListItemButton
               selected={selectedIndex === index}
-              onClick={() => handleListItemClick(index)}
+              onClick={() => handleListItemClick(item)}
               sx={{
                 px: 2,
                 height: 56,
@@ -145,12 +170,7 @@ export default Sidebar;
 
 import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material";
 
-const menuItemsMobile = [
-  { icon: <AddBox />, label: "Tạo dự án" },
-  { icon: <ListAlt />, label: "Dự án" },
-  { icon: <RecordVoiceOver />, label: " Giọng nói" },
-  { icon: <Settings />, label: "Tài khoản" },
-];
+
 const MobileSidebar = ({ selectedIndex, onChange }) => {
   return (
     <Paper

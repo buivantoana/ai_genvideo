@@ -202,13 +202,13 @@ function VideoProjectUI() {
         <ActionButton
           variant='contained'
           fullWidth={!isMobile}
-          sx={{ backgroundColor: "#6C63FF" }}>
+          sx={{ backgroundColor: "#6C63FF",height:{xs:40,md:50} }}>
           Tải video xuống
         </ActionButton>
         <ActionButton
           variant='contained'
           fullWidth={!isMobile}
-          sx={{ backgroundColor: "#fff", color: "#5932EA" }}>
+          sx={{ backgroundColor: "#fff", color: "#5932EA" ,height:{xs:40,md:50} }}>
           Upload lên Driver
         </ActionButton>
       </Box>

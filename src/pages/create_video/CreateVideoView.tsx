@@ -346,7 +346,7 @@ function SceneEditor() {
               "&:hover": {
                 background: "#5900cc",
               },
-              height: 50,
+               height: isMobile?40 :50,
               fontSize: isMobile ? "15px" : "18px",
             }}>
             Xác nhận tạo xong
@@ -363,7 +363,7 @@ function SceneEditor() {
               "&:hover": {
                 background: "white",
               },
-              height: 50,
+               height: isMobile?40 :50,
               fontSize: isMobile ? "15px" : "18px",
               color: "black",
             }}>

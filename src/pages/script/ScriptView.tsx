@@ -284,7 +284,7 @@ const PromptEditorUI = () => {
             color: "#fff",
             borderRadius: 2,
             width: isMobile ? "100%" : "48%",
-            height: "50px", // 👈 Chiều cao mong muốn
+            height: isMobile?40 :50, // 👈 Chiều cao mong muốn
             "& .MuiOutlinedInput-notchedOutline": {
               border: "2px solid",
               borderColor: "#414188", // 👈 Viền mặc định
@@ -319,7 +319,7 @@ const PromptEditorUI = () => {
             "&:hover": {
               background: "#5900cc",
             },
-            height: 50,
+            height: isMobile?40 :50,
             fontSize: isMobile ? "15px" : "18px",
             display: isMobile ? "block" : "none",
           }}>
@@ -346,7 +346,7 @@ const PromptEditorUI = () => {
             "&:hover": {
               background: "#5900cc",
             },
-            height: 50,
+            height: isMobile?40 :50,
             fontSize: isMobile ? "15px" : "18px",
           }}>
           Tạo lại kịch bản khác

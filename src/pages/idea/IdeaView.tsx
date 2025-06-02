@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Typography,
@@ -23,12 +23,13 @@ const modelOptions = ["ChatGPT", "Qwen", "DeepSeek"];
 const styleOptions = ["Thuyết minh", "Có hội thoại"];
 
 const IdeaView = () => {
+  const [genPromptAi, setGenPromptAi] = useState(false)
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
   return (
     <Box
-       className='hidden-add-voice'
+      className='hidden-add-voice'
       sx={{
         bgcolor: "#0D0C2B",
         p: isMobile ? 1.5 : 6,
@@ -36,7 +37,7 @@ const IdeaView = () => {
         display: "flex",
         flexDirection: "column",
         gap: isMobile ? 2 : 4,
-       
+
       }}>
       <StepComponent />
       <ResponsiveBox />
@@ -112,10 +113,47 @@ const IdeaView = () => {
         variant='h6'
         sx={{ fontSize: isMobile ? "1rem" : "1.25rem" }}
         fontWeight={"600"}>
-        Tên dự án
+        {genPromptAi ? "Nhập link video cần lấy nội dung" : "Tên dự án"}
       </Typography>
       {/* Project Name */}
-      <TextField
+      {genPromptAi ? <Box display={"flex"} gap={1}>
+        <TextField
+          fullWidth
+          placeholder='Nhập tên dự án'
+          variant='outlined'
+          size='small'
+          sx={{
+            backgroundColor: "#1A1836",
+            borderRadius: 2,
+            input: { color: "white" },  
+            "& .MuiOutlinedInput-root": {
+              height: isMobile ? "40px" : "50px", // 👈 Đặt ở đây mới ăn
+              alignItems: "center", // Canh giữa input text
+            },
+            "& .MuiOutlinedInput-notchedOutline": {
+              border: "2px solid",
+              borderColor: "#414188",
+            },
+          }}
+        />
+        <Button
+          variant='contained'
+          sx={{
+            background: "#6E00FF",
+            textTransform: "none",
+            borderRadius: 1,
+            
+            fontWeight: 600,
+            "&:hover": {
+              background: "#5900cc",
+            },
+            height: isMobile ? "40px" : "50px",
+            fontSize: isMobile ? "11px" : "18px",
+            width:isMobile?"50%":"40%"
+          }}>
+         Lấy nội dung video
+        </Button>
+      </Box> : <TextField
         fullWidth
         placeholder='Nhập tên dự án'
         variant='outlined'
@@ -125,7 +163,7 @@ const IdeaView = () => {
           borderRadius: 2,
           input: { color: "white" },
           "& .MuiOutlinedInput-root": {
-            height: isMobile ? "40px" : "72px", // 👈 Đặt ở đây mới ăn
+            height: isMobile ? "40px" : "50px", // 👈 Đặt ở đây mới ăn
             alignItems: "center", // Canh giữa input text
           },
           "& .MuiOutlinedInput-notchedOutline": {
@@ -133,12 +171,12 @@ const IdeaView = () => {
             borderColor: "#414188",
           },
         }}
-      />
+      />}
       <Typography
         variant='h6'
         sx={{ fontSize: isMobile ? "1rem" : "1.25rem" }}
         fontWeight={"600"}>
-        Nhập nội dung mong muốn -Tối đa 4000 ký tự
+        {genPromptAi ? "Nội dung video" : "Nhập nội dung mong muốn -Tối đa 4000 ký tự"}
       </Typography>
       {/* Prompt Text Area */}
       <Box sx={{ position: "relative", width: "100%" }}>
@@ -146,7 +184,7 @@ const IdeaView = () => {
           fullWidth
           multiline
           minRows={5}
-          placeholder='Mô tả chi tiết nội dung bạn muốn tạo. Sau đó AI sẽ biên kịch lại nội dung'
+          placeholder={genPromptAi ? "Mô tả chi tiết nội dung video" : 'Mô tả chi tiết nội dung bạn muốn tạo. Sau đó AI sẽ biên kịch lại nội dung'}
           variant='outlined'
           sx={{
             bgcolor: "#1b1c34", // nền tối
@@ -205,7 +243,7 @@ const IdeaView = () => {
               borderRadius: 2,
               input: { color: "white" },
               "& .MuiOutlinedInput-root": {
-                height: isMobile ? "40px" : "72px", // 👈 Đặt ở đây mới ăn
+                height: isMobile ? "40px" : "50px", // 👈 Đặt ở đây mới ăn
                 alignItems: "center", // Canh giữa input text
               },
               "& .MuiOutlinedInput-notchedOutline": {
@@ -217,7 +255,7 @@ const IdeaView = () => {
           />
         </Box>
 
-        <FormControl
+        {!genPromptAi && <FormControl
           variant='outlined'
           size='small'
           sx={{ flex: 1, borderRadius: 2 }}>
@@ -255,7 +293,7 @@ const IdeaView = () => {
               background: "transparent",
               color: "#fff",
               borderRadius: 2,
-              height: isMobile ? "40px" : "72px", // 👈 Chiều cao mong muốn
+              height: isMobile ? "40px" : "50px", // 👈 Chiều cao mong muốn
               "& .MuiOutlinedInput-notchedOutline": {
                 border: "2px solid",
                 borderColor: "#414188", // 👈 Viền mặc định
@@ -278,7 +316,7 @@ const IdeaView = () => {
               </MenuItem>
             ))}
           </Select>
-        </FormControl>
+        </FormControl>}
       </Box>
 
       {/* Action Buttons */}
@@ -309,6 +347,7 @@ const IdeaView = () => {
 
         <Button
           variant='contained'
+          onClick={() => setGenPromptAi(!genPromptAi)}
           sx={{
             background: "linear-gradient(90deg, #FF7A00 0%, #FF3D00 100%)",
             textTransform: "none",

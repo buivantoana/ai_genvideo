@@ -24,7 +24,7 @@ const ResponsiveBox = () => {
             sx={{
               bgcolor: i === 0 ? "#2A274B" : "transparent",
               px: { xs: 1, sm: 4 },
-              py: { xs: 1.5, sm: 2 },
+              py: { xs: 1, sm: 1.5 },
               borderRadius: 1,
               display: "flex",
               alignItems: "center",
