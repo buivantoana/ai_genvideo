@@ -19,52 +19,51 @@ import {
 } from "@mui/icons-material";
 import icon1 from "../images/Frame 25.png";
 import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from "react-router-dom";
 
 const menuItems = [
-  { icon: <AddBox />, label: "Tạo dự án" ,path:"/"},
-  { icon: <ListAlt />, label: "Danh sách dự án" ,path:"/project-manager"},
+  { icon: <AddBox />, label: "Tạo dự án", path: "/" },
+  { icon: <ListAlt />, label: "Danh sách dự án", path: "/project-manager" },
   { icon: <RecordVoiceOver />, label: "Cấu hình giọng nói" },
-  { icon: <Settings />, label: "Cài đặt tài khoản" ,path:"/account"},
+  { icon: <Settings />, label: "Cài đặt tài khoản", path: "/account" },
 ];
 const menuItemsMobile = [
-  { icon: <AddBox />, label: "Tạo dự án",path:"/" },
-  { icon: <ListAlt />, label: "Dự án" ,path:"/project-manager"},
+  { icon: <AddBox />, label: "Tạo dự án", path: "/" },
+  { icon: <ListAlt />, label: "Dự án", path: "/project-manager" },
   { icon: <RecordVoiceOver />, label: " Giọng nói" },
-  { icon: <Settings />, label: "Tài khoản" ,path:"/account"},
+  { icon: <Settings />, label: "Tài khoản", path: "/account" },
 ];
 const Sidebar = ({ isOpen, onToggle }) => {
-  const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
-  useEffect(()=>{
-    if(location&& location.pathname){
+  useEffect(() => {
+    if (location && location.pathname) {
       switch (location.pathname) {
         case "/account":
-          setSelectedIndex(3)
+          setSelectedIndex(3);
           break;
         case "/project-manager":
-          setSelectedIndex(1)
+          setSelectedIndex(1);
           break;
-      
+
         default:
-          setSelectedIndex(0)
+          setSelectedIndex(0);
           break;
       }
     }
-
-  },[location.pathname])
+  }, [location.pathname]);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm")); // dưới 600px
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const handleListItemClick = (item) => {
-    navigate(item.path)
+    navigate(item.path);
     // setSelectedIndex(index);
     if (isMobile) setMobileOpen(false); // auto đóng drawer trên mobile
   };
   const handleMenuChange = (item) => {
-    let path:any = menuItemsMobile.find((ix,index)=>index == item)?.path
-     navigate(path)
+    let path: any = menuItemsMobile.find((ix, index) => index == item)?.path;
+    navigate(path);
     // TODO: Điều hướng hoặc xử lý action tại đây
   };
   const drawerContent = (
@@ -170,7 +169,6 @@ export default Sidebar;
 
 import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material";
 
-
 const MobileSidebar = ({ selectedIndex, onChange }) => {
   return (
     <Paper
@@ -182,15 +180,15 @@ const MobileSidebar = ({ selectedIndex, onChange }) => {
         zIndex: 1300,
         p: 0,
         paddingBottom: "env(safe-area-inset-bottom)",
-        backdropFilter: "none", 
-        height:"10vh"
+        backdropFilter: "none",
+        height: "10vh",
       }}
       elevation={3}>
       <BottomNavigation
         showLabels
         value={selectedIndex}
         onChange={(e, newValue) => onChange(newValue)}
-        sx={{ bgcolor: "#1e1b3a", color: "white", height:"100%" }}>
+        sx={{ bgcolor: "#1e1b3a", color: "white", height: "100%" }}>
         {menuItemsMobile.map((item, index) => (
           <BottomNavigationAction
             key={index}

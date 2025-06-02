@@ -143,7 +143,10 @@ function AccountManager({ setAction, setOpen }) {
         bgcolor={"rgba(29, 29, 65, 1)"}
         p={isMobile ? 1 : 3}
         sx={{ borderRadius: 2 }}>
-        <Typography variant='h6' fontSize={isMobile ? "1rem" : "1.25rem"} mb={2}>
+        <Typography
+          variant='h6'
+          fontSize={isMobile ? "1rem" : "1.25rem"}
+          mb={2}>
           Quản lý tài khoản
         </Typography>
         <Box
@@ -152,9 +155,21 @@ function AccountManager({ setAction, setOpen }) {
           alignItems='center'
           px={isMobile ? "8px" : "16px"}
           mb={1}>
-          <Typography width={isMobile ? "25%" : "20%"} fontSize={isMobile ? ".7rem" : "1rem"}>Tên đăng nhập</Typography>
-          <Typography width={isMobile ? "25%" : "20%"} fontSize={isMobile ? ".7rem" : "1rem"}>Vai trò</Typography>
-          <Typography width={isMobile ? "25%" : "20%"} fontSize={isMobile ? ".7rem" : "1rem"}>Địa chỉ mail</Typography>
+          <Typography
+            width={isMobile ? "25%" : "20%"}
+            fontSize={isMobile ? ".7rem" : "1rem"}>
+            Tên đăng nhập
+          </Typography>
+          <Typography
+            width={isMobile ? "25%" : "20%"}
+            fontSize={isMobile ? ".7rem" : "1rem"}>
+            Vai trò
+          </Typography>
+          <Typography
+            width={isMobile ? "25%" : "20%"}
+            fontSize={isMobile ? ".7rem" : "1rem"}>
+            Địa chỉ mail
+          </Typography>
           <IconButton
             sx={{ display: "flex", gap: "10px", width: "20%" }}></IconButton>
         </Box>
@@ -165,9 +180,21 @@ function AccountManager({ setAction, setOpen }) {
               justifyContent='space-between'
               alignItems='center'
               mb={1}>
-              <Typography width={isMobile ? "25%" : "20%"} fontSize={isMobile ? ".7rem" : "1rem"}>{user.username}</Typography>
-              <Typography width={isMobile ? "25%" : "20%"} fontSize={isMobile ? ".7rem" : "1rem"}>{user.role}</Typography>
-              <Typography width={isMobile ? "25%" : "20%"} fontSize={isMobile ? ".7rem" : "1rem"}>{user.email}</Typography>
+              <Typography
+                width={isMobile ? "25%" : "20%"}
+                fontSize={isMobile ? ".7rem" : "1rem"}>
+                {user.username}
+              </Typography>
+              <Typography
+                width={isMobile ? "25%" : "20%"}
+                fontSize={isMobile ? ".7rem" : "1rem"}>
+                {user.role}
+              </Typography>
+              <Typography
+                width={isMobile ? "25%" : "20%"}
+                fontSize={isMobile ? ".7rem" : "1rem"}>
+                {user.email}
+              </Typography>
               <Box
                 sx={{
                   width: isMobile ? "25%" : "20%",
@@ -188,25 +215,69 @@ function AccountManager({ setAction, setOpen }) {
             </Box>
 
             <Collapse in={expanded === user.id}>
-              <Box mt={2} display='flex' flexDirection='column' gap={isMobile?1:2}>
+              <Box
+                mt={2}
+                display='flex'
+                flexDirection='column'
+                gap={isMobile ? 1 : 2}>
                 <Box display={"flex"} justifyContent={"space-between"}>
                   <Box width={isMobile ? "49%" : "47%"}>
-                    <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"} >Địa chỉ email</Typography>
-                    <Field sx={{ "& .MuiInputBase-root": { height: { xs: "35px", md: "unset" } } }} fullWidth placeholder='Example123' />
+                    <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
+                      Địa chỉ email
+                    </Typography>
+                    <Field
+                      sx={{
+                        "& .MuiInputBase-root": {
+                          height: { xs: "35px", md: "45px" },
+                        },
+                      }}
+                      fullWidth
+                      placeholder='Example123'
+                    />
                   </Box>
                   <Box width={isMobile ? "49%" : "47%"}>
-                    <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"} >Mật khẩu cũ</Typography>
-                    <Field sx={{ "& .MuiInputBase-root": { height: { xs: "35px", md: "unset" } } }} fullWidth placeholder='Ít nhất 8 ký tự' />
+                    <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
+                      Mật khẩu cũ
+                    </Typography>
+                    <Field
+                      sx={{
+                        "& .MuiInputBase-root": {
+                          height: { xs: "35px", md: "45px" },
+                        },
+                      }}
+                      fullWidth
+                      placeholder='Ít nhất 8 ký tự'
+                    />
                   </Box>
                 </Box>
                 <Box display={"flex"} justifyContent={"space-between"}>
                   <Box width={isMobile ? "49%" : "47%"}>
-                    <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"} >Mật khẩu mới</Typography>
-                    <Field sx={{ "& .MuiInputBase-root": { height: { xs: "35px", md: "unset" } } }} fullWidth placeholder='Example123' />
+                    <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
+                      Mật khẩu mới
+                    </Typography>
+                    <Field
+                      sx={{
+                        "& .MuiInputBase-root": {
+                          height: { xs: "35px", md: "45px" },
+                        },
+                      }}
+                      fullWidth
+                      placeholder='Example123'
+                    />
                   </Box>
                   <Box width={isMobile ? "49%" : "47%"}>
-                    <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"} >Xác nhận lại mật khẩu</Typography>
-                    <Field sx={{ "& .MuiInputBase-root": { height: { xs: "35px", md: "unset" } } }} fullWidth placeholder='Example123' />
+                    <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
+                      Xác nhận lại mật khẩu
+                    </Typography>
+                    <Field
+                      sx={{
+                        "& .MuiInputBase-root": {
+                          height: { xs: "35px", md: "45px" },
+                        },
+                      }}
+                      fullWidth
+                      placeholder='Example123'
+                    />
                   </Box>
                 </Box>
                 <Box
@@ -214,7 +285,9 @@ function AccountManager({ setAction, setOpen }) {
                   justifyContent={"space-between"}
                   alignItems={"end"}>
                   <Box width={isMobile ? "49%" : "47%"}>
-                    <Typography fontSize={isMobile ? ".7rem" : "1rem"} mb={1}>Vai trò</Typography>
+                    <Typography fontSize={isMobile ? ".7rem" : "1rem"} mb={1}>
+                      Vai trò
+                    </Typography>
                     <Select
                       fullWidth
                       defaultValue={user.role}
@@ -241,7 +314,7 @@ function AccountManager({ setAction, setOpen }) {
                       sx={{
                         backgroundColor: "rgba(29, 29, 65, 1)",
                         color: "#fff",
-                        height: isMobile?"35px":"45px",
+                        height: isMobile ? "35px" : "45px",
                         borderRadius: "8px",
                         "& .MuiOutlinedInput-notchedOutline": {
                           border: "2px solid",
@@ -265,7 +338,7 @@ function AccountManager({ setAction, setOpen }) {
                         backgroundColor: "rgba(89, 50, 234, 1)",
                         borderRadius: "12px",
                         alignSelf: "flex-end",
-                        height: isMobile?"35px":"45px",
+                        height: isMobile ? "35px" : "45px",
                       }}>
                       Cập nhật thông tin
                     </Button>
@@ -284,26 +357,66 @@ function AddUser() {
   const isMobile = useMediaQuery("(max-width:600px)");
   return (
     <Box>
-      <Typography variant='h5' my={3} fontSize={isMobile?"1.2rem":"1.5rem"}  fontWeight={"bold"}>
+      <Typography
+        variant='h5'
+        my={3}
+        fontSize={isMobile ? "1.2rem" : "1.5rem"}
+        fontWeight={"bold"}>
         Thêm người dùng
       </Typography>
-      <Box display={"flex"} my={2} gap={isMobile?1:0} flexDirection={isMobile?"column":"row"} justifyContent={"space-between"}>
-        <Box width={isMobile?"100%":"47%"}>
-          <Typography mb={1} fontSize={isMobile?".7rem":"1rem"}>Tên tài khoản</Typography>
-          <Field fullWidth sx={{ "& .MuiInputBase-root": { height: { xs: "35px", md: "unset" } } }} placeholder='Example123' />
+      <Box
+        display={"flex"}
+        my={2}
+        gap={isMobile ? 1 : 0}
+        flexDirection={isMobile ? "column" : "row"}
+        justifyContent={"space-between"}>
+        <Box width={isMobile ? "100%" : "47%"}>
+          <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
+            Tên tài khoản
+          </Typography>
+          <Field
+            fullWidth
+            sx={{
+              "& .MuiInputBase-root": { height: { xs: "35px", md: "45px" } },
+            }}
+            placeholder='Example123'
+          />
         </Box>
-        <Box width={isMobile?"100%":"47%"}>
-          <Typography mb={1} fontSize={isMobile?".7rem":"1rem"}>Mật khẩu </Typography>
-          <Field fullWidth sx={{ "& .MuiInputBase-root": { height: { xs: "35px", md: "unset" } } }} placeholder='Ít nhất 8 ký tự' />
+        <Box width={isMobile ? "100%" : "47%"}>
+          <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
+            Mật khẩu{" "}
+          </Typography>
+          <Field
+            fullWidth
+            sx={{
+              "& .MuiInputBase-root": { height: { xs: "35px", md: "45px" } },
+            }}
+            placeholder='Ít nhất 8 ký tự'
+          />
         </Box>
       </Box>
-      <Box display={"flex"} gap={isMobile?1:0} flexDirection={isMobile?"column":"row"} my={2} justifyContent={"space-between"}>
-        <Box width={isMobile?"100%":"47%"}>
-          <Typography mb={1} fontSize={isMobile?".7rem":"1rem"}>Email</Typography>
-          <Field fullWidth sx={{ "& .MuiInputBase-root": { height: { xs: "35px", md: "unset" } } }} placeholder='Example123' />
+      <Box
+        display={"flex"}
+        gap={isMobile ? 1 : 0}
+        flexDirection={isMobile ? "column" : "row"}
+        my={2}
+        justifyContent={"space-between"}>
+        <Box width={isMobile ? "100%" : "47%"}>
+          <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
+            Email
+          </Typography>
+          <Field
+            fullWidth
+            sx={{
+              "& .MuiInputBase-root": { height: { xs: "35px", md: "45px" } },
+            }}
+            placeholder='Example123'
+          />
         </Box>
-        <Box width={isMobile?"100%":"47%"}>
-          <Typography mb={1} fontSize={isMobile?".7rem":"1rem"}>Vai trò</Typography>
+        <Box width={isMobile ? "100%" : "47%"}>
+          <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
+            Vai trò
+          </Typography>
           <Select
             fullWidth
             defaultValue={"Admin"}
@@ -330,7 +443,7 @@ function AddUser() {
             sx={{
               backgroundColor: "rgba(29, 29, 65, 1)",
               color: "#fff",
-              height: isMobile ? "35px":"45px",
+              height: isMobile ? "35px" : "45px",
               borderRadius: "8px",
               "& .MuiOutlinedInput-notchedOutline": {
                 border: "2px solid",
@@ -355,8 +468,8 @@ function AddUser() {
             backgroundColor: "rgba(89, 50, 234, 1)",
             borderRadius: "12px",
             alignSelf: "flex-end",
-            height: isMobile ? "35px":"45px",
-            width: isMobile?"100%":"47%",
+            height: isMobile ? "35px" : "45px",
+            width: isMobile ? "100%" : "47%",
           }}>
           Xác nhận thêm người dùng
         </Button>
@@ -369,21 +482,49 @@ function ResetPassword() {
   const isMobile = useMediaQuery("(max-width:600px)");
   return (
     <Box>
-      <Typography variant='h5' my={3} fontSize={isMobile?"1.2rem":"1.5rem"}  fontWeight={"bold"}>
+      <Typography
+        variant='h5'
+        my={3}
+        fontSize={isMobile ? "1.2rem" : "1.5rem"}
+        fontWeight={"bold"}>
         Đổi mật khẩu
       </Typography>
       <Box display={"flex"} gap={2} flexDirection={"column"}>
         <Box width={"100%"}>
-          <Typography mb={1} fontSize={isMobile?".7rem":"1rem"}>Mật khẩu cũ</Typography>
-          <Field sx={{ "& .MuiInputBase-root": { height: { xs: "35px", md: "unset" } } }} fullWidth placeholder='Example123' />
+          <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
+            Mật khẩu cũ
+          </Typography>
+          <Field
+            sx={{
+              "& .MuiInputBase-root": { height: { xs: "35px", md: "45px" } },
+            }}
+            fullWidth
+            placeholder='Example123'
+          />
         </Box>
         <Box width={"100%"}>
-          <Typography mb={1} fontSize={isMobile?".7rem":"1rem"}>Mật khẩu mới </Typography>
-          <Field sx={{ "& .MuiInputBase-root": { height: { xs: "35px", md: "unset" } } }} fullWidth placeholder='Ít nhất 8 ký tự' />
+          <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
+            Mật khẩu mới{" "}
+          </Typography>
+          <Field
+            sx={{
+              "& .MuiInputBase-root": { height: { xs: "35px", md: "45px" } },
+            }}
+            fullWidth
+            placeholder='Ít nhất 8 ký tự'
+          />
         </Box>
         <Box width={"100%"}>
-          <Typography mb={1} fontSize={isMobile?".7rem":"1rem"}>Xác nhận mật khẩu mới</Typography>
-          <Field sx={{ "& .MuiInputBase-root": { height: { xs: "35px", md: "unset" } } }} fullWidth placeholder='Ít nhất 8 ký tự' />
+          <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
+            Xác nhận mật khẩu mới
+          </Typography>
+          <Field
+            sx={{
+              "& .MuiInputBase-root": { height: { xs: "35px", md: "45px" } },
+            }}
+            fullWidth
+            placeholder='Ít nhất 8 ký tự'
+          />
         </Box>
       </Box>
 
@@ -394,7 +535,7 @@ function ResetPassword() {
             backgroundColor: "rgba(89, 50, 234, 1)",
             borderRadius: "12px",
             alignSelf: "flex-end",
-            height: isMobile?"35px":"45px",
+            height: isMobile ? "35px" : "45px",
             width: "47%",
           }}>
           Cập nhật mật khẩu
@@ -427,7 +568,12 @@ const DeleteAccountModal = ({ open, onClose, onConfirm }) => {
         },
       }}>
       <DialogTitle
-        sx={{ position: "relative", textAlign: "center", fontWeight: "bold",fontSize:{xs:"1rem",md:"1.25rem"}  }}>
+        sx={{
+          position: "relative",
+          textAlign: "center",
+          fontWeight: "bold",
+          fontSize: { xs: "1rem", md: "1.25rem" },
+        }}>
         Bạn muốn xóa tài khoản này?
         <IconButton
           aria-label='close'
@@ -443,7 +589,9 @@ const DeleteAccountModal = ({ open, onClose, onConfirm }) => {
       </DialogTitle>
 
       <DialogContent sx={{ textAlign: "center" }}>
-        <Typography color='rgba(255, 255, 255, .8)' sx={{fontSize:{xs:".7rem",md:"1rem"}}}>
+        <Typography
+          color='rgba(255, 255, 255, .8)'
+          sx={{ fontSize: { xs: ".7rem", md: "1rem" } }}>
           Bạn có muốn xóa tài khoản này ngay bây giờ không?
           <br />
           Bạn không thể hoàn tác hành động này.
@@ -460,7 +608,7 @@ const DeleteAccountModal = ({ open, onClose, onConfirm }) => {
             backgroundColor: "rgba(47, 35, 116, 1)",
             borderRadius: "12px",
             px: 4,
-            height:{xs:"30px",md:"unset"},
+            height: { xs: "30px", md: "unset" },
             "&:hover": {
               backgroundColor: "#3A3960",
             },
@@ -476,7 +624,7 @@ const DeleteAccountModal = ({ open, onClose, onConfirm }) => {
             borderRadius: "12px",
             px: 4,
             ml: 2,
-            height:{xs:"30px",md:"unset"},
+            height: { xs: "30px", md: "unset" },
             "&:hover": {
               backgroundColor: "#6F6EFF",
             },
