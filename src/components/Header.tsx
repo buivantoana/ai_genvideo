@@ -170,7 +170,7 @@ const MobileSidebar = ({ selectedIndex, onChange }) => {
         showLabels
         value={selectedIndex}
         onChange={(e, newValue) => onChange(newValue)}
-        sx={{ bgcolor: "#1e1b3a", color: "white", py: 0.5 }}>
+        sx={{ bgcolor: "#1e1b3a", color: "white", height:"100%" }}>
         {menuItemsMobile.map((item, index) => (
           <BottomNavigationAction
             key={index}

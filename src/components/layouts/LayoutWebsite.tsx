@@ -20,10 +20,10 @@ const LayoutWebsite = () => {
        
       }}>
        
-      <Sidebar
+      {/* <Sidebar
         isOpen={isSidebarOpen}
         onToggle={() => setSidebarOpen(!isSidebarOpen)}
-      />
+      /> */}
       <Box width={"100%"} className='hidden-add-voice'  sx={{ overflowY: "scroll",
         height: {xs:"90vh", md:"100vh"}}}>
            <Hidden smUp>
