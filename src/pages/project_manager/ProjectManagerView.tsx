@@ -1,28 +1,20 @@
-import React, { useState } from "react";
 import {
   Box,
-  Typography,
-  TextField,
-  MenuItem,
   Button,
-  Select,
-  InputLabel,
-  FormControl,
-  useMediaQuery,
-  useTheme,
-  Switch,
-  Tooltip,
-  IconButton,
-  styled,
   Collapse,
+  IconButton,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
+  styled,
+  useMediaQuery,
+  useTheme
 } from "@mui/material";
-import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-import StepComponent from "../../components/StepComponent";
-import ContentCopyIcon from "@mui/icons-material/ContentCopy";
-const modelOptions = ["ChatGPT", "Qwen", "DeepSeek"];
-const styleOptions = ["Thuyết minh", "Có hội thoại"];
+import React, { useState } from "react";
 
-const ProjectManagerView = () => {
+
+const ProjectManagerView = ({project,functions ,setLoading}:any) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [action, setAction] = useState("manage");
@@ -40,35 +32,21 @@ const ProjectManagerView = () => {
         gap: isMobile?2:4,
         
       }}>
-      <ProjectList />
+      <ProjectList project={project}setLoading={setLoading} functions={functions} />
     </Box>
   );
 };
 
 export default ProjectManagerView;
 
-import { Container } from "@mui/material";
 
-const projects = [
-  {
-    id: 1,
-    title: "Dự án con thỏ 1",
-    description:
-      "is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry’s standard dummy text ever since the 1500s",
-    members: 6,
-  },
-  {
-    id: 2,
-    title: "Dự án con thỏ 1",
-    description:
-      "is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry’s standard dummy text ever since the 1500s",
-    members: 6,
-  },
-];
 
-const ProjectList = () => {
+
+const ProjectList = ({project,functions,setLoading}:any) => {
   const [open, setOpen] = React.useState(false);
   const [openDetail, setOpenDetail] = React.useState(false);
+  const [member, setMember] = React.useState([]);
+  const [idProject, setIdProject] = React.useState(null);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -88,15 +66,18 @@ const ProjectList = () => {
         Quản lý dự án
       </Typography>
       <Grid container mt={isMobile?1:2} spacing={3}>
-        {projects.map((project) => (
+        {project.map((project) => (
           <Grid key={project.id} item xs={12} sm={6}>
             <ProjectCard
-              title={project.title}
-              description={project.description}
-              members={project.members}
+              title={project.name}
+              description={project.prompt}
+              members={project.members&& project.members.length>0?project.members:[]}
               onDetailClick={() => alert(`Xem chi tiết ${project.title}`)}
               setOpen={setOpen}
               setOpenDetail={setOpenDetail}
+              setMember={setMember}
+              setIdProject={()=>setIdProject(project.id)}
+             
             />
           </Grid>
         ))}
@@ -105,18 +86,23 @@ const ProjectList = () => {
         open={open}
         onClose={() => setOpen(false)}
         onConfirm={handleDelete}
+        member={member}
+        functions={functions}
+        idProject={idProject}
+        setLoading={setLoading}
       />
       <DetailProject
         open={openDetail}
         onClose={() => setOpenDetail(false)}
         onConfirm={handleCloseDetail}
+        functions={functions}
       />
     </Box>
   );
 };
 
-import { Card, CardContent, Avatar, Grid } from "@mui/material";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import { Card, CardContent, Grid } from "@mui/material";
 
 const ProjectCard = ({
   title,
@@ -125,7 +111,9 @@ const ProjectCard = ({
   onDetailClick,
   setOpen,
   setOpenDetail,
-}) => {
+  setMember,
+  setIdProject
+}:any) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -153,7 +141,10 @@ const ProjectCard = ({
           {/* Thành viên */}
           <Box
             display='flex'
-            onClick={() => setOpen(true)}
+            onClick={() => {
+              setIdProject()
+              setMember(members)
+              setOpen(true)}}
             alignItems='center'
             gap={1}>
             <Typography
@@ -161,7 +152,7 @@ const ProjectCard = ({
               display='flex'
               alignItems='center'
               gap={0.5}>
-              {members} thành viên <EditOutlinedIcon sx={{ fontSize: 16 }} />
+              {members.length} thành viên <EditOutlinedIcon sx={{ fontSize: 16 }} />
             </Typography>
           </Box>
 
@@ -178,7 +169,9 @@ const ProjectCard = ({
                 backgroundColor: "#6A6AFF",
               },
             }}
-            onClick={() => setOpenDetail(true)}>
+            onClick={() => {
+              setIdProject()
+              setOpenDetail(true)}}>
             Chi tiết dự án
           </Button>
         </Box>
@@ -187,17 +180,18 @@ const ProjectCard = ({
   );
 };
 
+import { ExpandMore } from "@mui/icons-material";
+import CloseIcon from "@mui/icons-material/Close";
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
-  DialogActions,
+  DialogTitle
 } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
 import { RiAddCircleLine, RiDeleteBin5Line } from "react-icons/ri";
-import { ExpandMore } from "@mui/icons-material";
+import { updateProjectMember } from "../../service/project";
+import { toast } from "react-toastify";
 
-const Member = ({ open, onClose, onConfirm }) => {
+const Member = ({ open, onClose, onConfirm ,member,functions,idProject,setLoading}:any) => {
   return (
     <Dialog
       open={open}
@@ -212,13 +206,13 @@ const Member = ({ open, onClose, onConfirm }) => {
         },
       }}>
       <DialogContent sx={{p:{xs:.5,md:"unset"}}}>
-        <AccountManager />
+        <AccountManager member={member} functions={functions} setLoading={setLoading} idProject={idProject} />
       </DialogContent>
     </Dialog>
   );
 };
 
-const DetailProject = ({ open, onClose, onConfirm }) => {
+const DetailProject = ({ open, onClose, onConfirm ,functions}) => {
   return (
     <Dialog
       open={open}
@@ -233,7 +227,7 @@ const DetailProject = ({ open, onClose, onConfirm }) => {
         },
       }}>
       <DialogContent sx={{p:{xs:.5,md:"unset"}}}>
-        <DetailProjectManager />
+        <DetailProjectManager  functions={functions}/>
       </DialogContent>
     </Dialog>
   );
@@ -261,15 +255,39 @@ const Field = styled(TextField)({
   },
 });
 
-function AccountManager({ setAction, setOpen }) {
+function AccountManager({ setAction, setOpen,member ,functions ,idProject,setLoading }) {
   const [expanded, setExpanded] = useState(null);
   const isMobile = useMediaQuery("(max-width:600px)");
+  const [openAdd, setOpenAdd] = React.useState(false);
 
-  const users = [
-    { id: 1, username: "ABC123", role: "Admin", email: "ABC@gmail.com" },
-    { id: 2, username: "XYZ456", role: "Editor", email: "XYZ@gmail.com" },
-    { id: 3, username: "LMN789", role: "Viewer", email: "LMN@gmail.com" },
-  ];
+  const handleClose =async(body) => {
+    if(!body.userName.trim()){
+      toast.warning("Tên tài khoản là bắt buộc")
+      return
+    }
+    if(body.selectedFunctions.length==0){
+      toast.warning("Chức năng là bắt buộc")
+      return
+    }
+    setLoading(true)
+    try {
+      let result = await updateProjectMember({
+        "project_id": idProject,
+        "username":body.userName ,
+        "functions":body.selectedFunctions
+    })
+      if(result && result.message){
+        toast.success(result.message)
+      }else{
+        toast.warning(result.detail)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+    setLoading(false)
+    setOpenAdd(false);
+  };
+  
 
   const handleExpand = (id) => {
     setExpanded(expanded === id ? null : id);
@@ -277,13 +295,20 @@ function AccountManager({ setAction, setOpen }) {
 
   return (
     <Box>
+      <AddMemberModal
+        open={openAdd}
+        onClose={() => setOpenAdd(false)}
+        onConfirm={handleClose}
+        functions={functions}
+        
+      />
       <Box display='flex' justifyContent='space-between' gap={2} mb={2}>
         <Typography variant='h6' fontSize={isMobile ? "1rem" : "1.25rem"} mb={2}>
           Thành viên dự án
         </Typography>
         <Button
           variant='contained'
-          onClick={() => setAction("add")}
+          onClick={() => setOpenAdd(true)}
           startIcon={<RiAddCircleLine />}
           sx={{
             color: "white",
@@ -308,7 +333,7 @@ function AccountManager({ setAction, setOpen }) {
           <IconButton
             sx={{ display: "flex", gap: "10px", width: "20%" }}></IconButton>
         </Box>
-        {users.map((user) => (
+        {member.map((user) => (
           <UserCard key={user.id}>
             <Box
               display='flex'
@@ -412,12 +437,12 @@ function AccountManager({ setAction, setOpen }) {
   );
 }
 
-function DetailProjectManager({ setAction, setOpen }) {
+function DetailProjectManager({ setAction, setOpen ,functions }) {
   const [expanded, setExpanded] = useState(null);
   const isMobile = useMediaQuery("(max-width:600px)");
   const [openAdd, setOpenAdd] = React.useState(false);
 
-  const handleDelete = () => {
+  const handleDelete = (body) => {
     // Xử lý xóa tài khoản
     console.log("Đã xóa tài khoản!");
     setOpenAdd(false);
@@ -651,13 +676,22 @@ function DetailProjectManager({ setAction, setOpen }) {
         open={openAdd}
         onClose={() => setOpenAdd(false)}
         onConfirm={handleDelete}
+        functions={functions}
       />
     </Box>
   );
 }
 
-const AddMemberModal = ({ open, onClose, onConfirm }) => {
+const AddMemberModal = ({ open, onClose, onConfirm ,functions  }) => {
+  
   const isMobile = useMediaQuery("(max-width:600px)");
+  console.log("functions",functions)
+  const [selectedFunctions, setSelectedFunctions] = useState([]);
+  const [userName, setUserName] = useState("");
+
+  const handleChange = (event) => {
+    setSelectedFunctions(event.target.value);
+  };
   return (
     <Dialog
       open={open}
@@ -700,13 +734,23 @@ const AddMemberModal = ({ open, onClose, onConfirm }) => {
           alignItems={"end"}>
           <Box width={isMobile?"100%": "47%"}>
             <Typography mb={1}>Tên đăng nhập</Typography>
-            <Field fullWidth placeholder='Example123' />
+            <Field value={userName}  onChange={(e)=>setUserName(e.target.value)} fullWidth placeholder='Example123' />
           </Box>
           <Box width={isMobile?"100%": "47%"}>
-            <Typography mb={1}>Phân quyền cho dự án</Typography>
+            <Typography mb={1}>Chức năng</Typography>
             <Select
+              multiple
               fullWidth
-              defaultValue={"Admin"}
+              value={selectedFunctions}
+              onChange={handleChange}
+              renderValue={(selected:any) =>
+                selected
+                  .map(
+                    (code) =>
+                      functions.find((item) => item.code === code)?.name || code
+                  )
+                  .join(", ")
+              }
               MenuProps={{
                 PaperProps: {
                   sx: {
@@ -742,15 +786,61 @@ const AddMemberModal = ({ open, onClose, onConfirm }) => {
                 },
                 ".MuiSelect-icon": { color: "#fff" },
               }}>
-              <MenuItem value='Admin'>Admin</MenuItem>
-              <MenuItem value='Editor'>Editor</MenuItem>
-              <MenuItem value='Viewer'>Viewer</MenuItem>
+                {functions.map((item)=>{
+                  return  <MenuItem value={item.code}>{item.name}</MenuItem>
+                })}
+             
+              
             </Select>
           </Box>
+          {/* <Box width={isMobile?"100%": "47%"}>
+            <Typography mb={1}>Phân quyền cho dự án</Typography>
+            <Select
+              fullWidth
+              defaultValue={"admin"}
+              MenuProps={{
+                PaperProps: {
+                  sx: {
+                    backgroundColor: "#2A274B", // nền của dropdown list
+                    color: "#fff",
+                    borderRadius: 2,
+                    mt: 1,
+                    "& .MuiMenuItem-root": {
+                      "&:hover": {
+                        backgroundColor: "#3A375F", // màu hover
+                        borderRadius: 1,
+                      },
+                      "&.Mui-selected": {
+                        backgroundColor: "#4B3A79", // màu selected
+                        borderRadius: 1,
+                      },
+                    },
+                  },
+                },
+              }}
+              sx={{
+                backgroundColor: "rgba(29, 29, 65, 1)",
+                color: "#fff",
+                height: "45px",
+                borderRadius: "8px",
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: "2px solid",
+                  borderColor: "#414188", // 👈 Viền mặc định
+                },
+                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                  border: "2px solid",
+                  borderColor: "#414188", // 👈 Viền khi focus
+                },
+                ".MuiSelect-icon": { color: "#fff" },
+              }}>
+              <MenuItem value='admin'>Admin</MenuItem>
+              <MenuItem value='editor'>Editor</MenuItem>
+            </Select>
+          </Box> */}
         </Box>
         <Box mt={3} textAlign={"center"}>
           <Button
-            onClick={onConfirm}
+            onClick={()=>onConfirm({selectedFunctions,userName})}
             variant='contained'
             sx={{
               backgroundColor: "rgba(89, 50, 234, 1)",

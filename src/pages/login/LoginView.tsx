@@ -36,10 +36,10 @@ const StyledTextField = styled(TextField)({
     borderRadius: "8px",
   },
   "& .MuiInputLabel-root": {
-    color: "#aaa",
+    color: "white",
   },
   "& .MuiOutlinedInput-notchedOutline": {
-    borderColor: "#333",
+    borderColor: "white",
   },
   height: "72px",
 });

@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { useCoursesContext } from "../App";
 import LayoutWebsite from "../components/layouts/LayoutWebsite";
 import NotFound from "../components/NotFound";
@@ -14,11 +14,19 @@ import LoginController from "../pages/login/LoginController";
 import AccountController from "../pages/account/AccountController";
 import ProjectManagerController from "../pages/project_manager/ProjectManagerController";
 
+const isAuthenticated = () => {
+  return localStorage.getItem("token");
+};
+
+const PrivateRoute = ({ element }:any) => {
+  return isAuthenticated() ? element : <Navigate to="/login" replace />;
+};
+
 const Router = () => {
   const context: any = useCoursesContext();
   return (
     <Routes>
-      <Route path='/' element={<LayoutWebsite />}>
+      <Route path='/' element={<PrivateRoute element={<LayoutWebsite />}/> }>
         <Route path='' element={<HomeController />} />
         <Route path='/idea' element={<IdeaController />} />
         <Route path='/script' element={<ScriptController />} />
