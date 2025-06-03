@@ -9,16 +9,20 @@ import {
   Typography,
   styled,
   useMediaQuery,
-  useTheme
+  useTheme,
 } from "@mui/material";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
-
-const ProjectManagerView = ({project,functions ,setLoading}:any) => {
+const ProjectManagerView = ({
+  project,
+  functions,
+  setLoading,
+  getAll,
+}: any) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [action, setAction] = useState("manage");
-
+  console.log("project", project);
   return (
     <Box
       className='hidden-add-voice'
@@ -29,20 +33,21 @@ const ProjectManagerView = ({project,functions ,setLoading}:any) => {
         color: "white",
         display: "flex",
         flexDirection: "column",
-        gap: isMobile?2:4,
-        
+        gap: isMobile ? 2 : 4,
       }}>
-      <ProjectList project={project}setLoading={setLoading} functions={functions} />
+      <ProjectList
+        project={project}
+        setLoading={setLoading}
+        functions={functions}
+        getAll={getAll}
+      />
     </Box>
   );
 };
 
 export default ProjectManagerView;
 
-
-
-
-const ProjectList = ({project,functions,setLoading}:any) => {
+const ProjectList = ({ project, functions, setLoading, getAll }: any) => {
   const [open, setOpen] = React.useState(false);
   const [openDetail, setOpenDetail] = React.useState(false);
   const [member, setMember] = React.useState([]);
@@ -50,6 +55,15 @@ const ProjectList = ({project,functions,setLoading}:any) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
+  useEffect(() => {
+    if (idProject) {
+      setMember(
+        project.find((item) => item.id == idProject).members
+          ? project.find((item) => item.id == idProject).members
+          : member
+      );
+    }
+  }, [idProject, project]);
   const handleDelete = () => {
     // Xử lý xóa tài khoản
     console.log("Đã xóa tài khoản!");
@@ -62,22 +76,29 @@ const ProjectList = ({project,functions,setLoading}:any) => {
   };
   return (
     <Box>
-      <Typography variant='h5' fontSize={isMobile?"1.2rem":"1.5rem"} fontWeight='bold' mb={isMobile?1:3}>
+      <Typography
+        variant='h5'
+        fontSize={isMobile ? "1.2rem" : "1.5rem"}
+        fontWeight='bold'
+        mb={isMobile ? 1 : 3}>
         Quản lý dự án
       </Typography>
-      <Grid container mt={isMobile?1:2} spacing={3}>
+      <Grid container mt={isMobile ? 1 : 2} spacing={3}>
         {project.map((project) => (
-          <Grid key={project.id} item xs={12} sm={6}>
+          <Grid key={project.id} item xs={12} sm={6} style={{ height: "100%" }}>
             <ProjectCard
               title={project.name}
               description={project.prompt}
-              members={project.members&& project.members.length>0?project.members:[]}
+              members={
+                project.members && project.members.length > 0
+                  ? project.members
+                  : []
+              }
               onDetailClick={() => alert(`Xem chi tiết ${project.title}`)}
               setOpen={setOpen}
               setOpenDetail={setOpenDetail}
               setMember={setMember}
-              setIdProject={()=>setIdProject(project.id)}
-             
+              setIdProject={() => setIdProject(project.id)}
             />
           </Grid>
         ))}
@@ -90,6 +111,7 @@ const ProjectList = ({project,functions,setLoading}:any) => {
         functions={functions}
         idProject={idProject}
         setLoading={setLoading}
+        getAll={getAll}
       />
       <DetailProject
         open={openDetail}
@@ -112,8 +134,8 @@ const ProjectCard = ({
   setOpen,
   setOpenDetail,
   setMember,
-  setIdProject
-}:any) => {
+  setIdProject,
+}: any) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -123,10 +145,15 @@ const ProjectCard = ({
         backgroundColor: "rgba(29, 29, 65, 1)",
         color: "#fff",
         borderRadius: "16px",
-        p: isMobile?.5:2,
+        p: isMobile ? 0.5 : 2,
+        height: "21vh",
       }}>
       <CardContent>
-        <Typography variant='h6' fontSize={isMobile?"1rem":"1.25rem"} fontWeight='bold' gutterBottom>
+        <Typography
+          variant='h6'
+          fontSize={isMobile ? "1rem" : "1.25rem"}
+          fontWeight='bold'
+          gutterBottom>
           {title}
         </Typography>
         <Typography variant='body2' sx={{ opacity: 0.7 }} gutterBottom>
@@ -134,7 +161,7 @@ const ProjectCard = ({
         </Typography>
 
         <Box
-          mt={isMobile?2:4}
+          mt={isMobile ? 2 : 4}
           display='flex'
           alignItems='center'
           justifyContent='space-between'>
@@ -142,9 +169,10 @@ const ProjectCard = ({
           <Box
             display='flex'
             onClick={() => {
-              setIdProject()
-              setMember(members)
-              setOpen(true)}}
+              setIdProject();
+              setMember(members);
+              setOpen(true);
+            }}
             alignItems='center'
             gap={1}>
             <Typography
@@ -152,7 +180,8 @@ const ProjectCard = ({
               display='flex'
               alignItems='center'
               gap={0.5}>
-              {members.length} thành viên <EditOutlinedIcon sx={{ fontSize: 16 }} />
+              {members.length} thành viên{" "}
+              <EditOutlinedIcon sx={{ fontSize: 16 }} />
             </Typography>
           </Box>
 
@@ -170,8 +199,9 @@ const ProjectCard = ({
               },
             }}
             onClick={() => {
-              setIdProject()
-              setOpenDetail(true)}}>
+              setIdProject();
+              setOpenDetail(true);
+            }}>
             Chi tiết dự án
           </Button>
         </Box>
@@ -182,16 +212,21 @@ const ProjectCard = ({
 
 import { ExpandMore } from "@mui/icons-material";
 import CloseIcon from "@mui/icons-material/Close";
-import {
-  Dialog,
-  DialogContent,
-  DialogTitle
-} from "@mui/material";
+import { Dialog, DialogContent, DialogTitle } from "@mui/material";
 import { RiAddCircleLine, RiDeleteBin5Line } from "react-icons/ri";
 import { updateProjectMember } from "../../service/project";
 import { toast } from "react-toastify";
 
-const Member = ({ open, onClose, onConfirm ,member,functions,idProject,setLoading}:any) => {
+const Member = ({
+  open,
+  onClose,
+  onConfirm,
+  member,
+  functions,
+  idProject,
+  setLoading,
+  getAll,
+}: any) => {
   return (
     <Dialog
       open={open}
@@ -202,17 +237,23 @@ const Member = ({ open, onClose, onConfirm ,member,functions,idProject,setLoadin
           color: "#fff",
           borderRadius: "16px",
           padding: 2,
-          minWidth: { xs: '90vw', sm: 600, md: 800, lg: 900 }
+          minWidth: { xs: "90vw", sm: 600, md: 800, lg: 900 },
         },
       }}>
-      <DialogContent sx={{p:{xs:.5,md:"unset"}}}>
-        <AccountManager member={member} functions={functions} setLoading={setLoading} idProject={idProject} />
+      <DialogContent sx={{ p: { xs: 0.5, md: "unset" } }}>
+        <AccountManager
+          member={member}
+          functions={functions}
+          setLoading={setLoading}
+          idProject={idProject}
+          getAll={getAll}
+        />
       </DialogContent>
     </Dialog>
   );
 };
 
-const DetailProject = ({ open, onClose, onConfirm ,functions}) => {
+const DetailProject = ({ open, onClose, onConfirm, functions }) => {
   return (
     <Dialog
       open={open}
@@ -222,12 +263,12 @@ const DetailProject = ({ open, onClose, onConfirm ,functions}) => {
           backgroundColor: "rgba(29, 29, 65, 1)",
           color: "#fff",
           borderRadius: "16px",
-          padding: {xs:.5,md:2},
-          minWidth: { xs: '90vw', sm: 600, md: 800, lg: 900 }
+          padding: { xs: 0.5, md: 2 },
+          minWidth: { xs: "90vw", sm: 600, md: 800, lg: 900 },
         },
       }}>
-      <DialogContent sx={{p:{xs:.5,md:"unset"}}}>
-        <DetailProjectManager  functions={functions}/>
+      <DialogContent sx={{ p: { xs: 0.5, md: "unset" } }}>
+        <DetailProjectManager functions={functions} />
       </DialogContent>
     </Dialog>
   );
@@ -255,39 +296,47 @@ const Field = styled(TextField)({
   },
 });
 
-function AccountManager({ setAction, setOpen,member ,functions ,idProject,setLoading }) {
+function AccountManager({
+  setAction,
+  setOpen,
+  member,
+  functions,
+  idProject,
+  setLoading,
+  getAll,
+}) {
   const [expanded, setExpanded] = useState(null);
   const isMobile = useMediaQuery("(max-width:600px)");
   const [openAdd, setOpenAdd] = React.useState(false);
-
-  const handleClose =async(body) => {
-    if(!body.userName.trim()){
-      toast.warning("Tên tài khoản là bắt buộc")
-      return
+  console.log("member", member);
+  const handleClose = async (body) => {
+    if (!body.userName.trim()) {
+      toast.warning("Tên tài khoản là bắt buộc");
+      return;
     }
-    if(body.selectedFunctions.length==0){
-      toast.warning("Chức năng là bắt buộc")
-      return
+    if (body.selectedFunctions.length == 0) {
+      toast.warning("Chức năng là bắt buộc");
+      return;
     }
-    setLoading(true)
+    setLoading(true);
     try {
       let result = await updateProjectMember({
-        "project_id": idProject,
-        "username":body.userName ,
-        "functions":body.selectedFunctions
-    })
-      if(result && result.message){
-        toast.success(result.message)
-      }else{
-        toast.warning(result.detail)
+        project_id: idProject,
+        username: body.userName,
+        functions: body.selectedFunctions,
+      });
+      if (result && result.message) {
+        toast.success(result.message);
+        getAll();
+      } else {
+        toast.warning(result.detail);
       }
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-    setLoading(false)
+    setLoading(false);
     setOpenAdd(false);
   };
-  
 
   const handleExpand = (id) => {
     setExpanded(expanded === id ? null : id);
@@ -300,10 +349,12 @@ function AccountManager({ setAction, setOpen,member ,functions ,idProject,setLoa
         onClose={() => setOpenAdd(false)}
         onConfirm={handleClose}
         functions={functions}
-        
       />
       <Box display='flex' justifyContent='space-between' gap={2} mb={2}>
-        <Typography variant='h6' fontSize={isMobile ? "1rem" : "1.25rem"} mb={2}>
+        <Typography
+          variant='h6'
+          fontSize={isMobile ? "1rem" : "1.25rem"}
+          mb={2}>
           Thành viên dự án
         </Typography>
         <Button
@@ -321,15 +372,27 @@ function AccountManager({ setAction, setOpen,member ,functions ,idProject,setLoa
       </Box>
 
       <Box bgcolor={"rgba(29, 29, 65, 1)"} sx={{ borderRadius: 2 }}>
-      <Box
+        <Box
           display='flex'
           justifyContent='space-between'
           alignItems='center'
           px={isMobile ? "8px" : "16px"}
           mb={1}>
-          <Typography width={isMobile ? "25%" : "20%"} fontSize={isMobile ? ".7rem" : "1rem"}>Tên đăng nhập</Typography>
-          <Typography width={isMobile ? "25%" : "20%"} fontSize={isMobile ? ".7rem" : "1rem"}>Vai trò</Typography>
-          <Typography width={isMobile ? "25%" : "20%"} fontSize={isMobile ? ".7rem" : "1rem"}>Địa chỉ mail</Typography>
+          <Typography
+            width={isMobile ? "25%" : "20%"}
+            fontSize={isMobile ? ".7rem" : "1rem"}>
+            Tên đăng nhập
+          </Typography>
+          <Typography
+            width={isMobile ? "25%" : "20%"}
+            fontSize={isMobile ? ".7rem" : "1rem"}>
+            Vai trò
+          </Typography>
+          <Typography
+            width={isMobile ? "25%" : "20%"}
+            fontSize={isMobile ? ".7rem" : "1rem"}>
+            Địa chỉ mail
+          </Typography>
           <IconButton
             sx={{ display: "flex", gap: "10px", width: "20%" }}></IconButton>
         </Box>
@@ -340,14 +403,26 @@ function AccountManager({ setAction, setOpen,member ,functions ,idProject,setLoa
               justifyContent='space-between'
               alignItems='center'
               mb={1}>
-              <Typography width={isMobile?"25%":"20%"} fontSize={isMobile ? ".7rem" : "1rem"}>{user.username}</Typography>
-              <Typography width={isMobile?"25%":"20%"} fontSize={isMobile ? ".7rem" : "1rem"}>{user.role}</Typography>
-              <Typography width={isMobile?"25%":"20%"} fontSize={isMobile ? ".7rem" : "1rem"}>{user.email}</Typography>
+              <Typography
+                width={isMobile ? "25%" : "20%"}
+                fontSize={isMobile ? ".7rem" : "1rem"}>
+                {user.username}
+              </Typography>
+              <Typography
+                width={isMobile ? "25%" : "20%"}
+                fontSize={isMobile ? ".7rem" : "1rem"}>
+                {user.role}
+              </Typography>
+              <Typography
+                width={isMobile ? "25%" : "20%"}
+                fontSize={isMobile ? ".7rem" : "1rem"}>
+                {user.email}
+              </Typography>
               <Box
                 sx={{
-                  width: isMobile?"25%":"20%",
+                  width: isMobile ? "25%" : "20%",
                   display: "flex",
-                  gap:isMobile?"5px": "10px",
+                  gap: isMobile ? "5px" : "10px",
                   alignItems: "center",
                   justifyContent: "end",
                 }}>
@@ -367,11 +442,13 @@ function AccountManager({ setAction, setOpen,member ,functions ,idProject,setLoa
                 <Box
                   display={"flex"}
                   justifyContent={"space-between"}
-                  flexDirection={isMobile?"column":"row"}
-                  gap={isMobile?1:0}
+                  flexDirection={isMobile ? "column" : "row"}
+                  gap={isMobile ? 1 : 0}
                   alignItems={"end"}>
-                  <Box width={isMobile?"100%":"47%"}>
-                    <Typography fontSize={isMobile ? ".7rem" : "1rem"} mb={1}>Phân quyền dự án</Typography>
+                  <Box width={isMobile ? "100%" : "47%"}>
+                    <Typography fontSize={isMobile ? ".7rem" : "1rem"} mb={1}>
+                      Phân quyền dự án
+                    </Typography>
                     <Select
                       fullWidth
                       defaultValue={user.role}
@@ -398,7 +475,7 @@ function AccountManager({ setAction, setOpen,member ,functions ,idProject,setLoa
                       sx={{
                         backgroundColor: "rgba(29, 29, 65, 1)",
                         color: "#fff",
-                        height:isMobile?"35px": "45px",
+                        height: isMobile ? "35px" : "45px",
                         borderRadius: "8px",
                         "& .MuiOutlinedInput-notchedOutline": {
                           border: "2px solid",
@@ -415,14 +492,14 @@ function AccountManager({ setAction, setOpen,member ,functions ,idProject,setLoa
                       <MenuItem value='Viewer'>Viewer</MenuItem>
                     </Select>
                   </Box>
-                  <Box width={isMobile?"100%":"47%"} textAlign={"end"}>
+                  <Box width={isMobile ? "100%" : "47%"} textAlign={"end"}>
                     <Button
                       variant='contained'
                       sx={{
                         backgroundColor: "rgba(89, 50, 234, 1)",
                         borderRadius: "12px",
                         alignSelf: "flex-end",
-                        height: isMobile?"35px": "45px",
+                        height: isMobile ? "35px" : "45px",
                       }}>
                       Cập nhật thông tin
                     </Button>
@@ -437,7 +514,7 @@ function AccountManager({ setAction, setOpen,member ,functions ,idProject,setLoa
   );
 }
 
-function DetailProjectManager({ setAction, setOpen ,functions }) {
+function DetailProjectManager({ setAction, setOpen, functions }) {
   const [expanded, setExpanded] = useState(null);
   const isMobile = useMediaQuery("(max-width:600px)");
   const [openAdd, setOpenAdd] = React.useState(false);
@@ -460,7 +537,10 @@ function DetailProjectManager({ setAction, setOpen ,functions }) {
   return (
     <Box>
       <Box display='flex' justifyContent='space-between' gap={2} mb={2}>
-        <Typography variant='h6' fontSize={isMobile?"1rem":"1.25rem"} mb={2}>
+        <Typography
+          variant='h6'
+          fontSize={isMobile ? "1rem" : "1.25rem"}
+          mb={2}>
           Chi tiết dự án
         </Typography>
         <Button
@@ -471,7 +551,7 @@ function DetailProjectManager({ setAction, setOpen ,functions }) {
             color: "white",
             background: "rgba(89, 50, 234, 1)",
             borderRadius: 1,
-            height:isMobile?"33px":"unset"
+            height: isMobile ? "33px" : "unset",
           }}>
           Thêm thành viên
         </Button>
@@ -482,12 +562,30 @@ function DetailProjectManager({ setAction, setOpen ,functions }) {
           display='flex'
           justifyContent='space-between'
           alignItems='center'
-          sx={{p: { xs: 1, md: 2 } }}
+          sx={{ p: { xs: 1, md: 2 } }}
           mb={1}>
-          <Typography  width={isMobile ? "25%" : "20%"} fontSize={isMobile?".7rem":"1rem"}>Tên đăng nhập</Typography>
-         {!isMobile&& <Typography  width={isMobile ? "25%" : "20%"} fontSize={isMobile?".7rem":"1rem"}>Vai trò</Typography>}
-          <Typography  width={isMobile ? "25%" : "20%"} fontSize={isMobile?".7rem":"1rem"}>Tiến độ dự án </Typography>
-          <Typography  width={isMobile ? "25%" : "20%"} fontSize={isMobile?".7rem":"1rem"}>Địa chỉ mail</Typography>
+          <Typography
+            width={isMobile ? "25%" : "20%"}
+            fontSize={isMobile ? ".7rem" : "1rem"}>
+            Tên đăng nhập
+          </Typography>
+          {!isMobile && (
+            <Typography
+              width={isMobile ? "25%" : "20%"}
+              fontSize={isMobile ? ".7rem" : "1rem"}>
+              Vai trò
+            </Typography>
+          )}
+          <Typography
+            width={isMobile ? "25%" : "20%"}
+            fontSize={isMobile ? ".7rem" : "1rem"}>
+            Tiến độ dự án{" "}
+          </Typography>
+          <Typography
+            width={isMobile ? "25%" : "20%"}
+            fontSize={isMobile ? ".7rem" : "1rem"}>
+            Địa chỉ mail
+          </Typography>
           <IconButton
             sx={{ display: "flex", gap: "10px", width: "20%" }}></IconButton>
         </Box>
@@ -498,50 +596,66 @@ function DetailProjectManager({ setAction, setOpen ,functions }) {
               justifyContent='space-between'
               alignItems='center'
               mb={1}>
-              <Typography  width={isMobile ? "25%" : "20%"} fontSize={isMobile?".7rem":"1rem"}>{user.username}</Typography>
-              {!isMobile&&  <Typography  width={isMobile ? "25%" : "20%"} fontSize={isMobile?".7rem":"1rem"}>{user.role}</Typography>}
-             {!isMobile&& <Box  width={isMobile ? "25%" : "20%"}>
+              <Typography
+                width={isMobile ? "25%" : "20%"}
+                fontSize={isMobile ? ".7rem" : "1rem"}>
+                {user.username}
+              </Typography>
+              {!isMobile && (
                 <Typography
+                  width={isMobile ? "25%" : "20%"}
+                  fontSize={isMobile ? ".7rem" : "1rem"}>
+                  {user.role}
+                </Typography>
+              )}
+              {!isMobile && (
+                <Box width={isMobile ? "25%" : "20%"}>
+                  <Typography
+                    sx={{
+                      position: "relative",
+                      color: "green",
+                      fontSize: "13px",
+                      border: "1px solid green",
+                      width: "max-content",
+                      padding: "3px 5px",
+                      paddingLeft: "1.5em",
+                      borderRadius: 1,
+                      "&::before": {
+                        content: '"•"',
+                        position: "absolute",
+                        left: "5px",
+                        top: "50%",
+                        transform: "translateY(-50%)",
+                        fontSize: "20px",
+                        color: "green",
+                      },
+                    }}>
+                    Hoàn thành
+                  </Typography>
+                </Box>
+              )}
+              {isMobile && (
+                <Typography
+                  width={isMobile ? "25%" : "20%"}
                   sx={{
                     position: "relative",
                     color: "green",
                     fontSize: "13px",
-                    border: "1px solid green",
                     width: "max-content",
-                    padding: "3px 5px",
-                    paddingLeft: "1.5em",
-                    borderRadius: 1,
-                    "&::before": {
-                      content: '"•"',
-                      position: "absolute",
-                      left: "5px",
-                      top: "50%",
-                      transform: "translateY(-50%)",
-                      fontSize: "20px",
-                      color: "green",
-                    },
                   }}>
                   Hoàn thành
                 </Typography>
-              </Box>}
-              {isMobile&&<Typography
-                   width={isMobile ? "25%" : "20%"}
-                  sx={{
-                    position: "relative",
-                    color: "green",
-                    fontSize: "13px",
-                    width: "max-content",
-            
-                
-                  }}>
-                  Hoàn thành
-                </Typography>}
-              <Typography width={isMobile ? "25%" : "20%"} fontSize={isMobile?".7rem":"1rem"}>{user.email}</Typography>
+              )}
+              <Typography
+                width={isMobile ? "25%" : "20%"}
+                fontSize={isMobile ? ".7rem" : "1rem"}>
+                {user.email}
+              </Typography>
               <Box
                 sx={{
                   width: "20%",
                   display: "flex",
-                  gap: isMobile?0:"10px",
+                  gap: isMobile ? 0 : "10px",
                   alignItems: "center",
                   justifyContent: "end",
                 }}>
@@ -561,11 +675,15 @@ function DetailProjectManager({ setAction, setOpen ,functions }) {
                 <Box
                   display={"flex"}
                   justifyContent={"space-between"}
-                  flexDirection={isMobile?"column":"row"}
-                  gap={isMobile?1:0}
+                  flexDirection={isMobile ? "column" : "row"}
+                  gap={isMobile ? 1 : 0}
                   alignItems={"end"}>
-                  <Box width={isMobile?"100%":"47%"}>
-                    <Typography fontSize={isMobile?".7rem":"1rem"} mb={isMobile?.5:1}>Tiến độ dự án</Typography>
+                  <Box width={isMobile ? "100%" : "47%"}>
+                    <Typography
+                      fontSize={isMobile ? ".7rem" : "1rem"}
+                      mb={isMobile ? 0.5 : 1}>
+                      Tiến độ dự án
+                    </Typography>
                     <Select
                       fullWidth
                       defaultValue={user.role}
@@ -575,7 +693,7 @@ function DetailProjectManager({ setAction, setOpen ,functions }) {
                             backgroundColor: "#2A274B", // nền của dropdown list
                             color: "#fff",
                             borderRadius: 2,
-                            mt: isMobile?.5:1,
+                            mt: isMobile ? 0.5 : 1,
                             "& .MuiMenuItem-root": {
                               "&:hover": {
                                 backgroundColor: "#3A375F", // màu hover
@@ -592,7 +710,7 @@ function DetailProjectManager({ setAction, setOpen ,functions }) {
                       sx={{
                         backgroundColor: "rgba(29, 29, 65, 1)",
                         color: "#fff",
-                        height: isMobile?"35px":"45px",
+                        height: isMobile ? "35px" : "45px",
                         borderRadius: "8px",
                         "& .MuiOutlinedInput-notchedOutline": {
                           border: "2px solid",
@@ -603,13 +721,17 @@ function DetailProjectManager({ setAction, setOpen ,functions }) {
                           borderColor: "#414188", // 👈 Viền khi focus
                         },
                         ".MuiSelect-icon": { color: "#fff" },
-                        fontSize:isMobile?"12px":"unset"
+                        fontSize: isMobile ? "12px" : "unset",
                       }}>
                       <MenuItem value='Admin'>Đang tiến hành</MenuItem>
                     </Select>
                   </Box>
-                  <Box width={isMobile?"100%":"47%"}>
-                    <Typography fontSize={isMobile?".7rem":"1rem"} mb={isMobile?.5:1}>Phân quyền</Typography>
+                  <Box width={isMobile ? "100%" : "47%"}>
+                    <Typography
+                      fontSize={isMobile ? ".7rem" : "1rem"}
+                      mb={isMobile ? 0.5 : 1}>
+                      Phân quyền
+                    </Typography>
                     <Select
                       fullWidth
                       defaultValue={user.role}
@@ -619,7 +741,7 @@ function DetailProjectManager({ setAction, setOpen ,functions }) {
                             backgroundColor: "#2A274B", // nền của dropdown list
                             color: "#fff",
                             borderRadius: 2,
-                            mt: isMobile?.5:1,
+                            mt: isMobile ? 0.5 : 1,
                             "& .MuiMenuItem-root": {
                               "&:hover": {
                                 backgroundColor: "#3A375F", // màu hover
@@ -636,7 +758,7 @@ function DetailProjectManager({ setAction, setOpen ,functions }) {
                       sx={{
                         backgroundColor: "rgba(29, 29, 65, 1)",
                         color: "#fff",
-                        height: isMobile?"35px":"45px",
+                        height: isMobile ? "35px" : "45px",
                         borderRadius: "8px",
                         "& .MuiOutlinedInput-notchedOutline": {
                           border: "2px solid",
@@ -647,7 +769,7 @@ function DetailProjectManager({ setAction, setOpen ,functions }) {
                           borderColor: "#414188", // 👈 Viền khi focus
                         },
                         ".MuiSelect-icon": { color: "#fff" },
-                        fontSize:isMobile?"12px":"unset"
+                        fontSize: isMobile ? "12px" : "unset",
                       }}>
                       <MenuItem value='Admin'>Admin</MenuItem>
                       <MenuItem value='Editor'>Editor</MenuItem>
@@ -662,7 +784,7 @@ function DetailProjectManager({ setAction, setOpen ,functions }) {
                       backgroundColor: "rgba(89, 50, 234, 1)",
                       borderRadius: "12px",
                       alignSelf: "flex-end",
-                      height: isMobile?"35px":"45px",
+                      height: isMobile ? "35px" : "45px",
                     }}>
                     Cập nhật thông tin
                   </Button>
@@ -682,10 +804,9 @@ function DetailProjectManager({ setAction, setOpen ,functions }) {
   );
 }
 
-const AddMemberModal = ({ open, onClose, onConfirm ,functions  }) => {
-  
+const AddMemberModal = ({ open, onClose, onConfirm, functions }) => {
   const isMobile = useMediaQuery("(max-width:600px)");
-  console.log("functions",functions)
+  console.log("functions", functions);
   const [selectedFunctions, setSelectedFunctions] = useState([]);
   const [userName, setUserName] = useState("");
 
@@ -701,11 +822,16 @@ const AddMemberModal = ({ open, onClose, onConfirm ,functions  }) => {
           backgroundColor: "rgba(29, 29, 65, 1)",
           color: "#fff",
           borderRadius: "16px",
-          padding: {xs:.5,md:2},
-          minWidth: { xs: '90vw', sm: 600, md: 800, lg: 900 }
+          padding: { xs: 0.5, md: 2 },
+          minWidth: { xs: "90vw", sm: 600, md: 800, lg: 900 },
         },
       }}>
-      <DialogTitle sx={{ position: "relative", fontWeight: "bold", fontSize:isMobile?"1rem":"1.25rem" }}>
+      <DialogTitle
+        sx={{
+          position: "relative",
+          fontWeight: "bold",
+          fontSize: isMobile ? "1rem" : "1.25rem",
+        }}>
         Thêm thành viên
         <IconButton
           aria-label='close'
@@ -729,21 +855,26 @@ const AddMemberModal = ({ open, onClose, onConfirm ,functions  }) => {
         <Box
           display={"flex"}
           justifyContent={"space-between"}
-          flexDirection={isMobile?"column":"row"}
-          gap={isMobile?1:0}
+          flexDirection={isMobile ? "column" : "row"}
+          gap={isMobile ? 1 : 0}
           alignItems={"end"}>
-          <Box width={isMobile?"100%": "47%"}>
+          <Box width={isMobile ? "100%" : "47%"}>
             <Typography mb={1}>Tên đăng nhập</Typography>
-            <Field value={userName}  onChange={(e)=>setUserName(e.target.value)} fullWidth placeholder='Example123' />
+            <Field
+              value={userName}
+              onChange={(e) => setUserName(e.target.value)}
+              fullWidth
+              placeholder='Example123'
+            />
           </Box>
-          <Box width={isMobile?"100%": "47%"}>
+          <Box width={isMobile ? "100%" : "47%"}>
             <Typography mb={1}>Chức năng</Typography>
             <Select
               multiple
               fullWidth
               value={selectedFunctions}
               onChange={handleChange}
-              renderValue={(selected:any) =>
+              renderValue={(selected: any) =>
                 selected
                   .map(
                     (code) =>
@@ -786,11 +917,9 @@ const AddMemberModal = ({ open, onClose, onConfirm ,functions  }) => {
                 },
                 ".MuiSelect-icon": { color: "#fff" },
               }}>
-                {functions.map((item)=>{
-                  return  <MenuItem value={item.code}>{item.name}</MenuItem>
-                })}
-             
-              
+              {functions.map((item) => {
+                return <MenuItem value={item.code}>{item.name}</MenuItem>;
+              })}
             </Select>
           </Box>
           {/* <Box width={isMobile?"100%": "47%"}>
@@ -840,7 +969,7 @@ const AddMemberModal = ({ open, onClose, onConfirm ,functions  }) => {
         </Box>
         <Box mt={3} textAlign={"center"}>
           <Button
-            onClick={()=>onConfirm({selectedFunctions,userName})}
+            onClick={() => onConfirm({ selectedFunctions, userName })}
             variant='contained'
             sx={{
               backgroundColor: "rgba(89, 50, 234, 1)",

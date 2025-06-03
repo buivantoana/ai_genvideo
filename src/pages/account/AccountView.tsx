@@ -20,7 +20,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 const modelOptions = ["ChatGPT", "Qwen", "DeepSeek"];
 const styleOptions = ["Thuyết minh", "Có hội thoại"];
 
-const AccountView = ({ setLoading, users }: any) => {
+const AccountView = ({ setLoading, users, getAllUser }: any) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [action, setAction] = useState("manage");
@@ -47,7 +47,11 @@ const AccountView = ({ setLoading, users }: any) => {
       }}>
       {action == "reset" && <ResetPassword setAction={setAction} />}
       {action == "add" && (
-        <AddUser setLoading={setLoading} setAction={setAction} />
+        <AddUser
+          setLoading={setLoading}
+          setAction={setAction}
+          getAllUser={getAllUser}
+        />
       )}
       {action == "manage" && (
         <AccountManager setOpen={setOpen} users={users} setAction={setAction} />
@@ -107,8 +111,6 @@ const Field = styled(TextField)({
 function AccountManager({ setAction, setOpen, users }) {
   const [expanded, setExpanded] = useState(null);
   const isMobile = useMediaQuery("(max-width:600px)");
-
- 
 
   const handleExpand = (id) => {
     setExpanded(expanded === id ? null : id);
@@ -355,7 +357,7 @@ function AccountManager({ setAction, setOpen, users }) {
   );
 }
 
-function AddUser({ setLoading, setAction }: any) {
+function AddUser({ setLoading, setAction, getAllUser }: any) {
   const isMobile = useMediaQuery("(max-width:600px)");
 
   const [username, setUsername] = useState("");
@@ -416,6 +418,10 @@ function AddUser({ setLoading, setAction }: any) {
       let result = await Register(userData);
       if (result && result.message) {
         toast.success(result.message);
+        setUsername("");
+        setPassword("");
+        setEmail("");
+        getAllUser();
       } else {
         toast.warning(result.detail);
       }

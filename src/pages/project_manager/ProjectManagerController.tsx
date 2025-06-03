@@ -8,10 +8,10 @@ type Props = {};
 const ProjectManagerController = (props: Props) => {
   const [loading, setLoading] = useState(false);
   const [project, setProject] = useState([]);
-  const [functions,setFunctions] = useState([])
+  const [functions, setFunctions] = useState([]);
   useEffect(() => {
     getAll();
-    getFunctions()
+    getFunctions();
   }, []);
   const getAll = async () => {
     setLoading(true);
@@ -36,7 +36,12 @@ const ProjectManagerController = (props: Props) => {
   return (
     <>
       {loading && <Loading />}
-      <ProjectManagerView project={project} setLoading={setLoading} functions={functions} />
+      <ProjectManagerView
+        project={project}
+        setLoading={setLoading}
+        getAll={getAll}
+        functions={functions}
+      />
     </>
   );
 };

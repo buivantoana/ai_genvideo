@@ -28,7 +28,11 @@ const AccountController = (props: Props) => {
   return (
     <>
       {loading && <Loading />}
-      <AccountView setLoading={setLoading} users={users} />
+      <AccountView
+        setLoading={setLoading}
+        getAllUser={getAllUser}
+        users={users}
+      />
     </>
   );
 };
