@@ -1,21 +1,56 @@
-import React, { useState } from 'react'
-import ScriptView from './ScriptView'
-import Loading from '../../components/Loading';
+import React, { useEffect, useState } from "react";
+import ScriptView from "./ScriptView";
+import Loading from "../../components/Loading";
+import { useLocation } from "react-router-dom";
+import { genScriptProject } from "../../service/project";
+import { toast } from "react-toastify";
 
-type Props = {}
+type Props = {};
 
 const ScriptController = (props: Props) => {
-  const [loading,setLoading] = useState(false)
-  let script = localStorage.getItem("gen_script");
-  if(script){
-    script = JSON.parse(script)
-  }
+  const location = useLocation();
+  const query = new URLSearchParams(location.search);
+  const id = query.get("id");
+  const [loading, setLoading] = useState(false);
+  const [genScript, setGenScript] = useState(null);
+  useEffect(() => {
+    let script: any = localStorage.getItem("gen_script");
+    if (script) {
+      script = JSON.parse(script);
+      if (!script.script && id) {
+        genScriptFun();
+      } else {
+        setGenScript(script);
+      }
+    }
+  }, [id]);
+  const genScriptFun = async () => {
+    setLoading(true);
+    try {
+      let result = await genScriptProject(id);
+      if (result) {
+        let script: any = localStorage.getItem("gen_script");
+        if (script) {
+          script = JSON.parse(script);
+          script.script = result;
+          setGenScript(script);
+          localStorage.setItem("gen_script", JSON.stringify(script));
+        }
+      } else {
+        toast.warning(result.detail);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    setLoading(false);
+  };
+  console.log(genScript);
   return (
     <>
       {loading && <Loading />}
-    <ScriptView script={script} setLoading={setLoading} />
+      <ScriptView script={genScript} id={id} setLoading={setLoading} />
     </>
-  )
-}
+  );
+};
 
-export default ScriptController
+export default ScriptController;

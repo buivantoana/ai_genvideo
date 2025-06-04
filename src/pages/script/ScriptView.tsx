@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -24,7 +24,7 @@ const dynamicSteps = [
   { label: "Tạo Video", status: "pending" },
   { label: "Voice", status: "pending" },
 ];
-const ScriptView = ({ script, setLoading }) => {
+const ScriptView = ({ script, setLoading, id }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -43,7 +43,7 @@ const ScriptView = ({ script, setLoading }) => {
       <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
       <ResponsiveBox />
-      <PromptEditorUI script={script} setLoading={setLoading} />
+      <PromptEditorUI id={id} script={script} setLoading={setLoading} />
     </Box>
   );
 };
@@ -54,19 +54,25 @@ import { IconButton } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import ResponsiveBox from "../../components/ResponsiveBox";
 import { useNavigate } from "react-router-dom";
-import { createProject } from "../../service/project";
+import { createProject, updateProject } from "../../service/project";
 import { toast } from "react-toastify";
 
-
-const PromptEditorUI = ({ script, setLoading }) => {
+const PromptEditorUI = ({ script, setLoading, id }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
+  const [initialScenes, setInitialScenes] = useState([]);
 
   // Tạo bản copy để chỉnh sửa
   const [scenes, setScenes] = useState(script?.script?.scenes || []);
   const [editingField, setEditingField] = useState({}); // ví dụ: { 0: { field: 'description' } }
-
+  useEffect(() => {
+    if (script) {
+      const scenesData = script?.script?.scenes || [];
+      setScenes(scenesData);
+      setInitialScenes(JSON.parse(JSON.stringify(scenesData))); // Deep clone
+    }
+  }, [script]);
   const handleEdit = (index, field) => {
     setEditingField({ index, field });
   };
@@ -76,32 +82,43 @@ const PromptEditorUI = ({ script, setLoading }) => {
     updatedScenes[index][field] = value;
     setScenes(updatedScenes);
   };
+  const normalizeScenes = (scenes) =>
+    scenes.map((scene) => ({
+      ...scene,
+      description: scene.description?.trim(),
+      narrator: scene.narrator?.trim(),
+    }));
 
+  const isEqualScenes = (a, b) =>
+    JSON.stringify(normalizeScenes(a)) === JSON.stringify(normalizeScenes(b));
   const isEditing = (index, field) =>
     editingField.index === index && editingField.field === field;
 
   const handleCreate = async () => {
+    const hasChanged = !isEqualScenes(scenes, initialScenes);
+    console.log("Người dùng đã chỉnh sửa?", hasChanged);
+    if (hasChanged) {
+      setLoading(true);
+      try {
+        let result = await updateProject(id, {
+          script: script.script,
+        });
 
-
-    setLoading(true);
-    try {
-      let result = await createProject({
-        ...script,
-        script: {
-          ...script.script,
-          scenes
+        if (result && result.name) {
+          localStorage.setItem("gen_script", JSON.stringify(result));
+          setTimeout(() => {
+            navigate(`/create-image?id=${id}`);
+          }, 500);
+        } else {
+          toast.warning(result.detail);
         }
-      });
-
-      if (result && result.name) {
-        toast.success("Tạo thành công");
-      } else {
-        toast.warning(result.detail);
+      } catch (error) {
+        console.log(error);
       }
-    } catch (error) {
-      console.log(error);
+      setLoading(false);
+    } else {
+      navigate(`/create-image?id=${id}`);
     }
-    setLoading(false);
   };
 
   return (
@@ -170,7 +187,7 @@ const PromptEditorUI = ({ script, setLoading }) => {
       </Typography>
       {scenes.map((scene, index) => (
         <Box key={index} mb={4} borderRadius={2}>
-          <Typography fontWeight="bold" mb={1.5}>
+          <Typography fontWeight='bold' mb={1.5}>
             Phần cảnh {index + 1}
           </Typography>
 
@@ -178,26 +195,27 @@ const PromptEditorUI = ({ script, setLoading }) => {
           <Typography
             fontSize={14}
             sx={{ fontStyle: "italic" }}
-            color="#A3A4B5"
-            mb={1}
-          >
+            color='#A3A4B5'
+            mb={1}>
             Mô tả cảnh
           </Typography>
-          <Box position="relative">
+          <Box position='relative'>
             <TextField
               multiline
               fullWidth
               minRows={2}
               maxRows={5}
               value={scene.description}
-              onChange={(e) => handleChange(index, "description", e.target.value)}
-              variant="outlined"
+              onChange={(e) =>
+                handleChange(index, "description", e.target.value)
+              }
+              variant='outlined'
               sx={{
                 "& .MuiOutlinedInput-notchedOutline": {
                   border: "2px solid",
                   borderColor: "#414188",
                 },
-                opacity: !isEditing(index, "description") ? .7 : 1
+                opacity: !isEditing(index, "description") ? 0.7 : 1,
               }}
               InputProps={{
                 readOnly: !isEditing(index, "description"),
@@ -210,9 +228,8 @@ const PromptEditorUI = ({ script, setLoading }) => {
             />
             <IconButton
               sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
-              onClick={() => handleEdit(index, "description")}
-            >
-              <EditIcon fontSize="small" />
+              onClick={() => handleEdit(index, "description")}>
+              <EditIcon fontSize='small' />
             </IconButton>
           </Box>
 
@@ -220,13 +237,12 @@ const PromptEditorUI = ({ script, setLoading }) => {
           <Typography
             fontSize={14}
             sx={{ fontStyle: "italic" }}
-            color="#A3A4B5"
+            color='#A3A4B5'
             mt={2}
-            mb={1}
-          >
+            mb={1}>
             Lời thoại/narration:
           </Typography>
-          <Box position="relative">
+          <Box position='relative'>
             <TextField
               multiline
               fullWidth
@@ -234,13 +250,13 @@ const PromptEditorUI = ({ script, setLoading }) => {
               maxRows={4}
               value={scene.narrator}
               onChange={(e) => handleChange(index, "narrator", e.target.value)}
-              variant="outlined"
+              variant='outlined'
               sx={{
                 "& .MuiOutlinedInput-notchedOutline": {
                   border: "2px solid",
                   borderColor: "#414188",
                 },
-                opacity: !isEditing(index, "narrator") ? .7 : 1
+                opacity: !isEditing(index, "narrator") ? 0.7 : 1,
               }}
               InputProps={{
                 readOnly: !isEditing(index, "narrator"),
@@ -253,9 +269,8 @@ const PromptEditorUI = ({ script, setLoading }) => {
             />
             <IconButton
               sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
-              onClick={() => handleEdit(index, "narrator")}
-            >
-              <EditIcon fontSize="small" />
+              onClick={() => handleEdit(index, "narrator")}>
+              <EditIcon fontSize='small' />
             </IconButton>
           </Box>
         </Box>
@@ -275,7 +290,7 @@ const PromptEditorUI = ({ script, setLoading }) => {
         }}>
         <Button
           variant='contained'
-          onClick={() => navigate("/create-image")}
+          onClick={handleCreate}
           sx={{
             background: "#6E00FF",
             textTransform: "none",

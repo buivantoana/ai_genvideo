@@ -20,7 +20,7 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ResponsiveBox from "../../components/ResponsiveBox";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { genScript, updateProject } from "../../service/project";
+import { createProject, genScript, updateProject } from "../../service/project";
 import { useLocation } from "react-router-dom";
 const modelOptions = [
   { value: "ChatGPT", key: "openai" },
@@ -50,8 +50,8 @@ const IdeaView = ({ setLoading }: any) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const location = useLocation();
   const query = new URLSearchParams(location.search);
-
   const id = query.get("id");
+  const [selectedTab, setSelectedTab] = useState(0);
   useEffect(() => {
     if (id) {
       let data_update: any = localStorage.getItem("update_project");
@@ -103,16 +103,16 @@ const IdeaView = ({ setLoading }: any) => {
       if (id) {
         result = await updateProject(id, {
           name: projectName.trim(),
-          video_type: "video2video",
+          video_type: selectedTab == 0 ? "image2image" : "video2video",
           llm_model: model,
           prompt: prompt.trim(),
           style_type: style,
           scene_count: sceneCount,
         });
       } else {
-        result = await genScript({
+        result = await createProject({
           name: projectName.trim(),
-          video_type: "video2video",
+          video_type: selectedTab == 0 ? "image2image" : "video2video",
           llm_model: model,
           prompt: prompt.trim(),
           style_type: style,
@@ -124,11 +124,11 @@ const IdeaView = ({ setLoading }: any) => {
         toast.success(result.message);
         if (id) {
           navigate("/");
-        }else{
-          localStorage.setItem("gen_script",JSON.stringify(result));
-          setTimeout(()=>{
-            navigate("/script");
-          },500)
+        } else {
+          localStorage.setItem("gen_script", JSON.stringify(result));
+          setTimeout(() => {
+            navigate(`/script?id=${result.id}`);
+          }, 500);
         }
       } else {
         toast.warning(result.detail);
@@ -152,7 +152,10 @@ const IdeaView = ({ setLoading }: any) => {
         gap: isMobile ? 2 : 4,
       }}>
       <StepComponent steps={dynamicSteps} />
-      <ResponsiveBox />
+      <ResponsiveBox
+        selectedTab={selectedTab}
+        onTabChange={(index) => setSelectedTab(index)}
+      />
       <Typography color='#FDB52A' fontSize={{ xs: ".8rem", md: "1rem" }}>
         Lưu ý rằng AI phân biệt giữa chữ hoa và chữ thường ( yêu cầu nhập đúng
         chính tả ) <br />

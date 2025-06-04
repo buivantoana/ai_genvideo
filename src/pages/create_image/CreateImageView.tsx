@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -31,7 +31,7 @@ const dynamicSteps = [
   { label: "Tạo Video", status: "pending" },
   { label: "Voice", status: "pending" },
 ];
-const CreateImageView = () => {
+const CreateImageView = ({ genScript }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -281,7 +281,7 @@ const CreateImageView = () => {
           Tạo toàn bộ ảnh từ phân cảnh
         </Button>
       </Box>
-      <SceneEditor />
+      <SceneEditor genScript={genScript} />
     </Box>
   );
 };
@@ -295,9 +295,28 @@ import { RiRefreshLine } from "react-icons/ri";
 import ResponsiveBox from "../../components/ResponsiveBox";
 import { useNavigate } from "react-router-dom";
 
-const SceneCard = ({ sceneNumber, imageUrl, narrationText, dialogText }) => {
+const SceneCard = ({ scene, values, setValues }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const [isEditing, setIsEditing] = useState(false);
+
+  const sceneData = values.find((v) => v.scene === scene);
+
+  const handleChange = (field, value) => {
+    setValues((prev) =>
+      prev.map((item) =>
+        item.scene === scene
+          ? {
+              ...item,
+              image: {
+                ...item.image,
+                [field]: value,
+              },
+            }
+          : item
+      )
+    );
+  };
   return (
     <Box
       sx={{
@@ -310,19 +329,21 @@ const SceneCard = ({ sceneNumber, imageUrl, narrationText, dialogText }) => {
             variant='h6'
             fontSize={{ xs: ".9rem", md: "1.25rem" }}
             color='white'>
-            Phân cảnh {sceneNumber}:
+            Phân cảnh {sceneData.scene}:
           </Typography>
-          <Button
-            startIcon={<RiRefreshLine />}
-            size='small'
-            sx={{
-              borderRadius: 1,
-              background: "rgba(89, 50, 234, 1)",
-              fontSize: isMobile ? "0.675rem" : "0.875rem",
-            }}
-            variant='contained'>
-            Tạo lại ảnh
-          </Button>
+          {sceneData.image.id && (
+            <Button
+              startIcon={<RiRefreshLine />}
+              size='small'
+              sx={{
+                borderRadius: 1,
+                background: "rgba(89, 50, 234, 1)",
+                fontSize: isMobile ? "0.675rem" : "0.875rem",
+              }}
+              variant='contained'>
+              Tạo lại ảnh
+            </Button>
+          )}
         </Stack>
 
         <Box position='relative'>
@@ -331,7 +352,8 @@ const SceneCard = ({ sceneNumber, imageUrl, narrationText, dialogText }) => {
             fullWidth
             minRows={2}
             maxRows={5}
-            value={narrationText}
+            value={sceneData.image.prompt}
+            onChange={(e) => handleChange("prompt", e.target.value)}
             variant='outlined'
             sx={{
               "& .MuiOutlinedInput-notchedOutline": {
@@ -339,8 +361,10 @@ const SceneCard = ({ sceneNumber, imageUrl, narrationText, dialogText }) => {
                 borderColor: "#414188",
               },
               fontSize: "11px",
+              opacity: !isEditing ? 0.7 : 1,
             }}
             InputProps={{
+              readOnly: !isEditing,
               style: {
                 backgroundColor: "#1A1836",
                 color: "#fff",
@@ -349,12 +373,9 @@ const SceneCard = ({ sceneNumber, imageUrl, narrationText, dialogText }) => {
             }}
           />
           <IconButton
-            sx={{
-              position: "absolute",
-              top: 8,
-              right: 8,
-              color: "#A3A4B5",
-            }}>
+            onClick={() => setIsEditing(!isEditing)}
+            sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
+            size='small'>
             <EditIcon fontSize='small' />
           </IconButton>
         </Box>
@@ -369,12 +390,12 @@ const SceneCard = ({ sceneNumber, imageUrl, narrationText, dialogText }) => {
               }}
               sm={4}
               md={3}>
-              {imageUrl ? (
+              {sceneData.image.imageUrl ? (
                 <CardMedia
                   component='img'
                   height={isMobile ? "150px" : "220px"}
                   sx={{ objectFit: "cover", borderRadius: 1 }}
-                  image={imageUrl}
+                  image={sceneData.image.imageUrl}
                   alt='uploaded'
                 />
               ) : (
@@ -438,7 +459,7 @@ const SceneCard = ({ sceneNumber, imageUrl, narrationText, dialogText }) => {
           </Typography>
           <ul>
             <li style={{ color: "rgba(139, 139, 168, 1)", marginLeft: "50px" }}>
-              <Typography> {dialogText}</Typography>
+              <Typography> {sceneData.image.n_prompt}</Typography>
             </li>
           </ul>
         </Box>
@@ -447,22 +468,28 @@ const SceneCard = ({ sceneNumber, imageUrl, narrationText, dialogText }) => {
   );
 };
 
-function SceneEditor() {
+function SceneEditor({ genScript }) {
   const isMobile = useMediaQuery("(max-width:600px)");
   const navigate = useNavigate();
+  const [values, setValues] = useState(genScript?.prompts || []);
+  // ví dụ: { 0: { field: 'description' } }
+  useEffect(() => {
+    if (genScript) {
+      const scenesData = genScript?.prompts || [];
+      setValues(scenesData);
+    }
+  }, [genScript]);
+  console.log("values", values);
   return (
     <Box sx={{ minHeight: "100vh", pb: 3 }}>
-      <SceneCard
-        sceneNumber={1}
-        narrationText='Hai cậu bé học sinh Nam, Giang, mặc đồng phục...'
-        dialogText='Từ bé, tụi mình đã bên nhau...'
-      />
-      <SceneCard
-        sceneNumber={2}
-        imageUrl={group}
-        narrationText='Cảnh Nam buồn bã nhìn bài kiểm tra điểm kém...'
-        dialogText='Nam: tôi chào bạn nhé'
-      />
+      {values.map((s, idx) => (
+        <SceneCard
+          key={idx}
+          scene={s.scene}
+          values={values}
+          setValues={setValues}
+        />
+      ))}
 
       <Box textAlign='center'>
         <Box
@@ -485,7 +512,7 @@ function SceneEditor() {
               "&:hover": {
                 background: "#5900cc",
               },
-              height: isMobile?40 :50,
+              height: isMobile ? 40 : 50,
               fontSize: isMobile ? "15px" : "18px",
             }}>
             + Thêm màn mới
@@ -513,7 +540,7 @@ function SceneEditor() {
               "&:hover": {
                 background: "#5900cc",
               },
-               height: isMobile?40 :50,
+              height: isMobile ? 40 : 50,
               fontSize: isMobile ? "15px" : "18px",
             }}>
             Xác nhận ảnh
@@ -530,7 +557,7 @@ function SceneEditor() {
               "&:hover": {
                 background: "white",
               },
-               height: isMobile?40 :50,
+              height: isMobile ? 40 : 50,
               fontSize: isMobile ? "15px" : "18px",
               color: "black",
             }}>
