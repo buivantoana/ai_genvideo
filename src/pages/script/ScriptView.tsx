@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Box,
   Typography,
@@ -17,8 +17,14 @@ import StepComponent from "../../components/StepComponent";
 
 const modelOptions = ["ChatGPT", "Qwen", "DeepSeek"];
 const styleOptions = ["Tải xuống dạng CSV", "Tải xuống dạng TXT"];
-
-const ScriptView = () => {
+const dynamicSteps = [
+  { label: "Ý tưởng", status: "completed" },
+  { label: "Tạo kịch bản", status: "active" },
+  { label: "Tạo ảnh", status: "pending" },
+  { label: "Tạo Video", status: "pending" },
+  { label: "Voice", status: "pending" },
+];
+const ScriptView = ({ script, setLoading }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -32,12 +38,12 @@ const ScriptView = () => {
         color: "white",
         display: "flex",
         flexDirection: "column",
-        gap: isMobile?2:4,
+        gap: isMobile ? 2 : 4,
       }}>
-      <StepComponent />
+      <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
       <ResponsiveBox />
-      <PromptEditorUI />
+      <PromptEditorUI script={script} setLoading={setLoading} />
     </Box>
   );
 };
@@ -48,31 +54,56 @@ import { IconButton } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
 import ResponsiveBox from "../../components/ResponsiveBox";
 import { useNavigate } from "react-router-dom";
+import { createProject } from "../../service/project";
+import { toast } from "react-toastify";
 
-const scenes = [
-  {
-    description:
-      "Hai cậu bé học sinh mặc đồng phục, chạy trong công viên, người lớn chửi ghế đá, cửa hàng và cảnh vật mùa hè.",
-    narration:
-      "Từ bé, tui nhìn đã bần nheo. Một chiếc ghế đã cũ, hai thằng nhóc và cả một tuổi thơ trọn vẹn.",
-  },
-  {
-    description:
-      "Cảnh Nam buồn bã nhìn bài kiểm tra điểm kém. Sau đó là cảnh Giang đứng trước mặt Nam, nhận lỗi thay bạn.",
-    narration: "Nam: tới chào bạn nè",
-  },
-  {
-    description:
-      "Nam xách vali ra bến xe. Giang đứng vẫy tay chào, cố giấu vẻ buồn. Cảnh chuyển nhanh qua các đoạn từ nhân dân tệ.",
-    narration:
-      "Tớ đã đi thật xa... nhưng trái tim vẫn quay lại nơi từng thuộc về.",
-  },
-];
 
-const PromptEditorUI = () => {
+const PromptEditorUI = ({ script, setLoading }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
+
+  // Tạo bản copy để chỉnh sửa
+  const [scenes, setScenes] = useState(script?.script?.scenes || []);
+  const [editingField, setEditingField] = useState({}); // ví dụ: { 0: { field: 'description' } }
+
+  const handleEdit = (index, field) => {
+    setEditingField({ index, field });
+  };
+
+  const handleChange = (index, field, value) => {
+    const updatedScenes = [...scenes];
+    updatedScenes[index][field] = value;
+    setScenes(updatedScenes);
+  };
+
+  const isEditing = (index, field) =>
+    editingField.index === index && editingField.field === field;
+
+  const handleCreate = async () => {
+
+
+    setLoading(true);
+    try {
+      let result = await createProject({
+        ...script,
+        script: {
+          ...script.script,
+          scenes
+        }
+      });
+
+      if (result && result.name) {
+        toast.success("Tạo thành công");
+      } else {
+        toast.warning(result.detail);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    setLoading(false);
+  };
+
   return (
     <Box
       px={isMobile ? 1.5 : 0}
@@ -139,31 +170,37 @@ const PromptEditorUI = () => {
       </Typography>
       {scenes.map((scene, index) => (
         <Box key={index} mb={4} borderRadius={2}>
-          <Typography fontWeight='bold' mb={1.5}>
+          <Typography fontWeight="bold" mb={1.5}>
             Phần cảnh {index + 1}
           </Typography>
+
+          {/* Description */}
           <Typography
             fontSize={14}
             sx={{ fontStyle: "italic" }}
-            color='#A3A4B5'
-            mb={1}>
+            color="#A3A4B5"
+            mb={1}
+          >
             Mô tả cảnh
           </Typography>
-          <Box position='relative'>
+          <Box position="relative">
             <TextField
               multiline
               fullWidth
               minRows={2}
               maxRows={5}
               value={scene.description}
-              variant='outlined'
+              onChange={(e) => handleChange(index, "description", e.target.value)}
+              variant="outlined"
               sx={{
                 "& .MuiOutlinedInput-notchedOutline": {
                   border: "2px solid",
                   borderColor: "#414188",
                 },
+                opacity: !isEditing(index, "description") ? .7 : 1
               }}
               InputProps={{
+                readOnly: !isEditing(index, "description"),
                 style: {
                   backgroundColor: "#1A1836",
                   color: "#fff",
@@ -172,39 +209,41 @@ const PromptEditorUI = () => {
               }}
             />
             <IconButton
-              sx={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                color: "#A3A4B5",
-              }}>
-              <EditIcon fontSize='small' />
+              sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
+              onClick={() => handleEdit(index, "description")}
+            >
+              <EditIcon fontSize="small" />
             </IconButton>
           </Box>
 
+          {/* Narrator */}
           <Typography
             fontSize={14}
             sx={{ fontStyle: "italic" }}
-            color='#A3A4B5'
+            color="#A3A4B5"
             mt={2}
-            mb={1}>
+            mb={1}
+          >
             Lời thoại/narration:
           </Typography>
-          <Box position='relative'>
+          <Box position="relative">
             <TextField
               multiline
               fullWidth
               minRows={2}
               maxRows={4}
-              value={scene.narration}
-              variant='outlined'
+              value={scene.narrator}
+              onChange={(e) => handleChange(index, "narrator", e.target.value)}
+              variant="outlined"
               sx={{
                 "& .MuiOutlinedInput-notchedOutline": {
                   border: "2px solid",
                   borderColor: "#414188",
                 },
+                opacity: !isEditing(index, "narrator") ? .7 : 1
               }}
               InputProps={{
+                readOnly: !isEditing(index, "narrator"),
                 style: {
                   backgroundColor: "#1A1836",
                   color: "#fff",
@@ -213,13 +252,10 @@ const PromptEditorUI = () => {
               }}
             />
             <IconButton
-              sx={{
-                position: "absolute",
-                top: 8,
-                right: 8,
-                color: "#A3A4B5",
-              }}>
-              <EditIcon fontSize='small' />
+              sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
+              onClick={() => handleEdit(index, "narrator")}
+            >
+              <EditIcon fontSize="small" />
             </IconButton>
           </Box>
         </Box>
@@ -285,7 +321,7 @@ const PromptEditorUI = () => {
             color: "#fff",
             borderRadius: 2,
             width: isMobile ? "100%" : "48%",
-            height: isMobile?40 :50, // 👈 Chiều cao mong muốn
+            height: isMobile ? 40 : 50, // 👈 Chiều cao mong muốn
             "& .MuiOutlinedInput-notchedOutline": {
               border: "2px solid",
               borderColor: "#414188", // 👈 Viền mặc định
@@ -310,7 +346,7 @@ const PromptEditorUI = () => {
         </Select>
         <Button
           variant='contained'
-          onClick={() => navigate("/create-image")}
+          onClick={handleCreate}
           sx={{
             background: "#6E00FF",
             textTransform: "none",
@@ -320,7 +356,7 @@ const PromptEditorUI = () => {
             "&:hover": {
               background: "#5900cc",
             },
-            height: isMobile?40 :50,
+            height: isMobile ? 40 : 50,
             fontSize: isMobile ? "15px" : "18px",
             display: isMobile ? "block" : "none",
           }}>
@@ -347,7 +383,7 @@ const PromptEditorUI = () => {
             "&:hover": {
               background: "#5900cc",
             },
-            height: isMobile?40 :50,
+            height: isMobile ? 40 : 50,
             fontSize: isMobile ? "15px" : "18px",
           }}>
           Tạo lại kịch bản khác

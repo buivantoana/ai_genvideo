@@ -20,7 +20,13 @@ import download from "../../images/maximize-3.png";
 
 import image from "../../images/adbe6e126ef5ad889784e0f288edfd8329fed5c7.png";
 import image1 from "../../images/bf053d80d9782e45442f9fd54f729b5a17616751.png";
-
+const dynamicSteps = [
+  { label: "Ý tưởng", status: "completed" },
+  { label: "Tạo kịch bản", status: "completed" },
+  { label: "Tạo ảnh", status: "completed" },
+  { label: "Tạo Video", status: "active" },
+  { label: "Voice", status: "pending" },
+];
 const modelOptions1 = ["Klling", "FramePack", "Wan"];
 const modelOptions2 = ["1080p", "720p", "480p"];
 
@@ -40,7 +46,7 @@ const CreateVideoView = () => {
         flexDirection: "column",
         gap: isMobile ? 2 : 4,
       }}>
-      <StepComponent />
+      <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
       <ResponsiveBox />
       <Box display={"flex"} gap={3}>

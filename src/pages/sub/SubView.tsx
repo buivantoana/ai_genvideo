@@ -28,7 +28,13 @@ import image3 from "../../images/AB C.png";
 import image4 from "../../images/Group 1171275725.png";
 const modelOptions1 = ["Klling", "FramePack", "Wan"];
 const modelOptions2 = ["1080p", "720p", "480p"];
-
+const dynamicSteps = [
+  { label: "Ý tưởng", status: "completed" },
+  { label: "Tạo kịch bản", status: "completed" },
+  { label: "Tạo ảnh", status: "completed" },
+  { label: "Tạo Video", status: "completed" },
+  { label: "Voice", status: "active" },
+];
 const SubView = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -45,7 +51,7 @@ const SubView = () => {
         flexDirection: "column",
         gap:isMobile?2: 4,
       }}>
-      <StepComponent />
+      <StepComponent  steps={dynamicSteps}/>
       {/* Toggle Tabs */}
       <ResponsiveBox />
 

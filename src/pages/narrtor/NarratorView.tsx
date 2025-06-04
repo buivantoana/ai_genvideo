@@ -23,7 +23,13 @@ import image1 from "../../images/bf053d80d9782e45442f9fd54f729b5a17616751.png";
 
 const modelOptions1 = ["Klling", "FramePack", "Wan"];
 const modelOptions2 = ["1080p", "720p", "480p"];
-
+const dynamicSteps = [
+  { label: "Ý tưởng", status: "completed" },
+  { label: "Tạo kịch bản", status: "completed" },
+  { label: "Tạo ảnh", status: "completed" },
+  { label: "Tạo Video", status: "completed" },
+  { label: "Voice", status: "active" },
+];
 const NarratorView = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -41,7 +47,7 @@ const NarratorView = () => {
         gap: isMobile ? 2 : 4,
        
       }}>
-      <StepComponent />
+      <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
       <ResponsiveBox />
 

@@ -20,21 +20,28 @@ import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import ResponsiveBox from "../../components/ResponsiveBox";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { createProject, updateProject } from "../../service/project";
+import { genScript, updateProject } from "../../service/project";
 import { useLocation } from "react-router-dom";
 const modelOptions = [
-  { value: "ChatGPT", key: "gpt" },
+  { value: "ChatGPT", key: "openai" },
   { value: "Qwen", key: "qwen" },
-  { value: "DeepSeek", key: "deepseek" },
+  { value: "DeepSeek", key: "deepseekr1" },
 ];
 const styleOptions = [
   { value: "Thuyết minh", key: "explanation" },
   { value: "Tường thuật", key: "narration" },
 ];
 
+const dynamicSteps = [
+  { label: "Ý tưởng", status: "active" },
+  { label: "Tạo kịch bản", status: "pending" },
+  { label: "Tạo ảnh", status: "pending" },
+  { label: "Tạo Video", status: "pending" },
+  { label: "Voice", status: "pending" },
+];
 const IdeaView = ({ setLoading }: any) => {
   const [genPromptAi, setGenPromptAi] = useState(false);
-  const [model, setModel] = useState("gpt");
+  const [model, setModel] = useState("openai");
   const [projectName, setProjectName] = useState("");
   const [prompt, setPrompt] = useState("");
   const [sceneCount, setSceneCount] = useState("");
@@ -96,16 +103,16 @@ const IdeaView = ({ setLoading }: any) => {
       if (id) {
         result = await updateProject(id, {
           name: projectName.trim(),
-          video_type: "image2video",
+          video_type: "video2video",
           llm_model: model,
           prompt: prompt.trim(),
           style_type: style,
           scene_count: sceneCount,
         });
       } else {
-        result = await createProject({
+        result = await genScript({
           name: projectName.trim(),
-          video_type: "image2video",
+          video_type: "video2video",
           llm_model: model,
           prompt: prompt.trim(),
           style_type: style,
@@ -113,10 +120,15 @@ const IdeaView = ({ setLoading }: any) => {
         });
       }
 
-      if (result && result.message) {
+      if (result && result.name) {
         toast.success(result.message);
         if (id) {
           navigate("/");
+        }else{
+          localStorage.setItem("gen_script",JSON.stringify(result));
+          setTimeout(()=>{
+            navigate("/script");
+          },500)
         }
       } else {
         toast.warning(result.detail);
@@ -139,7 +151,7 @@ const IdeaView = ({ setLoading }: any) => {
         flexDirection: "column",
         gap: isMobile ? 2 : 4,
       }}>
-      <StepComponent />
+      <StepComponent steps={dynamicSteps} />
       <ResponsiveBox />
       <Typography color='#FDB52A' fontSize={{ xs: ".8rem", md: "1rem" }}>
         Lưu ý rằng AI phân biệt giữa chữ hoa và chữ thường ( yêu cầu nhập đúng

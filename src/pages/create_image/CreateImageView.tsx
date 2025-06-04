@@ -24,7 +24,13 @@ const modelOptions3 = [
   "1280x720 (16:9)",
   "1024x1024 (1:1)",
 ];
-
+const dynamicSteps = [
+  { label: "Ý tưởng", status: "completed" },
+  { label: "Tạo kịch bản", status: "completed" },
+  { label: "Tạo ảnh", status: "active" },
+  { label: "Tạo Video", status: "pending" },
+  { label: "Voice", status: "pending" },
+];
 const CreateImageView = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -40,7 +46,7 @@ const CreateImageView = () => {
         flexDirection: "column",
         gap: { xs: 2, md: 4 },
       }}>
-      <StepComponent />
+      <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
       <ResponsiveBox />
       <Box display={"flex"} flexWrap={"wrap"} gap={isMobile ? 1 : 3}>

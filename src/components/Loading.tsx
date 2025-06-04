@@ -7,7 +7,7 @@ const Loading = (props: any) => {
         display: "flex",
         width: props.width ? props.width : "100%",
         height: props.height ? props.height : "100vh",
-        position: props.position ? props.position : "absolute",
+        position: props.position ? props.position : "fixed",
         top: 0,
         left: 0,
         justifyContent: "center",

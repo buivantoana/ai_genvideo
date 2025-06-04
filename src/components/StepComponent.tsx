@@ -1,15 +1,7 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
 
-const steps = [
-  { label: "Ý tưởng", status: "completed" },
-  { label: "Tạo kịch bản", status: "active" },
-  { label: "Tạo ảnh", status: "pending" },
-  { label: "Tạo Video", status: "pending" },
-  { label: "Voice", status: "pending" },
-];
-
-const StepComponent = () => {
+const StepComponent = ({ steps = [] }) => {
   return (
     <Box
       display='flex'
@@ -21,7 +13,6 @@ const StepComponent = () => {
       width={"100%"}>
       {steps.map((step, index) => (
         <Box key={index} display='flex' alignItems='top'>
-          {/* Step Box + Label */}
           <Box
             sx={{
               display: "flex",
@@ -29,7 +20,6 @@ const StepComponent = () => {
               alignItems: "center",
               gap: "6px",
             }}>
-            {/* Step Box */}
             <Box
               sx={{
                 width: { xs: 22, md: 44 },
@@ -46,7 +36,6 @@ const StepComponent = () => {
                 justifyContent: "center",
                 color: "#fff",
                 fontWeight: "bold",
-
                 boxShadow:
                   step.status === "completed"
                     ? "0px 0px 0px 5px rgba(0, 206, 124, 0.2)"
@@ -58,8 +47,6 @@ const StepComponent = () => {
                 {step.status === "completed" ? "✓" : index + 1}
               </Typography>
             </Box>
-
-            {/* Label */}
             <Typography
               sx={{
                 color:
