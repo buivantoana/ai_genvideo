@@ -157,7 +157,8 @@ const ProjectCard = ({
           {title}
         </Typography>
         <Typography variant='body2' sx={{ opacity: 0.7 }} gutterBottom>
-          {description}
+          {description.split(" ").slice(0, 100).join(" ") +
+            (description.split(" ").length > 100 ? "..." : "")}
         </Typography>
 
         <Box

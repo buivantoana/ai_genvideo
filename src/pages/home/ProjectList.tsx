@@ -51,6 +51,11 @@ const ProjectList = ({ project }: any) => {
               display: "flex",
               justifyContent: "center",
               alignItems: "center",
+              cursor: "pointer",
+              transition: "transform 0.3s ease-in-out",
+              "&:hover": {
+                transform: "scale(1.1)",
+              },
             }}>
             <Typography
               fontSize={"24px"}
@@ -67,7 +72,7 @@ const ProjectList = ({ project }: any) => {
                 localStorage.setItem("update_project", JSON.stringify(item));
                 setTimeout(() => {
                   navigate(`/idea?id=${item.id}`);
-                }, 1000);
+                }, 500);
               }}
               key={index}
               sx={{
@@ -85,6 +90,11 @@ const ProjectList = ({ project }: any) => {
                 display: "flex",
                 justifyContent: "center",
                 alignItems: "center",
+                cursor: "pointer",
+                transition: "transform 0.3s ease-in-out",
+                "&:hover": {
+                  transform: "scale(1.1)",
+                },
               }}>
               <Typography
                 fontSize={"24px"}

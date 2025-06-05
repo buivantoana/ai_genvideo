@@ -1,4 +1,10 @@
-import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
+import React, {
+  forwardRef,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import {
   Box,
   Typography,
@@ -17,7 +23,10 @@ import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import StepComponent from "../../components/StepComponent";
 import EditIcon from "@mui/icons-material/Edit";
 import group from "../../images/Group 13.png";
-const modelOptions1 = [{ value: "SDXL", key: "sdxl" }, { value: "Flux", key: "flux" }];
+const modelOptions1 = [
+  { value: "SDXL", key: "sdxl" },
+  { value: "Flux", key: "flux" },
+];
 const modelOptions2 = ["ChatGPT", "Runpod"];
 const modelOptions4 = ["Local"];
 const modelOptions3 = [
@@ -32,16 +41,17 @@ const dynamicSteps = [
   { label: "Tạo Video", status: "pending" },
   { label: "Voice", status: "pending" },
 ];
-const CreateImageView = ({ genScript ,setLoading }) => {
+const CreateImageView = ({ genScript, setLoading, id }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [selectedTab, setSelectedTab]: any = useState(genScript && genScript.video_type == "video2video" ? 1 : 0);
+  const [selectedTab, setSelectedTab]: any = useState(
+    genScript && genScript.video_type == "video2video" ? 1 : 0
+  );
   const [model, setModel] = useState("flux");
   const [px, setPx] = useState("1920x1080 (16:9)");
   useEffect(() => {
     if (genScript) {
-      setSelectedTab(genScript?.video_type == "video2video" ? 1 : 0)
-
+      setSelectedTab(genScript?.video_type == "video2video" ? 1 : 0);
     }
   }, [genScript]);
   return (
@@ -57,8 +67,10 @@ const CreateImageView = ({ genScript ,setLoading }) => {
       }}>
       <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
-      <ResponsiveBox selectedTab={selectedTab}
-        onTabChange={(index) => setSelectedTab(index)} />
+      <ResponsiveBox
+        selectedTab={selectedTab}
+        onTabChange={(index) => setSelectedTab(index)}
+      />
       <Box display={"flex"} flexWrap={"wrap"} gap={isMobile ? 1 : 3}>
         <FormControl variant='outlined' size='small'>
           <Select
@@ -278,8 +290,13 @@ const CreateImageView = ({ genScript ,setLoading }) => {
         </FormControl>
       </Box>
 
-
-      <SceneEditor genScript={genScript} model={model} px={px} setLoading={setLoading} />
+      <SceneEditor
+        genScript={genScript}
+        model={model}
+        px={px}
+        setLoading={setLoading}
+        id={id}
+      />
     </Box>
   );
 };
@@ -295,11 +312,12 @@ import { useNavigate } from "react-router-dom";
 import { genScriptImage, genScriptImageStatus } from "../../service/project";
 
 const SceneCard = forwardRef((props, ref) => {
-  const { scene, values, setValues, model, px }:any = props;
+  const { scene, values, setValues, model, px }: any = props;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingUpload, setLoadingUpload] = useState(false);
   const [intervalId, setIntervalId] = useState(null);
   const sceneData = values.find((v) => v.scene === scene);
   const fileInputRef = useRef(null);
@@ -320,12 +338,12 @@ const SceneCard = forwardRef((props, ref) => {
       prev.map((item) =>
         item.scene === scene
           ? {
-            ...item,
-            image: {
-              ...item.image,
-              [field]: value,
-            },
-          }
+              ...item,
+              image: {
+                ...item.image,
+                [field]: value,
+              },
+            }
           : item
       )
     );
@@ -336,12 +354,12 @@ const SceneCard = forwardRef((props, ref) => {
       prev.map((item) =>
         item.scene === scene
           ? {
-            ...item,
-            image: {
-              ...item.image,
-              selected: index,
-            },
-          }
+              ...item,
+              image: {
+                ...item.image,
+                selected: index,
+              },
+            }
           : item
       )
     );
@@ -352,12 +370,12 @@ const SceneCard = forwardRef((props, ref) => {
       script.prompts = script.prompts.map((item) =>
         item.scene === scene
           ? {
-            ...item,
-            image: {
-              ...item.image,
-              selected: index,
-            },
-          }
+              ...item,
+              image: {
+                ...item.image,
+                selected: index,
+              },
+            }
           : item
       );
       localStorage.setItem("gen_script", JSON.stringify(script));
@@ -365,10 +383,15 @@ const SceneCard = forwardRef((props, ref) => {
   };
 
   const genImage = async (fileImage = null) => {
-    setLoading(true);
+    if (fileImage) {
+      setLoadingUpload(true);
+    } else {
+      setLoading(true);
+    }
+    const [width, height] = px.split(" ")[0].split("x").map(Number);
     let formData = new FormData();
-    formData.set("width", "1280");
-    formData.set("height", "1920");
+    formData.set("width", width);
+    formData.set("height", height);
     formData.set("prompt", sceneData.image.prompt);
     formData.set("n_prompt", sceneData.image.n_prompt);
     formData.set("model", model);
@@ -382,7 +405,6 @@ const SceneCard = forwardRef((props, ref) => {
         const poll = setInterval(async () => {
           const status = await genScriptImageStatus(result.id);
           if (status?.code === 0 && status?.image_url) {
-
             let script: any = localStorage.getItem("gen_script");
             if (script) {
               script = JSON.parse(script);
@@ -393,36 +415,52 @@ const SceneCard = forwardRef((props, ref) => {
                     image: {
                       ...item.image,
                       ids: [...(item.image.ids || []), result.id],
-                      imageUrls: [...(item.image.imageUrls || []), status.image_url],
-                      selected: (item.image.imageUrls?.length || 0) === 0 ? 0 : item.image.selected
-                    }
-                  }
+                      imageUrls: [
+                        ...(item.image.imageUrls || []),
+                        status.image_url,
+                      ],
+                      selected:
+                        (item.image.imageUrls?.length || 0) === 0
+                          ? 0
+                          : item.image.selected,
+                    },
+                  };
                 }
-                return item
-              })
-              localStorage.setItem("gen_script", JSON.stringify(script))
+                return item;
+              });
+              localStorage.setItem("gen_script", JSON.stringify(script));
             }
             setValues((prev) =>
               prev.map((item) =>
                 item.scene === scene
                   ? {
-                    ...item,
-                    image: {
-                      ...item.image,
-                      ids: [...(item.image.ids || []), result.id],
-                      imageUrls: [...(item.image.imageUrls || []), status.image_url],
-                      selected: (item.image.imageUrls?.length || 0) === 0 ? 0 : item.image.selected,
-                    },
-                  }
+                      ...item,
+                      image: {
+                        ...item.image,
+                        ids: [...(item.image.ids || []), result.id],
+                        imageUrls: [
+                          ...(item.image.imageUrls || []),
+                          status.image_url,
+                        ],
+                        selected:
+                          (item.image.imageUrls?.length || 0) === 0
+                            ? 0
+                            : item.image.selected,
+                      },
+                    }
                   : item
               )
             );
-            setLoading(false);
+            if (fileImage) {
+              setLoadingUpload(false);
+            } else {
+              setLoading(false);
+            }
             clearInterval(poll);
           }
         }, 2000);
         setIntervalId(poll);
-      } else if(result.code == 0) {
+      } else if (result.code == 0) {
         // fallback không cần chờ status
         let script: any = localStorage.getItem("gen_script");
         if (script) {
@@ -434,38 +472,53 @@ const SceneCard = forwardRef((props, ref) => {
                 image: {
                   ...item.image,
                   ids: [...(item.image.ids || []), result.id],
-                  imageUrls: [...(item.image.imageUrls || []), result.image_url],
-                  selected: (item.image.imageUrls?.length || 0) === 0 ? 0 : item.image.selected
-                }
-              }
+                  imageUrls: [
+                    ...(item.image.imageUrls || []),
+                    result.image_url,
+                  ],
+                  selected:
+                    (item.image.imageUrls?.length || 0) === 0
+                      ? 0
+                      : item.image.selected,
+                },
+              };
             }
-            return item
-          })
-          localStorage.setItem("gen_script", JSON.stringify(script))
+            return item;
+          });
+          localStorage.setItem("gen_script", JSON.stringify(script));
         }
         const newImageUrl = result?.image_url || "";
         setValues((prev) =>
           prev.map((item) =>
             item.scene === scene
               ? {
-                ...item,
-                image: {
-                  ...item.image,
-                  ids: [...(item.image.ids || []), result.id],
-                  imageUrls: [...(item.image.imageUrls || []), newImageUrl],
-                  selected: (item.image.imageUrls?.length || 0) === 0 ? 0 : item.image.selected,
-                },
-              }
+                  ...item,
+                  image: {
+                    ...item.image,
+                    ids: [...(item.image.ids || []), result.id],
+                    imageUrls: [...(item.image.imageUrls || []), newImageUrl],
+                    selected:
+                      (item.image.imageUrls?.length || 0) === 0
+                        ? 0
+                        : item.image.selected,
+                  },
+                }
               : item
           )
         );
-        setLoading(false);
+        if (fileImage) {
+          setLoadingUpload(false);
+        } else {
+          setLoading(false);
+        }
       }
     } catch (error) {
       console.error("Lỗi khi tạo ảnh:", error);
-      setLoading(false);
-    }finally {
-      setLoading(false);
+      if (fileImage) {
+        setLoadingUpload(false);
+      } else {
+        setLoading(false);
+      }
     }
   };
   useImperativeHandle(ref, () => ({
@@ -499,8 +552,8 @@ const SceneCard = forwardRef((props, ref) => {
                 borderRadius: 1,
                 background: "rgba(89, 50, 234, 1)",
                 fontSize: isMobile ? "0.675rem" : "0.875rem",
-                opacity: loading ? .8 : 1,
-                pointerEvents: loading ? "none" : "unset"
+                opacity: loading ? 0.8 : 1,
+                pointerEvents: loading ? "none" : "unset",
               }}
               variant='contained'>
               {loading ? (
@@ -550,35 +603,47 @@ const SceneCard = forwardRef((props, ref) => {
         </Box>
 
         <Box sx={{ margin: "30px 0 !important" }}>
-          <Grid container gap={isMobile ? 2 : 0}>
-            {sceneData.image.imageUrls?.length > 0 ?
+          <Grid container gap={isMobile ? 2 : 2}>
+            {sceneData.image.imageUrls?.length > 0 ? (
               <>
                 {sceneData.image.imageUrls.map((item, index) => {
-                  let selected = sceneData.image.selected == (index)
-                  return <Grid
-                    onClick={() => handleSelectedImage(index)}
-                    item
-                    xs={5}
-                    sx={{
-                      mr: isMobile ? "0px" : "20px",
-                      display: "flex",
-                      gap: "10px"
-                    }}
-                    sm={4}
-                    md={3}>
-                    <>
-
-                      <CardMedia
-                        component='img'
-                        height={isMobile ? "150px" : "220px"}
-                        sx={{ objectFit: "cover", borderRadius: 1, border: selected ? "3px solid green" : "none" }}
-                        image={item}
-                        alt='uploaded'
-                      />
-                    </>
-                  </Grid>
-                })} </> :
-              <Grid item xs={5} sx={{ mr: isMobile ? "0px" : "20px", }} sm={4} md={3}>
+                  let selected = sceneData.image.selected == index;
+                  return (
+                    <Grid
+                      onClick={() => handleSelectedImage(index)}
+                      item
+                      xs={5}
+                      sx={{
+                        mr: isMobile ? "0px" : "20px",
+                        display: "flex",
+                        gap: "10px",
+                      }}
+                      sm={4}
+                      md={3}>
+                      <>
+                        <CardMedia
+                          component='img'
+                          height={isMobile ? "150px" : "220px"}
+                          sx={{
+                            objectFit: "cover",
+                            borderRadius: 1,
+                            border: selected ? "3px solid green" : "none",
+                          }}
+                          image={item}
+                          alt='uploaded'
+                        />
+                      </>
+                    </Grid>
+                  );
+                })}{" "}
+              </>
+            ) : (
+              <Grid
+                item
+                xs={5}
+                sx={{ mr: isMobile ? "0px" : "20px" }}
+                sm={4}
+                md={3}>
                 <Card
                   sx={{
                     bgcolor: "#292a45",
@@ -592,15 +657,14 @@ const SceneCard = forwardRef((props, ref) => {
                   <Button
                     onClick={() => genImage()}
                     variant='contained'
-
                     sx={{
                       background: "rgba(89, 50, 234, 1)",
                       borderRadius: 1,
                       fontSize: isMobile ? "0.675rem" : "0.875rem",
                       minWidth: isMobile ? 120 : 150, // để text và spinner không bị co
                       height: 36,
-                      opacity: loading ? .8 : 1,
-                      pointerEvents: loading ? "none" : "unset"
+                      opacity: loading ? 0.8 : 1,
+                      pointerEvents: loading ? "none" : "unset",
                     }}>
                     {loading ? (
                       <Stack direction='row' alignItems='center' spacing={1}>
@@ -612,7 +676,8 @@ const SceneCard = forwardRef((props, ref) => {
                     )}
                   </Button>
                 </Card>
-              </Grid>}
+              </Grid>
+            )}
             <Grid item xs={5} sm={4} md={3}>
               <Card
                 onClick={handleUploadClick}
@@ -624,10 +689,10 @@ const SceneCard = forwardRef((props, ref) => {
                   justifyContent: "center",
                   padding: 0,
                   cursor: "pointer",
-                  opacity: loading ? 0.7 : 1,
-                  pointerEvents: loading ? "none" : "auto",
+                  opacity: loadingUpload ? 0.7 : 1,
+                  pointerEvents: loadingUpload ? "none" : "auto",
                 }}>
-                {loading ? (
+                {loadingUpload ? (
                   <Stack direction='row' alignItems='center' spacing={1}>
                     <CircularProgress size={20} color='inherit' />
                     <Typography color='white'>Đang tải ảnh...</Typography>
@@ -653,7 +718,6 @@ const SceneCard = forwardRef((props, ref) => {
                   onChange={handleFileChange}
                 />
               </Card>
-
             </Grid>
           </Grid>
         </Box>
@@ -677,38 +741,149 @@ const SceneCard = forwardRef((props, ref) => {
   );
 });
 
-function SceneEditor({ genScript, model, px,setLoading }) {
+function SceneEditor({ genScript, model, px, setLoading, id }) {
   const isMobile = useMediaQuery("(max-width:600px)");
   const navigate = useNavigate();
   const [values, setValues] = useState(genScript?.prompts || []);
-  const sceneRefs:any = useRef([]);
+  const [check, setCheck] = useState(false);
+  const sceneRefs: any = useRef([]);
   // ví dụ: { 0: { field: 'description' } }
   useEffect(() => {
     if (genScript) {
       const scenesData = genScript?.prompts || [];
-      localStorage.setItem("gen_script", JSON.stringify(genScript))
+      localStorage.setItem("gen_script", JSON.stringify(genScript));
       setValues(scenesData);
     }
   }, [genScript]);
-  console.log("values", values);
-  
+
+  useEffect(() => {
+    if (check) {
+      let script: any = localStorage.getItem("gen_script");
+      if (script) {
+        console.log("toan update", values);
+        script = JSON.parse(script);
+        script.prompts = values;
+        localStorage.setItem("gen_script", JSON.stringify(script));
+      }
+      setCheck(false);
+    }
+  }, [check]);
   const handleGenerateAllImages = async () => {
     setLoading(true);
-    console.log("sceneRefs:", sceneRefs.current);
     try {
-      for (let i = 0; i < sceneRefs.current.length; i++) {
-        const ref = sceneRefs.current[i];
-        if (ref?.genImage) {
-          console.log(`Generating image for scene ${i + 1}`);
-          await ref.genImage();
-          console.log("Current values:", values);
-          console.log("Current localStorage gen_script:", JSON.parse(localStorage.getItem("gen_script")));
+      console.log(
+        "Bắt đầu quá trình tạo tất cả ảnh, tổng số phân cảnh:",
+        sceneRefs.current.length
+      );
+      let completedScenes = 0;
+      for (let i = 0; i < values.length; i++) {
+        const ref = values[i];
+        const sceneData = values.find((v) => v.scene === ref.scene);
+        if (!sceneData) {
+          console.warn(`Không tìm thấy dữ liệu cho phân cảnh ${i + 1}`);
+          continue;
+        }
+        console.log(`Bắt đầu tạo ảnh cho phân cảnh ${i + 1}`);
+        try {
+          // Chuẩn bị formData cho mỗi phân cảnh
+          const [width, height] = px.split(" ")[0].split("x").map(Number);
+          let formData = new FormData();
+          formData.set("width", width);
+          formData.set("height", height);
+          formData.set("prompt", sceneData.image.prompt);
+          formData.set("n_prompt", sceneData.image.n_prompt);
+          formData.set("model", model);
+
+          // Gọi API để tạo ảnh
+          const result = await genScriptImage(formData);
+
+          if (result && result.code === 2) {
+            // Bọc polling trong Promise để chờ kết quả
+            const pollResult = await new Promise((resolve, reject) => {
+              const poll = setInterval(async () => {
+                try {
+                  const status = await genScriptImageStatus(result.id);
+                  if (status?.code === 0 && status?.image_url) {
+                    setValues((prev) =>
+                      prev.map((item) =>
+                        item.scene === sceneData.scene
+                          ? {
+                              ...item,
+                              image: {
+                                ...item.image,
+                                ids: [...(item.image.ids || []), result.id],
+                                imageUrls: [
+                                  ...(item.image.imageUrls || []),
+                                  status.image_url,
+                                ],
+                                selected:
+                                  (item.image.imageUrls?.length || 0) === 0
+                                    ? 0
+                                    : item.image.selected,
+                              },
+                            }
+                          : item
+                      )
+                    );
+                    clearInterval(poll);
+                    resolve(status);
+                  }
+                } catch (error) {
+                  clearInterval(poll);
+                  reject(error);
+                }
+              }, 2000);
+              // Thêm timeout để tránh polling vô hạn
+              setTimeout(() => {
+                clearInterval(poll);
+                reject(new Error("Hết thời gian chờ trạng thái ảnh"));
+              }, 60000); // Timeout sau 60 giây
+            });
+          } else if (result.code === 0) {
+            // Fallback không cần chờ status
+            const newImageUrl = result?.image_url || "";
+            setValues((prev) =>
+              prev.map((item) =>
+                item.scene === sceneData.scene
+                  ? {
+                      ...item,
+                      image: {
+                        ...item.image,
+                        ids: [...(item.image.ids || []), result.id],
+                        imageUrls: [
+                          ...(item.image.imageUrls || []),
+                          newImageUrl,
+                        ],
+                        selected:
+                          (item.image.imageUrls?.length || 0) === 0
+                            ? 0
+                            : item.image.selected,
+                      },
+                    }
+                  : item
+              )
+            );
+          }
+          console.log(`Hoàn tất tạo ảnh cho phân cảnh ${i + 1}`);
+          console.log("Giá trị hiện tại của values:", values);
+          completedScenes++;
+        } catch (error) {
+          console.error(`Lỗi khi tạo ảnh cho phân cảnh ${i + 1}:`, error);
+          // Tiếp tục vòng lặp dù có lỗi
         }
       }
+      // Cập nhật localStorage một lần sau khi tất cả phân cảnh được xử lý
+      // let update = JSON.parse(localStorage.getItem("gen_script") || "{}");
+      // update.prompts = values;
+      // localStorage.setItem("gen_script", JSON.stringify(update));
+      // console.log("Đã cập nhật localStorage sau khi tạo tất cả ảnh:", update);
+      setTimeout(() => {
+        setCheck(true);
+        setLoading(false);
+      }, 1500);
     } catch (error) {
-      console.error("Lỗi khi tạo toàn bộ ảnh:", error);
-    } finally {
       setLoading(false);
+      console.error("Lỗi chung khi tạo toàn bộ ảnh:", error);
     }
   };
   return (
@@ -732,17 +907,19 @@ function SceneEditor({ genScript, model, px,setLoading }) {
         </Button>
       </Box>
       <Box sx={{ minHeight: "100vh", pb: 3 }}>
-        {values && values.length && values.map((s, idx) => (
-          <SceneCard
-            key={idx}
-            scene={s.scene}
-            values={values}
-            setValues={setValues}
-            model={model}
-            px={px}
-            ref={(el) => (sceneRefs.current[idx] = el)}
-          />
-        ))}
+        {values &&
+          values.length &&
+          values.map((s, idx) => (
+            <SceneCard
+              key={idx}
+              scene={s.scene}
+              values={values}
+              setValues={setValues}
+              model={model}
+              px={px}
+              ref={(el) => (sceneRefs.current[idx] = el)}
+            />
+          ))}
 
         <Box textAlign='center'>
           <Box
@@ -783,7 +960,7 @@ function SceneEditor({ genScript, model, px,setLoading }) {
             }}>
             <Button
               variant='contained'
-              onClick={() => navigate("/create-video")}
+              onClick={() => navigate(`/create-video?id=${id}`)}
               sx={{
                 background: "#6E00FF",
                 textTransform: "none",
@@ -819,7 +996,6 @@ function SceneEditor({ genScript, model, px,setLoading }) {
           </Box>
         </Box>
       </Box>
-
     </>
   );
 }

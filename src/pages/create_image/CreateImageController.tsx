@@ -48,7 +48,7 @@ const CreateImageController = (props: Props) => {
   return (
     <>
       {loading && <Loading />}
-      <CreateImageView genScript={genScript} setLoading={setLoading} />;
+      <CreateImageView genScript={genScript} setLoading={setLoading} id={id} />;
     </>
   );
 };
