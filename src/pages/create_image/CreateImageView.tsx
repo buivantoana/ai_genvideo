@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import {
   Box,
   Typography,
@@ -11,12 +11,13 @@ import {
   useMediaQuery,
   useTheme,
   Switch,
+  CircularProgress,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import StepComponent from "../../components/StepComponent";
 import EditIcon from "@mui/icons-material/Edit";
 import group from "../../images/Group 13.png";
-const modelOptions1 = ["Stabledifution", "Flux"];
+const modelOptions1 = [{ value: "SDXL", key: "sdxl" }, { value: "Flux", key: "flux" }];
 const modelOptions2 = ["ChatGPT", "Runpod"];
 const modelOptions4 = ["Local"];
 const modelOptions3 = [
@@ -31,14 +32,16 @@ const dynamicSteps = [
   { label: "Tạo Video", status: "pending" },
   { label: "Voice", status: "pending" },
 ];
-const CreateImageView = ({ genScript }) => {
+const CreateImageView = ({ genScript ,setLoading }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [selectedTab, setSelectedTab]: any = useState(genScript && genScript.video_type == "video2video" ? 1 : 0);
+  const [model, setModel] = useState("flux");
+  const [px, setPx] = useState("1920x1080 (16:9)");
   useEffect(() => {
     if (genScript) {
       setSelectedTab(genScript?.video_type == "video2video" ? 1 : 0)
-  
+
     }
   }, [genScript]);
   return (
@@ -60,6 +63,8 @@ const CreateImageView = ({ genScript }) => {
         <FormControl variant='outlined' size='small'>
           <Select
             defaultValue='Stabledifution'
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
             sx={{
               background: "transparent",
               color: "#fff",
@@ -104,8 +109,8 @@ const CreateImageView = ({ genScript }) => {
               },
             }}>
             {modelOptions1.map((option) => (
-              <MenuItem key={option} value={option}>
-                {option}
+              <MenuItem key={option.key} value={option.key}>
+                {option.value}
               </MenuItem>
             ))}
           </Select>
@@ -219,6 +224,8 @@ const CreateImageView = ({ genScript }) => {
         <FormControl variant='outlined' size='small'>
           <Select
             defaultValue='1920x1080 (16:9)'
+            value={px}
+            onChange={(e) => setPx(e.target.value)}
             sx={{
               background: "transparent",
               color: "#fff",
@@ -271,24 +278,8 @@ const CreateImageView = ({ genScript }) => {
         </FormControl>
       </Box>
 
-      <Box display={"flex"} alignItems={"center"} gap={"20px"}>
-        <Typography
-          variant='h5'
-          fontSize={isMobile ? "1rem" : "1.5rem"}
-          fontWeight={"bold"}>
-          Tạo phân cảnh
-        </Typography>
-        <Button
-          variant='contained'
-          sx={{
-            background: " linear-gradient(135deg, #FDD819 0%, #E80505 100%)",
-            borderRadius: 1,
-            fontSize: isMobile ? "0.675rem" : "0.875rem",
-          }}>
-          Tạo toàn bộ ảnh từ phân cảnh
-        </Button>
-      </Box>
-      <SceneEditor genScript={genScript} />
+
+      <SceneEditor genScript={genScript} model={model} px={px} setLoading={setLoading} />
     </Box>
   );
 };
@@ -301,29 +292,190 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { RiRefreshLine } from "react-icons/ri";
 import ResponsiveBox from "../../components/ResponsiveBox";
 import { useNavigate } from "react-router-dom";
+import { genScriptImage, genScriptImageStatus } from "../../service/project";
 
-const SceneCard = ({ scene, values, setValues }) => {
+const SceneCard = forwardRef((props, ref) => {
+  const { scene, values, setValues, model, px }:any = props;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [isEditing, setIsEditing] = useState(false);
-
+  const [loading, setLoading] = useState(false);
+  const [intervalId, setIntervalId] = useState(null);
   const sceneData = values.find((v) => v.scene === scene);
+  const fileInputRef = useRef(null);
 
+  const handleUploadClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      genImage(file);
+      event.target.value = ""; // reset input
+    }
+  };
   const handleChange = (field, value) => {
     setValues((prev) =>
       prev.map((item) =>
         item.scene === scene
           ? {
-              ...item,
-              image: {
-                ...item.image,
-                [field]: value,
-              },
-            }
+            ...item,
+            image: {
+              ...item.image,
+              [field]: value,
+            },
+          }
           : item
       )
     );
   };
+
+  const handleSelectedImage = (index) => {
+    setValues((prev) =>
+      prev.map((item) =>
+        item.scene === scene
+          ? {
+            ...item,
+            image: {
+              ...item.image,
+              selected: index,
+            },
+          }
+          : item
+      )
+    );
+
+    let script: any = localStorage.getItem("gen_script");
+    if (script) {
+      script = JSON.parse(script);
+      script.prompts = script.prompts.map((item) =>
+        item.scene === scene
+          ? {
+            ...item,
+            image: {
+              ...item.image,
+              selected: index,
+            },
+          }
+          : item
+      );
+      localStorage.setItem("gen_script", JSON.stringify(script));
+    }
+  };
+
+  const genImage = async (fileImage = null) => {
+    setLoading(true);
+    let formData = new FormData();
+    formData.set("width", "1280");
+    formData.set("height", "1920");
+    formData.set("prompt", sceneData.image.prompt);
+    formData.set("n_prompt", sceneData.image.n_prompt);
+    formData.set("model", model);
+    if (fileImage) {
+      formData.set("input_image_file", fileImage);
+    }
+    try {
+      let result = await genScriptImage(formData);
+
+      if (result && result.code === 2) {
+        const poll = setInterval(async () => {
+          const status = await genScriptImageStatus(result.id);
+          if (status?.code === 0 && status?.image_url) {
+
+            let script: any = localStorage.getItem("gen_script");
+            if (script) {
+              script = JSON.parse(script);
+              script.prompts = values.map((item) => {
+                if (item.scene == scene) {
+                  return {
+                    ...item,
+                    image: {
+                      ...item.image,
+                      ids: [...(item.image.ids || []), result.id],
+                      imageUrls: [...(item.image.imageUrls || []), status.image_url],
+                      selected: (item.image.imageUrls?.length || 0) === 0 ? 0 : item.image.selected
+                    }
+                  }
+                }
+                return item
+              })
+              localStorage.setItem("gen_script", JSON.stringify(script))
+            }
+            setValues((prev) =>
+              prev.map((item) =>
+                item.scene === scene
+                  ? {
+                    ...item,
+                    image: {
+                      ...item.image,
+                      ids: [...(item.image.ids || []), result.id],
+                      imageUrls: [...(item.image.imageUrls || []), status.image_url],
+                      selected: (item.image.imageUrls?.length || 0) === 0 ? 0 : item.image.selected,
+                    },
+                  }
+                  : item
+              )
+            );
+            setLoading(false);
+            clearInterval(poll);
+          }
+        }, 2000);
+        setIntervalId(poll);
+      } else if(result.code == 0) {
+        // fallback không cần chờ status
+        let script: any = localStorage.getItem("gen_script");
+        if (script) {
+          script = JSON.parse(script);
+          script.prompts = values.map((item) => {
+            if (item.scene == scene) {
+              return {
+                ...item,
+                image: {
+                  ...item.image,
+                  ids: [...(item.image.ids || []), result.id],
+                  imageUrls: [...(item.image.imageUrls || []), result.image_url],
+                  selected: (item.image.imageUrls?.length || 0) === 0 ? 0 : item.image.selected
+                }
+              }
+            }
+            return item
+          })
+          localStorage.setItem("gen_script", JSON.stringify(script))
+        }
+        const newImageUrl = result?.image_url || "";
+        setValues((prev) =>
+          prev.map((item) =>
+            item.scene === scene
+              ? {
+                ...item,
+                image: {
+                  ...item.image,
+                  ids: [...(item.image.ids || []), result.id],
+                  imageUrls: [...(item.image.imageUrls || []), newImageUrl],
+                  selected: (item.image.imageUrls?.length || 0) === 0 ? 0 : item.image.selected,
+                },
+              }
+              : item
+          )
+        );
+        setLoading(false);
+      }
+    } catch (error) {
+      console.error("Lỗi khi tạo ảnh:", error);
+      setLoading(false);
+    }finally {
+      setLoading(false);
+    }
+  };
+  useImperativeHandle(ref, () => ({
+    genImage: () => genImage(),
+  }));
+  useEffect(() => {
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [intervalId]);
   return (
     <Box
       sx={{
@@ -338,17 +490,27 @@ const SceneCard = ({ scene, values, setValues }) => {
             color='white'>
             Phân cảnh {sceneData.scene}:
           </Typography>
-          {sceneData.image.id && (
+          {sceneData.image.ids && (
             <Button
               startIcon={<RiRefreshLine />}
+              onClick={() => genImage()}
               size='small'
               sx={{
                 borderRadius: 1,
                 background: "rgba(89, 50, 234, 1)",
                 fontSize: isMobile ? "0.675rem" : "0.875rem",
+                opacity: loading ? .8 : 1,
+                pointerEvents: loading ? "none" : "unset"
               }}
               variant='contained'>
-              Tạo lại ảnh
+              {loading ? (
+                <Stack direction='row' alignItems='center' spacing={1}>
+                  <CircularProgress size={16} color='inherit' />
+                  <span>Đang tạo ảnh...</span>
+                </Stack>
+              ) : (
+                "Tạo lại ảnh"
+              )}
             </Button>
           )}
         </Stack>
@@ -389,23 +551,34 @@ const SceneCard = ({ scene, values, setValues }) => {
 
         <Box sx={{ margin: "30px 0 !important" }}>
           <Grid container gap={isMobile ? 2 : 0}>
-            <Grid
-              item
-              xs={5}
-              sx={{
-                mr: isMobile ? "0px" : "20px",
-              }}
-              sm={4}
-              md={3}>
-              {sceneData.image.imageUrl ? (
-                <CardMedia
-                  component='img'
-                  height={isMobile ? "150px" : "220px"}
-                  sx={{ objectFit: "cover", borderRadius: 1 }}
-                  image={sceneData.image.imageUrl}
-                  alt='uploaded'
-                />
-              ) : (
+            {sceneData.image.imageUrls?.length > 0 ?
+              <>
+                {sceneData.image.imageUrls.map((item, index) => {
+                  let selected = sceneData.image.selected == (index)
+                  return <Grid
+                    onClick={() => handleSelectedImage(index)}
+                    item
+                    xs={5}
+                    sx={{
+                      mr: isMobile ? "0px" : "20px",
+                      display: "flex",
+                      gap: "10px"
+                    }}
+                    sm={4}
+                    md={3}>
+                    <>
+
+                      <CardMedia
+                        component='img'
+                        height={isMobile ? "150px" : "220px"}
+                        sx={{ objectFit: "cover", borderRadius: 1, border: selected ? "3px solid green" : "none" }}
+                        image={item}
+                        alt='uploaded'
+                      />
+                    </>
+                  </Grid>
+                })} </> :
+              <Grid item xs={5} sx={{ mr: isMobile ? "0px" : "20px", }} sm={4} md={3}>
                 <Card
                   sx={{
                     bgcolor: "#292a45",
@@ -417,41 +590,70 @@ const SceneCard = ({ scene, values, setValues }) => {
                     padding: 0,
                   }}>
                   <Button
+                    onClick={() => genImage()}
                     variant='contained'
+
                     sx={{
                       background: "rgba(89, 50, 234, 1)",
                       borderRadius: 1,
                       fontSize: isMobile ? "0.675rem" : "0.875rem",
+                      minWidth: isMobile ? 120 : 150, // để text và spinner không bị co
+                      height: 36,
+                      opacity: loading ? .8 : 1,
+                      pointerEvents: loading ? "none" : "unset"
                     }}>
-                    Xác nhận tạo ảnh
+                    {loading ? (
+                      <Stack direction='row' alignItems='center' spacing={1}>
+                        <CircularProgress size={16} color='inherit' />
+                        <span>Đang tạo ảnh...</span>
+                      </Stack>
+                    ) : (
+                      "Xác nhận tạo ảnh"
+                    )}
                   </Button>
                 </Card>
-              )}
-            </Grid>
+              </Grid>}
             <Grid item xs={5} sm={4} md={3}>
               <Card
+                onClick={handleUploadClick}
                 sx={{
                   bgcolor: "#292a45",
                   height: isMobile ? 150 : 220,
-
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   padding: 0,
+                  cursor: "pointer",
+                  opacity: loading ? 0.7 : 1,
+                  pointerEvents: loading ? "none" : "auto",
                 }}>
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    gap: 0.5,
-                  }}>
-                  <UploadFileIcon sx={{ color: "white" }} fontSize='large' />
-
-                  <Typography color='white'>Tải ảnh của bạn lên</Typography>
-                </Box>
+                {loading ? (
+                  <Stack direction='row' alignItems='center' spacing={1}>
+                    <CircularProgress size={20} color='inherit' />
+                    <Typography color='white'>Đang tải ảnh...</Typography>
+                  </Stack>
+                ) : (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      gap: 0.5,
+                    }}>
+                    <UploadFileIcon sx={{ color: "white" }} fontSize='large' />
+                    <Typography color='white'>Tải ảnh của bạn lên</Typography>
+                  </Box>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type='file'
+                  accept='image/*'
+                  hidden
+                  onChange={handleFileChange}
+                />
               </Card>
+
             </Grid>
           </Grid>
         </Box>
@@ -473,105 +675,151 @@ const SceneCard = ({ scene, values, setValues }) => {
       </Stack>
     </Box>
   );
-};
+});
 
-function SceneEditor({ genScript }) {
+function SceneEditor({ genScript, model, px,setLoading }) {
   const isMobile = useMediaQuery("(max-width:600px)");
   const navigate = useNavigate();
   const [values, setValues] = useState(genScript?.prompts || []);
+  const sceneRefs:any = useRef([]);
   // ví dụ: { 0: { field: 'description' } }
   useEffect(() => {
     if (genScript) {
       const scenesData = genScript?.prompts || [];
+      localStorage.setItem("gen_script", JSON.stringify(genScript))
       setValues(scenesData);
     }
   }, [genScript]);
   console.log("values", values);
+  
+  const handleGenerateAllImages = async () => {
+    setLoading(true);
+    console.log("sceneRefs:", sceneRefs.current);
+    try {
+      for (let i = 0; i < sceneRefs.current.length; i++) {
+        const ref = sceneRefs.current[i];
+        if (ref?.genImage) {
+          console.log(`Generating image for scene ${i + 1}`);
+          await ref.genImage();
+          console.log("Current values:", values);
+          console.log("Current localStorage gen_script:", JSON.parse(localStorage.getItem("gen_script")));
+        }
+      }
+    } catch (error) {
+      console.error("Lỗi khi tạo toàn bộ ảnh:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
-    <Box sx={{ minHeight: "100vh", pb: 3 }}>
-      {values&&values.length && values.map((s, idx) => (
-        <SceneCard
-          key={idx}
-          scene={s.scene}
-          values={values}
-          setValues={setValues}
-        />
-      ))}
-
-      <Box textAlign='center'>
-        <Box
+    <>
+      <Box display={"flex"} alignItems={"center"} gap={"20px"}>
+        <Typography
+          variant='h5'
+          fontSize={isMobile ? "1rem" : "1.5rem"}
+          fontWeight={"bold"}>
+          Tạo phân cảnh
+        </Typography>
+        <Button
+          variant='contained'
+          onClick={handleGenerateAllImages}
           sx={{
-            display: "flex",
-            flexDirection: isMobile ? "column" : "row",
-            gap: 2,
-            mt: 4,
-            justifyContent: "center",
+            background: " linear-gradient(135deg, #FDD819 0%, #E80505 100%)",
+            borderRadius: 1,
+            fontSize: isMobile ? "0.675rem" : "0.875rem",
           }}>
-          <Button
-            variant='contained'
-            sx={{
-              background: "rgba(89, 50, 234, 0.3)",
-              textTransform: "none",
-              borderRadius: 1,
-              width: isMobile ? "100%" : "38%",
-              fontWeight: 600,
-              border: "2px dashed rgba(89, 50, 234, 1)",
-              "&:hover": {
-                background: "#5900cc",
-              },
-              height: isMobile ? 40 : 50,
-              fontSize: isMobile ? "15px" : "18px",
-            }}>
-            + Thêm màn mới
-          </Button>
-        </Box>
+          Tạo toàn bộ ảnh từ phân cảnh
+        </Button>
+      </Box>
+      <Box sx={{ minHeight: "100vh", pb: 3 }}>
+        {values && values.length && values.map((s, idx) => (
+          <SceneCard
+            key={idx}
+            scene={s.scene}
+            values={values}
+            setValues={setValues}
+            model={model}
+            px={px}
+            ref={(el) => (sceneRefs.current[idx] = el)}
+          />
+        ))}
 
-        <Box
-          paddingBottom={4}
-          sx={{
-            display: "flex",
-            flexDirection: isMobile ? "column" : "row",
-            gap: 2,
-            mt: 2,
-            justifyContent: "center",
-          }}>
-          <Button
-            variant='contained'
-            onClick={() => navigate("/create-video")}
+        <Box textAlign='center'>
+          <Box
             sx={{
-              background: "#6E00FF",
-              textTransform: "none",
-              borderRadius: 1,
-              width: isMobile ? "100%" : "38%",
-              fontWeight: 600,
-              "&:hover": {
-                background: "#5900cc",
-              },
-              height: isMobile ? 40 : 50,
-              fontSize: isMobile ? "15px" : "18px",
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              gap: 2,
+              mt: 4,
+              justifyContent: "center",
             }}>
-            Xác nhận ảnh
-          </Button>
+            <Button
+              variant='contained'
+              sx={{
+                background: "rgba(89, 50, 234, 0.3)",
+                textTransform: "none",
+                borderRadius: 1,
+                width: isMobile ? "100%" : "38%",
+                fontWeight: 600,
+                border: "2px dashed rgba(89, 50, 234, 1)",
+                "&:hover": {
+                  background: "#5900cc",
+                },
+                height: isMobile ? 40 : 50,
+                fontSize: isMobile ? "15px" : "18px",
+              }}>
+              + Thêm màn mới
+            </Button>
+          </Box>
 
-          <Button
-            variant='contained'
+          <Box
+            paddingBottom={4}
             sx={{
-              background: "white",
-              textTransform: "none",
-              borderRadius: 1,
-              width: isMobile ? "100%" : "38%",
-              fontWeight: 600,
-              "&:hover": {
+              display: "flex",
+              flexDirection: isMobile ? "column" : "row",
+              gap: 2,
+              mt: 2,
+              justifyContent: "center",
+            }}>
+            <Button
+              variant='contained'
+              onClick={() => navigate("/create-video")}
+              sx={{
+                background: "#6E00FF",
+                textTransform: "none",
+                borderRadius: 1,
+                width: isMobile ? "100%" : "38%",
+                fontWeight: 600,
+                "&:hover": {
+                  background: "#5900cc",
+                },
+                height: isMobile ? 40 : 50,
+                fontSize: isMobile ? "15px" : "18px",
+              }}>
+              Xác nhận ảnh
+            </Button>
+
+            <Button
+              variant='contained'
+              sx={{
                 background: "white",
-              },
-              height: isMobile ? 40 : 50,
-              fontSize: isMobile ? "15px" : "18px",
-              color: "black",
-            }}>
-            Tải hàng loạt (2)
-          </Button>
+                textTransform: "none",
+                borderRadius: 1,
+                width: isMobile ? "100%" : "38%",
+                fontWeight: 600,
+                "&:hover": {
+                  background: "white",
+                },
+                height: isMobile ? 40 : 50,
+                fontSize: isMobile ? "15px" : "18px",
+                color: "black",
+              }}>
+              Tải hàng loạt (2)
+            </Button>
+          </Box>
         </Box>
       </Box>
-    </Box>
+
+    </>
   );
 }
