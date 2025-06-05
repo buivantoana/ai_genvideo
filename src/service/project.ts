@@ -26,7 +26,7 @@ export async function genScriptProject(id: any) {
     }
   }
 }
-export async function genScriptPromt(
+export async function genScriptImage (
   project_id: any,
   scene_id: any,
   promt_id: any
@@ -59,7 +59,7 @@ export async function genScriptPromt(
   }
 }
 
-export async function genScriptImage(id: any) {
+export async function genScriptPromt(id: any) {
   try {
     let token = localStorage.getItem("token");
     const response = await api.post(`/project/gen_prompt/${id}`, {

@@ -34,7 +34,13 @@ const dynamicSteps = [
 const CreateImageView = ({ genScript }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
+  const [selectedTab, setSelectedTab]: any = useState(genScript && genScript.video_type == "video2video" ? 1 : 0);
+  useEffect(() => {
+    if (genScript) {
+      setSelectedTab(genScript?.video_type == "video2video" ? 1 : 0)
+  
+    }
+  }, [genScript]);
   return (
     <Box
       className='hidden-add-voice'
@@ -48,7 +54,8 @@ const CreateImageView = ({ genScript }) => {
       }}>
       <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
-      <ResponsiveBox />
+      <ResponsiveBox selectedTab={selectedTab}
+        onTabChange={(index) => setSelectedTab(index)} />
       <Box display={"flex"} flexWrap={"wrap"} gap={isMobile ? 1 : 3}>
         <FormControl variant='outlined' size='small'>
           <Select
@@ -482,7 +489,7 @@ function SceneEditor({ genScript }) {
   console.log("values", values);
   return (
     <Box sx={{ minHeight: "100vh", pb: 3 }}>
-      {values.map((s, idx) => (
+      {values&&values.length && values.map((s, idx) => (
         <SceneCard
           key={idx}
           scene={s.scene}

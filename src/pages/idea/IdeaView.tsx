@@ -51,22 +51,60 @@ const IdeaView = ({ setLoading }: any) => {
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const id = query.get("id");
-  const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedTab, setSelectedTab]: any = useState(0);
+  const [initialData, setInitialData] = useState<any>(null); // Lưu dữ liệu ban đầu
+  const [hasChanges, setHasChanges] = useState(false);
   useEffect(() => {
-    if (id) {
-      let data_update: any = localStorage.getItem("update_project");
-      if (data_update) {
-        data_update = JSON.parse(data_update);
+    let data_update: any = localStorage.getItem("gen_script");
+    if (data_update) {
+      data_update = JSON.parse(data_update);
+      if (id == data_update.id) {
         setModel(data_update.llm_model);
         setProjectName(data_update.name);
         setStyle(data_update.style_type);
         setPrompt(data_update.prompt);
         setSceneCount(data_update.scene_count);
+        setSelectedTab(data_update.video_type == "video2video" ? 1 : 0)
+        setInitialData({
+          llm_model: data_update.llm_model,
+          name: data_update.name.trim(),
+          style_type: data_update.style_type,
+          prompt: data_update.prompt.trim(),
+          scene_count: data_update.scene_count,
+          video_type: data_update.video_type == "video2video" ? "video2video" : "image2image",
+        });
       }
     }
   }, [id]);
   const navigate = useNavigate();
+  const checkForChanges = (currentData: any) => {
+    if (!initialData) return true; // Nếu không có dữ liệu ban đầu, coi như có thay đổi
+    console.log("initialData",initialData)
+    const trimmedCurrent = {
+      llm_model: currentData.model,
+      name: currentData.projectName.trim(),
+      style_type: currentData.style,
+      prompt: currentData.prompt.trim(),
+      scene_count: currentData.sceneCount,
+      video_type: currentData.selectedTab == 0 ? "image2image" : "video2video",
+    };
+    console.log("trimmedCurrent",trimmedCurrent)
+    return JSON.stringify(trimmedCurrent) !== JSON.stringify(initialData);
+  };
 
+  // Cập nhật cờ hasChanges mỗi khi dữ liệu thay đổi
+  useEffect(() => {
+    const currentData = {
+      model,
+      projectName,
+      prompt,
+      sceneCount,
+      style,
+      selectedTab,
+    };
+    setHasChanges(checkForChanges(currentData));
+  }, [model, projectName, prompt, sceneCount, style, selectedTab]);
+  console.log("!hasChanges",!hasChanges)
   const handleCreate = async () => {
     // Trim giá trị để tránh chuỗi rỗng có khoảng trắng
     const values = {
@@ -75,6 +113,7 @@ const IdeaView = ({ setLoading }: any) => {
       prompt: prompt.trim(),
       sceneCount: sceneCount,
       style: style,
+      selectedTab,
     };
 
     // Validate required
@@ -98,9 +137,16 @@ const IdeaView = ({ setLoading }: any) => {
       return;
     }
     setLoading(true);
+    console.log("!hasChanges",!hasChanges)
     try {
-      let result = null;
+      let result:any = null;
       if (id) {
+        if (!hasChanges) {
+          toast.info("Không có thay đổi để cập nhật");
+          setLoading(false);
+          navigate(`/script?id=${id}`);
+          return;
+        }
         result = await updateProject(id, {
           name: projectName.trim(),
           video_type: selectedTab == 0 ? "image2image" : "video2video",
@@ -121,10 +167,15 @@ const IdeaView = ({ setLoading }: any) => {
       }
 
       if (result && result.name) {
-        toast.success(result.message);
+        
         if (id) {
-          navigate("/");
+          toast.success("Update success");
+          localStorage.setItem("gen_script", JSON.stringify(result));
+          setTimeout(() => {
+            navigate(`/script?id=${id}`);
+          }, 500);
         } else {
+          toast.success("Create success");
           localStorage.setItem("gen_script", JSON.stringify(result));
           setTimeout(() => {
             navigate(`/script?id=${result.id}`);
@@ -480,7 +531,7 @@ const IdeaView = ({ setLoading }: any) => {
             height: 50,
             fontSize: isMobile ? "15px" : "18px",
           }}>
-          Xác nhận tạo kịch bản từ Prompt
+         {id ?"Cập nhật kịch bản":"Xác nhận tạo kịch bản từ Prompt" }
         </Button>
 
         <Button

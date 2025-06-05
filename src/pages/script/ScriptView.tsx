@@ -24,10 +24,10 @@ const dynamicSteps = [
   { label: "Tạo Video", status: "pending" },
   { label: "Voice", status: "pending" },
 ];
-const ScriptView = ({ script, setLoading, id }) => {
+const ScriptView = ({ script, setLoading, id }: any) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
+  const [selectedTab, setSelectedTab]: any = useState(script && script.video_type == "video2video" ? 1 : 0);
   return (
     <Box
       className='hidden-add-voice'
@@ -42,8 +42,9 @@ const ScriptView = ({ script, setLoading, id }) => {
       }}>
       <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
-      <ResponsiveBox />
-      <PromptEditorUI id={id} script={script} setLoading={setLoading} />
+      <ResponsiveBox selectedTab={selectedTab}
+        onTabChange={(index) => setSelectedTab(index)} />
+      <PromptEditorUI id={id} setSelectedTab={setSelectedTab} script={script} setLoading={setLoading} />
     </Box>
   );
 };
@@ -57,7 +58,7 @@ import { useNavigate } from "react-router-dom";
 import { createProject, updateProject } from "../../service/project";
 import { toast } from "react-toastify";
 
-const PromptEditorUI = ({ script, setLoading, id }) => {
+const PromptEditorUI = ({ script, setLoading, id, setSelectedTab }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
@@ -70,6 +71,7 @@ const PromptEditorUI = ({ script, setLoading, id }) => {
     if (script) {
       const scenesData = script?.script?.scenes || [];
       setScenes(scenesData);
+      setSelectedTab(script?.video_type == "video2video" ? 1 : 0)
       setInitialScenes(JSON.parse(JSON.stringify(scenesData))); // Deep clone
     }
   }, [script]);
@@ -93,15 +95,26 @@ const PromptEditorUI = ({ script, setLoading, id }) => {
     JSON.stringify(normalizeScenes(a)) === JSON.stringify(normalizeScenes(b));
   const isEditing = (index, field) =>
     editingField.index === index && editingField.field === field;
-
+  function removeNullKeys(data) {
+    return data.map(scene => {
+      const cleanedScene = {};
+      for (const key in scene) {
+        if (scene[key] !== null) {
+          cleanedScene[key] = scene[key];
+        }
+      }
+      return cleanedScene;
+    });
+  }
   const handleCreate = async () => {
     const hasChanged = !isEqualScenes(scenes, initialScenes);
     console.log("Người dùng đã chỉnh sửa?", hasChanged);
     if (hasChanged) {
       setLoading(true);
+      const cleanedData = removeNullKeys(script?.script?.scenes);
       try {
         let result = await updateProject(id, {
-          script: script.script,
+          script: {...script.script,scenes:cleanedData},
         });
 
         if (result && result.name) {

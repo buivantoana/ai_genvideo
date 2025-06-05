@@ -1,7 +1,13 @@
 import React from "react";
 import { Box, Typography } from "@mui/material";
+import { useLocation, useNavigate } from "react-router-dom";
 
+const linkStep = ['idea','script','create-image',"create-video",'narrator']
 const StepComponent = ({ steps = [] }) => {
+  const location = useLocation();
+  const query = new URLSearchParams(location.search);
+  const id = query.get("id");
+  const navigate = useNavigate()
   return (
     <Box
       display='flex'
@@ -10,10 +16,12 @@ const StepComponent = ({ steps = [] }) => {
       mb={2}
       mt={{ xs: 2, md: 0 }}
       bgcolor='#0D0C2B'
+      sx={{cursor:"pointer"}}
       width={"100%"}>
       {steps.map((step, index) => (
         <Box key={index} display='flex' alignItems='top'>
           <Box
+            onClick={step.status === "completed"? ()=>navigate(`/${linkStep[index]}?id=${id}`) :undefined}
             sx={{
               display: "flex",
               flexDirection: "column",
