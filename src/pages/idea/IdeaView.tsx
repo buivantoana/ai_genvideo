@@ -28,8 +28,8 @@ const modelOptions = [
   { value: "DeepSeek", key: "deepseekr1" },
 ];
 const styleOptions = [
-  { value: "Thuyết minh", key: "explanation" },
-  { value: "Tường thuật", key: "narration" },
+  { value: "Hội thoại", key: "dialogue" },
+  { value: "Kể chuyện", key: "narration" },
 ];
 
 const dynamicSteps = [
@@ -64,14 +64,17 @@ const IdeaView = ({ setLoading }: any) => {
         setStyle(data_update.style_type);
         setPrompt(data_update.prompt);
         setSceneCount(data_update.scene_count);
-        setSelectedTab(data_update.video_type == "video2video" ? 1 : 0)
+        setSelectedTab(data_update.video_type == "video2video" ? 1 : 0);
         setInitialData({
           llm_model: data_update.llm_model,
           name: data_update.name.trim(),
           style_type: data_update.style_type,
           prompt: data_update.prompt.trim(),
           scene_count: data_update.scene_count,
-          video_type: data_update.video_type == "video2video" ? "video2video" : "image2image",
+          video_type:
+            data_update.video_type == "video2video"
+              ? "video2video"
+              : "image2image",
         });
       }
     }
@@ -79,7 +82,7 @@ const IdeaView = ({ setLoading }: any) => {
   const navigate = useNavigate();
   const checkForChanges = (currentData: any) => {
     if (!initialData) return true; // Nếu không có dữ liệu ban đầu, coi như có thay đổi
-    console.log("initialData",initialData)
+    console.log("initialData", initialData);
     const trimmedCurrent = {
       llm_model: currentData.model,
       name: currentData.projectName.trim(),
@@ -88,7 +91,7 @@ const IdeaView = ({ setLoading }: any) => {
       scene_count: currentData.sceneCount,
       video_type: currentData.selectedTab == 0 ? "image2image" : "video2video",
     };
-    console.log("trimmedCurrent",trimmedCurrent)
+    console.log("trimmedCurrent", trimmedCurrent);
     return JSON.stringify(trimmedCurrent) !== JSON.stringify(initialData);
   };
 
@@ -104,7 +107,7 @@ const IdeaView = ({ setLoading }: any) => {
     };
     setHasChanges(checkForChanges(currentData));
   }, [model, projectName, prompt, sceneCount, style, selectedTab]);
-  console.log("!hasChanges",!hasChanges)
+  console.log("!hasChanges", !hasChanges);
   const handleCreate = async () => {
     // Trim giá trị để tránh chuỗi rỗng có khoảng trắng
     const values = {
@@ -137,9 +140,9 @@ const IdeaView = ({ setLoading }: any) => {
       return;
     }
     setLoading(true);
-    console.log("!hasChanges",!hasChanges)
+    console.log("!hasChanges", !hasChanges);
     try {
-      let result:any = null;
+      let result: any = null;
       if (id) {
         if (!hasChanges) {
           toast.info("Không có thay đổi để cập nhật");
@@ -167,7 +170,6 @@ const IdeaView = ({ setLoading }: any) => {
       }
 
       if (result && result.name) {
-        
         if (id) {
           toast.success("Update success");
           localStorage.setItem("gen_script", JSON.stringify(result));
@@ -531,7 +533,7 @@ const IdeaView = ({ setLoading }: any) => {
             height: 50,
             fontSize: isMobile ? "15px" : "18px",
           }}>
-         {id ?"Cập nhật kịch bản":"Xác nhận tạo kịch bản từ Prompt" }
+          {id ? "Cập nhật kịch bản" : "Xác nhận tạo kịch bản từ Prompt"}
         </Button>
 
         <Button

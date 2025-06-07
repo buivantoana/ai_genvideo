@@ -27,7 +27,9 @@ const dynamicSteps = [
 const ScriptView = ({ script, setLoading, id }: any) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [selectedTab, setSelectedTab]: any = useState(script && script.video_type == "video2video" ? 1 : 0);
+  const [selectedTab, setSelectedTab]: any = useState(
+    script && script.video_type == "video2video" ? 1 : 0
+  );
   return (
     <Box
       className='hidden-add-voice'
@@ -42,9 +44,16 @@ const ScriptView = ({ script, setLoading, id }: any) => {
       }}>
       <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
-      <ResponsiveBox selectedTab={selectedTab}
-        onTabChange={(index) => setSelectedTab(index)} />
-      <PromptEditorUI id={id} setSelectedTab={setSelectedTab} script={script} setLoading={setLoading} />
+      <ResponsiveBox
+        selectedTab={selectedTab}
+        onTabChange={(index) => setSelectedTab(index)}
+      />
+      <PromptEditorUI
+        id={id}
+        setSelectedTab={setSelectedTab}
+        script={script}
+        setLoading={setLoading}
+      />
     </Box>
   );
 };
@@ -71,7 +80,7 @@ const PromptEditorUI = ({ script, setLoading, id, setSelectedTab }) => {
     if (script) {
       const scenesData = script?.script?.scenes || [];
       setScenes(scenesData);
-      setSelectedTab(script?.video_type == "video2video" ? 1 : 0)
+      setSelectedTab(script?.video_type == "video2video" ? 1 : 0);
       setInitialScenes(JSON.parse(JSON.stringify(scenesData))); // Deep clone
     }
   }, [script]);
@@ -96,7 +105,7 @@ const PromptEditorUI = ({ script, setLoading, id, setSelectedTab }) => {
   const isEditing = (index, field) =>
     editingField.index === index && editingField.field === field;
   function removeNullKeys(data) {
-    return data.map(scene => {
+    return data.map((scene) => {
       const cleanedScene = {};
       for (const key in scene) {
         if (scene[key] !== null) {
@@ -106,6 +115,11 @@ const PromptEditorUI = ({ script, setLoading, id, setSelectedTab }) => {
       return cleanedScene;
     });
   }
+  const handleDialogueChange = (sceneIndex, dialogueIndex, value) => {
+    const updatedScenes = [...scenes];
+    updatedScenes[sceneIndex].dialogue[dialogueIndex].description = value;
+    setScenes(updatedScenes);
+  };
   const handleCreate = async () => {
     const hasChanged = !isEqualScenes(scenes, initialScenes);
     console.log("Người dùng đã chỉnh sửa?", hasChanged);
@@ -114,7 +128,7 @@ const PromptEditorUI = ({ script, setLoading, id, setSelectedTab }) => {
       const cleanedData = removeNullKeys(script?.script?.scenes);
       try {
         let result = await updateProject(id, {
-          script: {...script.script,scenes:cleanedData},
+          script: { ...script.script, scenes: cleanedData },
         });
 
         if (result && result.name) {
@@ -255,37 +269,103 @@ const PromptEditorUI = ({ script, setLoading, id, setSelectedTab }) => {
             mb={1}>
             Lời thoại/narration:
           </Typography>
-          <Box position='relative'>
-            <TextField
-              multiline
-              fullWidth
-              minRows={2}
-              maxRows={4}
-              value={scene.narrator}
-              onChange={(e) => handleChange(index, "narrator", e.target.value)}
-              variant='outlined'
-              sx={{
-                "& .MuiOutlinedInput-notchedOutline": {
-                  border: "2px solid",
-                  borderColor: "#414188",
-                },
-                opacity: !isEditing(index, "narrator") ? 0.7 : 1,
-              }}
-              InputProps={{
-                readOnly: !isEditing(index, "narrator"),
-                style: {
-                  backgroundColor: "#1A1836",
-                  color: "#fff",
-                  borderRadius: 10,
-                },
-              }}
-            />
-            <IconButton
-              sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
-              onClick={() => handleEdit(index, "narrator")}>
-              <EditIcon fontSize='small' />
-            </IconButton>
-          </Box>
+          {scene.dialogue && scene.dialogue.length > 0 ? (
+            <>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                {scene.dialogue.map((item, dIndex) => {
+                  return (
+                    <ul>
+                      <li
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}>
+                        <Typography width={"max-content"}>
+                          {item.charactor}
+                        </Typography>
+                        <Box width={"90%"} position='relative'>
+                          <TextField
+                            multiline
+                            fullWidth
+                            minRows={2}
+                            maxRows={4}
+                            value={item.description}
+                            onChange={(e) =>
+                              handleDialogueChange(
+                                index,
+                                dIndex,
+                                e.target.value
+                              )
+                            }
+                            variant='outlined'
+                            sx={{
+                              "& .MuiOutlinedInput-notchedOutline": {
+                                border: "2px solid",
+                                borderColor: "#414188",
+                              },
+                              opacity: !isEditing(index, "narrator") ? 0.7 : 1,
+                            }}
+                            InputProps={{
+                              readOnly: !isEditing(index, "narrator"),
+                              style: {
+                                backgroundColor: "#1A1836",
+                                color: "#fff",
+                                borderRadius: 10,
+                              },
+                            }}
+                          />
+                          <IconButton
+                            sx={{
+                              position: "absolute",
+                              top: 8,
+                              right: 8,
+                              color: "white",
+                            }}
+                            onClick={() => handleEdit(index, "narrator")}>
+                            <EditIcon fontSize='small' />
+                          </IconButton>
+                        </Box>{" "}
+                      </li>
+                    </ul>
+                  );
+                })}
+              </Box>
+            </>
+          ) : (
+            <Box position='relative'>
+              <TextField
+                multiline
+                fullWidth
+                minRows={2}
+                maxRows={4}
+                value={scene.narrator}
+                onChange={(e) =>
+                  handleChange(index, "narrator", e.target.value)
+                }
+                variant='outlined'
+                sx={{
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    border: "2px solid",
+                    borderColor: "#414188",
+                  },
+                  opacity: !isEditing(index, "narrator") ? 0.7 : 1,
+                }}
+                InputProps={{
+                  readOnly: !isEditing(index, "narrator"),
+                  style: {
+                    backgroundColor: "#1A1836",
+                    color: "#fff",
+                    borderRadius: 10,
+                  },
+                }}
+              />
+              <IconButton
+                sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
+                onClick={() => handleEdit(index, "narrator")}>
+                <EditIcon fontSize='small' />
+              </IconButton>
+            </Box>
+          )}
         </Box>
       ))}
 

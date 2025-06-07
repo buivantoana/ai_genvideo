@@ -310,6 +310,7 @@ import { RiRefreshLine } from "react-icons/ri";
 import ResponsiveBox from "../../components/ResponsiveBox";
 import { useNavigate } from "react-router-dom";
 import { genScriptImage, genScriptImageStatus } from "../../service/project";
+import { toast } from "react-toastify";
 
 const SceneCard = forwardRef((props, ref) => {
   const { scene, values, setValues, model, px }: any = props;
@@ -960,7 +961,16 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
             }}>
             <Button
               variant='contained'
-              onClick={() => navigate(`/create-video?id=${id}`)}
+              onClick={() => {
+                // let isNavigate =
+                //   values.filter((item) => !item.image.ids || !item.image.id)
+                //     .length > 0;
+                // if (!isNavigate) {
+                navigate(`/create-video?id=${id}`);
+                // } else {
+                //   toast.warning("Bạn cần tạo toàn bộ ảnh mỗi phân cảnh");
+                // }
+              }}
               sx={{
                 background: "#6E00FF",
                 textTransform: "none",
