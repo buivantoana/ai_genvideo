@@ -68,53 +68,60 @@ export default function LoginView({
           <br />
           Đăng nhập để bắt đầu quản lý các dự án của bạn.
         </Typography>
-        <Typography color='#BCBCE0' fontWeight={"500"}>
-          Tên đăng nhập
-        </Typography>
-        <StyledTextField
-          label='Tên đăng nhập'
-          placeholder='Example@email.com'
-          fullWidth
-          margin='normal'
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <Typography color='#BCBCE0' fontWeight={"500"}>
-          Mật khẩu
-        </Typography>
-        <StyledTextField
-          label='Mật khẩu'
-          placeholder='Ít nhất 8 ký tự'
-          type='password'
-          fullWidth
-          margin='normal'
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-
-        <Box textAlign='right' mt={1} mb={3}>
-          <Link
-            href='#'
-            underline='hover'
-            sx={{ fontSize: "0.875rem", color: "#aaa" }}>
-            Quên mật khẩu
-          </Link>
-        </Box>
-
-        <Button
-          fullWidth
-          variant='contained'
-          onClick={handleLogin}
-          sx={{
-            backgroundColor: "#6C63FF",
-            borderRadius: "12px",
-            padding: 0,
-            fontWeight: "600",
-            fontSize: "1rem",
-            height: "55px",
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleLogin();
           }}>
-          Đăng nhập
-        </Button>
+          <Typography color='#BCBCE0' fontWeight={"500"}>
+            Tên đăng nhập
+          </Typography>
+          <StyledTextField
+            label='Tên đăng nhập'
+            placeholder='Example@email.com'
+            fullWidth
+            margin='normal'
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <Typography color='#BCBCE0' fontWeight={"500"}>
+            Mật khẩu
+          </Typography>
+          <StyledTextField
+            label='Mật khẩu'
+            placeholder='Ít nhất 8 ký tự'
+            type='password'
+            fullWidth
+            margin='normal'
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <Box textAlign='right' mt={1} mb={3}>
+            <Link
+              href='#'
+              underline='hover'
+              sx={{ fontSize: "0.875rem", color: "#aaa" }}>
+              Quên mật khẩu
+            </Link>
+          </Box>
+
+          <Button
+            fullWidth
+            variant='contained'
+            type='submit'
+            // onClick={handleLogin}
+            sx={{
+              backgroundColor: "#6C63FF",
+              borderRadius: "12px",
+              padding: 0,
+              fontWeight: "600",
+              fontSize: "1rem",
+              height: "55px",
+            }}>
+            Đăng nhập
+          </Button>
+        </form>
       </FormBox>
     </Background>
   );

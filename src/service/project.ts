@@ -31,6 +31,7 @@ export async function genScriptImage(body: any) {
     let token = localStorage.getItem("token");
     const response = await api.post(`/image/generate`, body, {
       headers: {
+        "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${token}`,
       },
     });
@@ -82,6 +83,7 @@ export async function genScriptVideo(body: any) {
     let token = localStorage.getItem("token");
     const response = await api.post(`/video/generate`, body, {
       headers: {
+        "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${token}`,
       },
     });
