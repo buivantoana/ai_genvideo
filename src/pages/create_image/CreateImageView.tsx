@@ -309,7 +309,11 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { RiRefreshLine } from "react-icons/ri";
 import ResponsiveBox from "../../components/ResponsiveBox";
 import { useNavigate } from "react-router-dom";
-import { genScriptImage, genScriptImageStatus } from "../../service/project";
+import {
+  genScriptImage,
+  genScriptImageStatus,
+  updateProject,
+} from "../../service/project";
 import { toast } from "react-toastify";
 
 const SceneCard = forwardRef((props, ref) => {
@@ -563,7 +567,7 @@ const SceneCard = forwardRef((props, ref) => {
                   <span>Đang tạo ảnh...</span>
                 </Stack>
               ) : (
-                "Tạo lại ảnh"
+                "Tạo ảnh mới"
               )}
             </Button>
           )}
@@ -779,98 +783,99 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
       let completedScenes = 0;
       for (let i = 0; i < values.length; i++) {
         const ref = values[i];
-        const sceneData = values.find((v) => v.scene === ref.scene);
-        if (!sceneData) {
-          console.warn(`Không tìm thấy dữ liệu cho phân cảnh ${i + 1}`);
-          continue;
-        }
-        console.log(`Bắt đầu tạo ảnh cho phân cảnh ${i + 1}`);
-        try {
-          // Chuẩn bị formData cho mỗi phân cảnh
-          const [width, height] = px.split(" ")[0].split("x").map(Number);
-          let formData = new FormData();
-          formData.set("width", width);
-          formData.set("height", height);
-          formData.set("prompt", sceneData.image.prompt);
-          formData.set("n_prompt", sceneData.image.n_prompt);
-          formData.set("model", model);
-
-          // Gọi API để tạo ảnh
-          const result = await genScriptImage(formData);
-
-          if (result && result.code === 2) {
-            // Bọc polling trong Promise để chờ kết quả
-            const pollResult = await new Promise((resolve, reject) => {
-              const poll = setInterval(async () => {
-                try {
-                  const status = await genScriptImageStatus(result.id);
-                  if (status?.code === 0 && status?.image_url) {
-                    setValues((prev) =>
-                      prev.map((item) =>
-                        item.scene === sceneData.scene
-                          ? {
-                              ...item,
-                              image: {
-                                ...item.image,
-                                ids: [...(item.image.ids || []), result.id],
-                                imageUrls: [
-                                  ...(item.image.imageUrls || []),
-                                  status.image_url,
-                                ],
-                                selected:
-                                  (item.image.imageUrls?.length || 0) === 0
-                                    ? 0
-                                    : item.image.selected,
-                              },
-                            }
-                          : item
-                      )
-                    );
-                    clearInterval(poll);
-                    resolve(status);
-                  }
-                } catch (error) {
-                  clearInterval(poll);
-                  reject(error);
-                }
-              }, 2000);
-              // Thêm timeout để tránh polling vô hạn
-              setTimeout(() => {
-                clearInterval(poll);
-                reject(new Error("Hết thời gian chờ trạng thái ảnh"));
-              }, 60000); // Timeout sau 60 giây
-            });
-          } else if (result.code === 0) {
-            // Fallback không cần chờ status
-            const newImageUrl = result?.image_url || "";
-            setValues((prev) =>
-              prev.map((item) =>
-                item.scene === sceneData.scene
-                  ? {
-                      ...item,
-                      image: {
-                        ...item.image,
-                        ids: [...(item.image.ids || []), result.id],
-                        imageUrls: [
-                          ...(item.image.imageUrls || []),
-                          newImageUrl,
-                        ],
-                        selected:
-                          (item.image.imageUrls?.length || 0) === 0
-                            ? 0
-                            : item.image.selected,
-                      },
-                    }
-                  : item
-              )
-            );
+        if (ref.image && !ref.image.ids) {
+          const sceneData = values.find((v) => v.scene === ref.scene);
+          if (!sceneData) {
+            console.warn(`Không tìm thấy dữ liệu cho phân cảnh ${i + 1}`);
+            continue;
           }
-          console.log(`Hoàn tất tạo ảnh cho phân cảnh ${i + 1}`);
-          console.log("Giá trị hiện tại của values:", values);
-          completedScenes++;
-        } catch (error) {
-          console.error(`Lỗi khi tạo ảnh cho phân cảnh ${i + 1}:`, error);
-          // Tiếp tục vòng lặp dù có lỗi
+          console.log(`Bắt đầu tạo ảnh cho phân cảnh ${i + 1}`);
+          try {
+            // Chuẩn bị formData cho mỗi phân cảnh
+            const [width, height] = px.split(" ")[0].split("x").map(Number);
+            let formData = new FormData();
+            formData.set("width", width);
+            formData.set("height", height);
+            formData.set("prompt", sceneData.image.prompt);
+            formData.set("n_prompt", sceneData.image.n_prompt);
+            formData.set("model", model);
+
+            // Gọi API để tạo ảnh
+            const result = await genScriptImage(formData);
+
+            if (result && result.code === 2) {
+              // Bọc polling trong Promise để chờ kết quả
+              const pollResult = await new Promise((resolve, reject) => {
+                const poll = setInterval(async () => {
+                  try {
+                    const status = await genScriptImageStatus(result.id);
+                    if (status?.code === 0 && status?.image_url) {
+                      setValues((prev) =>
+                        prev.map((item) =>
+                          item.scene === sceneData.scene
+                            ? {
+                                ...item,
+                                image: {
+                                  ...item.image,
+                                  ids: [...(item.image.ids || []), result.id],
+                                  imageUrls: [
+                                    ...(item.image.imageUrls || []),
+                                    status.image_url,
+                                  ],
+                                  selected:
+                                    (item.image.imageUrls?.length || 0) === 0
+                                      ? 0
+                                      : item.image.selected,
+                                },
+                              }
+                            : item
+                        )
+                      );
+                      clearInterval(poll);
+                      resolve(status);
+                    }
+                  } catch (error) {
+                    clearInterval(poll);
+                    reject(error);
+                  }
+                }, 2000);
+                // Thêm timeout để tránh polling vô hạn
+                setTimeout(() => {
+                  clearInterval(poll);
+                  reject(new Error("Hết thời gian chờ trạng thái ảnh"));
+                }, 60000); // Timeout sau 60 giây
+              });
+            } else if (result.code === 0) {
+              // Fallback không cần chờ status
+              const newImageUrl = result?.image_url || "";
+              setValues((prev) =>
+                prev.map((item) =>
+                  item.scene === sceneData.scene
+                    ? {
+                        ...item,
+                        image: {
+                          ...item.image,
+                          ids: [...(item.image.ids || []), result.id],
+                          imageUrls: [
+                            ...(item.image.imageUrls || []),
+                            newImageUrl,
+                          ],
+                          selected:
+                            (item.image.imageUrls?.length || 0) === 0
+                              ? 0
+                              : item.image.selected,
+                        },
+                      }
+                    : item
+                )
+              );
+            }
+            console.log(`Hoàn tất tạo ảnh cho phân cảnh ${i + 1}`);
+            console.log("Giá trị hiện tại của values:", values);
+            completedScenes++;
+          } catch (error) {
+            console.error(`Lỗi khi tạo ảnh cho phân cảnh ${i + 1}:`, error);
+          }
         }
       }
       // Cập nhật localStorage một lần sau khi tất cả phân cảnh được xử lý
@@ -961,15 +966,83 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
             }}>
             <Button
               variant='contained'
-              onClick={() => {
-                // let isNavigate =
-                //   values.filter((item) => !item.image.ids || !item.image.id)
-                //     .length > 0;
-                // if (!isNavigate) {
-                navigate(`/create-video?id=${id}`);
-                // } else {
-                //   toast.warning("Bạn cần tạo toàn bộ ảnh mỗi phân cảnh");
-                // }
+              onClick={async () => {
+                let isNavigate =
+                  values.filter((item) => !item.image.ids).length > 0;
+                if (!isNavigate) {
+                  try {
+                    if (id) {
+                      setLoading(true);
+                      let body = values.map((item) => {
+                        // Xử lý image
+                        const updatedImage = {
+                          ...item.image,
+                          id:
+                            item.ids && item.ids[item.image.selected]
+                              ? item.ids[item.image.selected]
+                              : 1,
+                          image_url:
+                            item.imageUrls &&
+                            item.imageUrls[item.image.selected]
+                              ? item.imageUrls[item.image.selected]
+                              : "https://dev.zeezoo.mobi:8082/results/images/193.jpg",
+                        };
+
+                        // Xử lý video: xóa field nào có giá trị null
+                        const updatedVideo = Object.fromEntries(
+                          Object.entries(item.video || {}).filter(
+                            ([_, value]) => value !== null
+                          )
+                        );
+
+                        // Xử lý dialogue
+                        const updatedDialogue = (item.dialogue || []).map(
+                          (dlg) => {
+                            const cleanedImage = Object.fromEntries(
+                              Object.entries(dlg.image || {}).filter(
+                                ([_, value]) => value !== null
+                              )
+                            );
+                            const cleanedVideo = Object.fromEntries(
+                              Object.entries(dlg.video || {}).filter(
+                                ([_, value]) => value !== null
+                              )
+                            );
+                            return {
+                              image: cleanedImage,
+                              video: cleanedVideo,
+                            };
+                          }
+                        );
+
+                        return {
+                          ...item,
+                          image: updatedImage,
+                          video: updatedVideo,
+                          dialogue: updatedDialogue,
+                        };
+                      });
+                      let result = await updateProject(id, { prompts: body });
+                      if (result && result.name) {
+                        localStorage.setItem(
+                          "gen_script",
+                          JSON.stringify(result)
+                        );
+                        setTimeout(() => {
+                          navigate(`/create-video?id=${id}`);
+                        }, 500);
+                      }
+                    }
+                  } catch (error) {
+                    console.log(error);
+                    setLoading(false);
+                  } finally {
+                    setLoading(false);
+                  }
+                  // navigate(`/create-video?id=${id}`);
+                } else {
+                  toast.warning("Bạn cần tạo toàn bộ ảnh mỗi phân cảnh");
+                }
               }}
               sx={{
                 background: "#6E00FF",

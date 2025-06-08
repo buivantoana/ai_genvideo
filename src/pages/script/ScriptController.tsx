@@ -48,7 +48,12 @@ const ScriptController = (props: Props) => {
   return (
     <>
       {loading && <Loading />}
-      <ScriptView script={genScript} id={id} setLoading={setLoading} />
+      <ScriptView
+        script={genScript}
+        id={id}
+        genScriptFun={genScriptFun}
+        setLoading={setLoading}
+      />
     </>
   );
 };

@@ -20,6 +20,18 @@ const CreateImageController = (props: Props) => {
       if (!script.prompts && id) {
         genScriptFun();
       } else {
+        let prompt = script.prompts.map((item) => {
+          return {
+            ...item,
+            image: {
+              ...item.image,
+              ids: item.image?.id ? [item.image?.id] : null,
+              imageUrls: item.image?.image_url ? [item.image?.image_url] : null,
+              selected: 0,
+            },
+          };
+        });
+        script.prompt = prompt;
         setGenScript(script);
       }
     }

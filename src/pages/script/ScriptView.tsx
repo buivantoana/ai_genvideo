@@ -24,7 +24,7 @@ const dynamicSteps = [
   { label: "Tạo Video", status: "pending" },
   { label: "Voice", status: "pending" },
 ];
-const ScriptView = ({ script, setLoading, id }: any) => {
+const ScriptView = ({ script, setLoading, id, genScriptFun }: any) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [selectedTab, setSelectedTab]: any = useState(
@@ -53,6 +53,7 @@ const ScriptView = ({ script, setLoading, id }: any) => {
         setSelectedTab={setSelectedTab}
         script={script}
         setLoading={setLoading}
+        genScriptFun={genScriptFun}
       />
     </Box>
   );
@@ -66,8 +67,15 @@ import ResponsiveBox from "../../components/ResponsiveBox";
 import { useNavigate } from "react-router-dom";
 import { createProject, updateProject } from "../../service/project";
 import { toast } from "react-toastify";
+import { RiRecordCircleFill } from "react-icons/ri";
 
-const PromptEditorUI = ({ script, setLoading, id, setSelectedTab }) => {
+const PromptEditorUI = ({
+  script,
+  setLoading,
+  id,
+  setSelectedTab,
+  genScriptFun,
+}) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
@@ -224,7 +232,7 @@ const PromptEditorUI = ({ script, setLoading, id, setSelectedTab }) => {
             sx={{ fontStyle: "italic" }}
             color='#A3A4B5'
             mb={1}>
-            Mô tả cảnh
+            Mô tả cảnh (phục vụ cho tạo prompt)
           </Typography>
           <Box position='relative'>
             <TextField
@@ -267,66 +275,68 @@ const PromptEditorUI = ({ script, setLoading, id, setSelectedTab }) => {
             color='#A3A4B5'
             mt={2}
             mb={1}>
-            Lời thoại/narration:
+            Lời kể:
           </Typography>
-          {scene.dialogue && scene.dialogue.length > 0 ? (
+          {scene.dialogue && scene.dialogue.length > 0 && script.style_type ? (
             <>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {scene.dialogue.map((item, dIndex) => {
                   return (
-                    <ul>
-                      <li
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                        }}>
-                        <Typography width={"max-content"}>
-                          {item.charactor}
-                        </Typography>
-                        <Box width={"90%"} position='relative'>
-                          <TextField
-                            multiline
-                            fullWidth
-                            minRows={2}
-                            maxRows={4}
-                            value={item.description}
-                            onChange={(e) =>
-                              handleDialogueChange(
-                                index,
-                                dIndex,
-                                e.target.value
-                              )
-                            }
-                            variant='outlined'
-                            sx={{
-                              "& .MuiOutlinedInput-notchedOutline": {
-                                border: "2px solid",
-                                borderColor: "#414188",
-                              },
-                              opacity: !isEditing(index, "narrator") ? 0.7 : 1,
-                            }}
-                            InputProps={{
-                              readOnly: !isEditing(index, "narrator"),
-                              style: {
-                                backgroundColor: "#1A1836",
-                                color: "#fff",
-                                borderRadius: 10,
-                              },
-                            }}
-                          />
-                          <IconButton
-                            sx={{
-                              position: "absolute",
-                              top: 8,
-                              right: 8,
-                              color: "white",
-                            }}
-                            onClick={() => handleEdit(index, "narrator")}>
-                            <EditIcon fontSize='small' />
-                          </IconButton>
-                        </Box>{" "}
-                      </li>
-                    </ul>
+                    <Box width={"100%"} position='relative'>
+                      <TextField
+                        multiline
+                        fullWidth
+                        minRows={2}
+                        maxRows={4}
+                        value={item.description}
+                        onChange={(e) =>
+                          handleDialogueChange(index, dIndex, e.target.value)
+                        }
+                        variant='outlined'
+                        sx={{
+                          "& .MuiOutlinedInput-notchedOutline": {
+                            border: "2px solid",
+                            borderColor: "#414188",
+                          },
+                          opacity: !isEditing(index, "narrator") ? 0.7 : 1,
+                        }}
+                        InputProps={{
+                          readOnly: !isEditing(index, "narrator"),
+                          style: {
+                            backgroundColor: "#1A1836",
+                            color: "#fff",
+                            borderRadius: 10,
+                            alignItems: "start",
+                            gap: 10,
+                          },
+                          startAdornment: (
+                            <ul>
+                              <li
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 10,
+                                }}>
+                                <RiRecordCircleFill size={10} />
+                                <Typography width={"max-content"}>
+                                  {item.charactor} {` : `}{" "}
+                                </Typography>
+                              </li>
+                            </ul>
+                          ),
+                        }}
+                      />
+                      <IconButton
+                        sx={{
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          color: "white",
+                        }}
+                        onClick={() => handleEdit(index, "narrator")}>
+                        <EditIcon fontSize='small' />
+                      </IconButton>
+                    </Box>
                   );
                 })}
               </Box>
@@ -481,6 +491,7 @@ const PromptEditorUI = ({ script, setLoading, id, setSelectedTab }) => {
         }}>
         <Button
           variant='contained'
+          onClick={genScriptFun}
           sx={{
             background: "rgba(89, 50, 234, 0.3)",
             textTransform: "none",

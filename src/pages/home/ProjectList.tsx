@@ -69,10 +69,10 @@ const ProjectList = ({ project }: any) => {
           return (
             <Card
               onClick={() => {
-                localStorage.setItem("update_project", JSON.stringify(item));
+                localStorage.setItem("gen_script", JSON.stringify(item));
                 setTimeout(() => {
                   navigate(`/idea?id=${item.id}`);
-                }, 500);
+                }, 200);
               }}
               key={index}
               sx={{
