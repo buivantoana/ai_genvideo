@@ -31,7 +31,7 @@ const CreateImageController = (props: Props) => {
             },
           };
         });
-        script.prompt = prompt;
+        script.prompts = prompt;
         setGenScript(script);
       }
     }
