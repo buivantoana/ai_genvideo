@@ -334,10 +334,67 @@ const SceneCard = forwardRef((props, ref) => {
   const handleFileChange = (event) => {
     const file = event.target.files?.[0];
     if (file) {
-      genImage(file);
+      // Tạo URL từ file để hiển thị trực tiếp
+      const imageUrl = URL.createObjectURL(file);
+
+      // Cập nhật state với ảnh mới
+      setValues((prev) =>
+        prev.map((item) =>
+          item.scene === scene
+            ? {
+                ...item,
+                image: {
+                  ...item.image,
+                  imageUrls: [...(item.image.imageUrls || []), imageUrl],
+                  file: file,
+                  selected:
+                    (item.image.imageUrls?.length || 0) === 0
+                      ? 0
+                      : item.image.selected,
+                },
+              }
+            : item
+        )
+      );
+
+      // Cập nhật localStorage nếu cần
+      let script: any = localStorage.getItem("gen_script");
+      if (script) {
+        script = JSON.parse(script);
+        script.prompts = script.prompts.map((item) =>
+          item.scene === scene
+            ? {
+                ...item,
+                image: {
+                  ...item.image,
+                  imageUrls: [...(item.image.imageUrls || []), imageUrl],
+                  selected:
+                    (item.image.imageUrls?.length || 0) === 0
+                      ? 0
+                      : item.image.selected,
+                },
+              }
+            : item
+        );
+        localStorage.setItem("gen_script", JSON.stringify(script));
+      }
+
       event.target.value = ""; // reset input
     }
   };
+  useEffect(() => {
+    return () => {
+      // Dọn dẹp các object URL khi component unmount
+      if (sceneData?.image?.imageUrls) {
+        sceneData.image.imageUrls.forEach((url) => {
+          if (url.startsWith("blob:")) {
+            URL.revokeObjectURL(url);
+          }
+        });
+      }
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [intervalId, sceneData?.image?.imageUrls]);
   const handleChange = (field, value) => {
     setValues((prev) =>
       prev.map((item) =>
@@ -362,7 +419,7 @@ const SceneCard = forwardRef((props, ref) => {
               ...item,
               image: {
                 ...item.image,
-                selected: index,
+                selected: item.image.selected == index ? null : index,
               },
             }
           : item
@@ -378,7 +435,7 @@ const SceneCard = forwardRef((props, ref) => {
               ...item,
               image: {
                 ...item.image,
-                selected: index,
+                selected: item.image.selected == index ? null : index,
               },
             }
           : item
@@ -395,13 +452,13 @@ const SceneCard = forwardRef((props, ref) => {
     }
     const [width, height] = px.split(" ")[0].split("x").map(Number);
     let formData = new FormData();
-    formData.set("width", width);
-    formData.set("height", height);
-    formData.set("prompt", sceneData.image.prompt);
-    formData.set("n_prompt", sceneData.image.n_prompt);
-    formData.set("model", model);
+    formData.append("width", width);
+    formData.append("height", height);
+    formData.append("prompt", sceneData.image.prompt);
+    formData.append("n_prompt", sceneData.image.n_prompt);
+    formData.append("model", model);
     if (fileImage) {
-      formData.set("input_image_file", fileImage);
+      formData.append("input_image_file", fileImage);
     }
     try {
       let result = await genScriptImage(formData);
@@ -550,7 +607,7 @@ const SceneCard = forwardRef((props, ref) => {
           </Typography>
           {sceneData.image.ids && (
             <Button
-              startIcon={<RiRefreshLine />}
+              startIcon={loading ? <></> : <RiRefreshLine />}
               onClick={() => genImage()}
               size='small'
               sx={{
@@ -614,31 +671,13 @@ const SceneCard = forwardRef((props, ref) => {
                 {sceneData.image.imageUrls.map((item, index) => {
                   let selected = sceneData.image.selected == index;
                   return (
-                    <Grid
-                      onClick={() => handleSelectedImage(index)}
-                      item
-                      xs={5}
-                      sx={{
-                        mr: isMobile ? "0px" : "20px",
-                        display: "flex",
-                        gap: "10px",
-                      }}
-                      sm={4}
-                      md={3}>
-                      <>
-                        <CardMedia
-                          component='img'
-                          height={isMobile ? "150px" : "220px"}
-                          sx={{
-                            objectFit: "cover",
-                            borderRadius: 1,
-                            border: selected ? "3px solid green" : "none",
-                          }}
-                          image={item}
-                          alt='uploaded'
-                        />
-                      </>
-                    </Grid>
+                    <ImageGridItem
+                      index={index}
+                      handleSelectedImage={handleSelectedImage}
+                      isMobile={isMobile}
+                      item={item}
+                      selected={selected}
+                    />
                   );
                 })}{" "}
               </>
@@ -794,11 +833,11 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
             // Chuẩn bị formData cho mỗi phân cảnh
             const [width, height] = px.split(" ")[0].split("x").map(Number);
             let formData = new FormData();
-            formData.set("width", width);
-            formData.set("height", height);
-            formData.set("prompt", sceneData.image.prompt);
-            formData.set("n_prompt", sceneData.image.n_prompt);
-            formData.set("model", model);
+            formData.append("width", width);
+            formData.append("height", height);
+            formData.append("prompt", sceneData.image.prompt);
+            formData.append("n_prompt", sceneData.image.n_prompt);
+            formData.append("model", model);
 
             // Gọi API để tạo ảnh
             const result = await genScriptImage(formData);
@@ -892,6 +931,28 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
       console.error("Lỗi chung khi tạo toàn bộ ảnh:", error);
     }
   };
+  const downloadImage = async ({ imageUrl }) => {
+    setLoading(true);
+
+    try {
+      const response = await fetch(imageUrl);
+      if (!response.ok) {
+        throw new Error("Không thể tải ảnh. Kiểm tra lại URL.");
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "downloaded-image.jpg";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+    } finally {
+      setLoading(false);
+    }
+  };
   return (
     <>
       <Box display={"flex"} alignItems={"center"} gap={"20px"}>
@@ -928,7 +989,7 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
           ))}
 
         <Box textAlign='center'>
-          <Box
+          {/* <Box
             sx={{
               display: "flex",
               flexDirection: isMobile ? "column" : "row",
@@ -953,7 +1014,7 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
               }}>
               + Thêm màn mới
             </Button>
-          </Box>
+          </Box> */}
 
           <Box
             paddingBottom={4}
@@ -967,81 +1028,146 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
             <Button
               variant='contained'
               onClick={async () => {
-                let isNavigate =
-                  values.filter((item) => !item.image.ids).length > 0;
-                if (!isNavigate) {
-                  try {
-                    if (id) {
-                      setLoading(true);
-                      let body = values.map((item) => {
-                        // Xử lý image
-                        const updatedImage = {
-                          ...item.image,
-                          id:
-                            item.ids && item.ids[item.image.selected]
-                              ? item.ids[item.image.selected]
-                              : 1,
-                          image_url:
-                            item.imageUrls &&
-                            item.imageUrls[item.image.selected]
-                              ? item.imageUrls[item.image.selected]
-                              : "https://dev.zeezoo.mobi:8082/results/images/193.jpg",
-                        };
+                const isNavigate =
+                  values.filter(
+                    (item) =>
+                      !(typeof item.image.selected == "number") ||
+                      !item.image.ids
+                  ).length > 0;
 
-                        // Xử lý video: xóa field nào có giá trị null
-                        const updatedVideo = Object.fromEntries(
-                          Object.entries(item.video || {}).filter(
-                            ([_, value]) => value !== null
-                          )
-                        );
-
-                        // Xử lý dialogue
-                        const updatedDialogue = (item.dialogue || []).map(
-                          (dlg) => {
-                            const cleanedImage = Object.fromEntries(
-                              Object.entries(dlg.image || {}).filter(
-                                ([_, value]) => value !== null
-                              )
-                            );
-                            const cleanedVideo = Object.fromEntries(
-                              Object.entries(dlg.video || {}).filter(
-                                ([_, value]) => value !== null
-                              )
-                            );
-                            return {
-                              image: cleanedImage,
-                              video: cleanedVideo,
-                            };
-                          }
-                        );
-
-                        return {
-                          ...item,
-                          image: updatedImage,
-                          video: updatedVideo,
-                          dialogue: updatedDialogue,
-                        };
-                      });
-                      let result = await updateProject(id, { prompts: body });
-                      if (result && result.name) {
-                        localStorage.setItem(
-                          "gen_script",
-                          JSON.stringify(result)
-                        );
-                        setTimeout(() => {
-                          navigate(`/create-video?id=${id}`);
-                        }, 500);
-                      }
-                    }
-                  } catch (error) {
-                    console.log(error);
-                    setLoading(false);
-                  } finally {
-                    setLoading(false);
+                if (isNavigate) {
+                  toast.warning("Bạn cần chọn ảnh mỗi phân cảnh");
+                  return;
+                }
+                try {
+                  setLoading(true);
+                  if (!id) {
+                    throw new Error("ID dự án không tồn tại");
                   }
-                  // navigate(`/create-video?id=${id}`);
-                } else {
-                  toast.warning("Bạn cần tạo toàn bộ ảnh mỗi phân cảnh");
+
+                  const isUploadedImage = (url) => {
+                    return typeof url === "string" && url.startsWith("blob:");
+                  };
+
+                  // Chờ tất cả Promise từ map hoàn thành
+                  const updatedValues = await Promise.all(
+                    values.map(async (item) => {
+                      let updatedImage;
+                      if (
+                        isUploadedImage(
+                          item.image.imageUrls[item.image.selected]
+                        )
+                      ) {
+                        const [width, height] = px
+                          .split(" ")[0]
+                          .split("x")
+                          .map(Number);
+                        let formData = new FormData();
+                        formData.append("input_image_file", item.image.file);
+                        formData.append("width", width);
+                        formData.append("height", height);
+                        formData.append("prompt", item.image.prompt);
+                        formData.append("n_prompt", item.image.n_prompt);
+                        formData.append("model", model);
+
+                        const result = await genScriptImage(formData);
+                        if (result && result.code === 2) {
+                          const pollResult = await new Promise(
+                            (resolve, reject) => {
+                              const poll = setInterval(async () => {
+                                try {
+                                  const status = await genScriptImageStatus(
+                                    result.id
+                                  );
+                                  if (status?.code === 0 && status?.image_url) {
+                                    updatedImage = {
+                                      ...item.image,
+                                      id: result.id,
+
+                                      image_url: status?.image_url,
+                                      // Tránh URL mặc định cứng
+                                    };
+                                    clearInterval(poll);
+                                    resolve(status);
+                                  }
+                                } catch (error) {
+                                  clearInterval(poll);
+                                  reject(error);
+                                }
+                              }, 2000);
+                              setTimeout(() => {
+                                clearInterval(poll);
+                                reject(
+                                  new Error("Hết thời gian chờ trạng thái ảnh")
+                                );
+                              }, 120000);
+                            }
+                          );
+                        }
+                      } else {
+                        updatedImage = {
+                          ...item.image,
+                          id: item.image && item.image.ids[item.image.selected],
+
+                          image_url:
+                            item.image &&
+                            item.image.imageUrls[item.image.selected],
+                          // Tránh URL mặc định cứng
+                        };
+                      }
+
+                      const updatedVideo = Object.fromEntries(
+                        Object.entries(item.video || {}).filter(
+                          ([_, value]) => value !== null
+                        )
+                      );
+
+                      const updatedDialogue = (item.dialogue || []).map(
+                        (dlg) => {
+                          const cleanedImage = Object.fromEntries(
+                            Object.entries(dlg.image || {}).filter(
+                              ([_, value]) => value !== null
+                            )
+                          );
+                          const cleanedVideo = Object.fromEntries(
+                            Object.entries(dlg.video || {}).filter(
+                              ([_, value]) => value !== null
+                            )
+                          );
+                          return {
+                            image: cleanedImage,
+                            video: cleanedVideo,
+                          };
+                        }
+                      );
+
+                      return {
+                        ...item,
+                        image: updatedImage,
+                        video: updatedVideo,
+                        dialogue: updatedDialogue,
+                      };
+                    })
+                  );
+
+                  const result = await updateProject(id, {
+                    prompts: updatedValues,
+                  });
+                  if (result && result.name) {
+                    localStorage.setItem("gen_script", JSON.stringify(result));
+                    setTimeout(() => {
+                      navigate(`/create-video?id=${id}`);
+                    }, 500);
+                  } else {
+                    throw new Error("Cập nhật dự án thất bại");
+                  }
+                } catch (error) {
+                  console.error("Lỗi:", error);
+                  toast.error(
+                    error.message || "Có lỗi xảy ra khi xác nhận ảnh"
+                  );
+                } finally {
+                  setLoading(false);
                 }
               }}
               sx={{
@@ -1061,6 +1187,12 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
 
             <Button
               variant='contained'
+              onClick={() => {
+                downloadImage({
+                  imageUrl:
+                    "https://dev.zeezoo.mobi:8082/results/images/214.jpg",
+                });
+              }}
               sx={{
                 background: "white",
                 textTransform: "none",
@@ -1074,7 +1206,12 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                 fontSize: isMobile ? "15px" : "18px",
                 color: "black",
               }}>
-              Tải hàng loạt (2)
+              Tải hàng loạt (
+              {
+                values.filter((item) => typeof item.image.selected == "number")
+                  .length
+              }
+              )
             </Button>
           </Box>
         </Box>
@@ -1082,3 +1219,108 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
     </>
   );
 }
+
+import { Dialog } from "@mui/material";
+import ZoomInIcon from "@mui/icons-material/ZoomIn";
+import { Close } from "@mui/icons-material";
+
+const ImageGridItem = ({
+  item,
+  index,
+  handleSelectedImage,
+  isMobile,
+  selected,
+}) => {
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+
+  return (
+    <>
+      <Grid
+        onClick={() => handleSelectedImage(index)}
+        item
+        xs={5}
+        sx={{
+          mr: isMobile ? "0px" : "20px",
+          display: "flex",
+          gap: "10px",
+          position: "relative", // Added to position the icon relative to the Grid
+        }}
+        sm={4}
+        md={3}>
+        <CardMedia
+          component='img'
+          height={isMobile ? "150px" : "220px"}
+          sx={{
+            objectFit: "cover",
+            borderRadius: 1,
+            border: selected ? "3px solid green" : "none",
+          }}
+          image={item}
+          alt='uploaded'
+        />
+        <IconButton
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent Grid's onClick from firing
+            handleOpen();
+          }}
+          sx={{
+            position: "absolute",
+            top: "10px", // Position in top-right corner
+            right: "10px",
+            color: "white", // White icon for visibility
+            backgroundColor: "rgba(0, 0, 0, 0.5)", // Semi-transparent background
+            "&:hover": {
+              backgroundColor: "rgba(0, 0, 0, 0.7)",
+            },
+          }}>
+          <ZoomInIcon />
+        </IconButton>
+      </Grid>
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        maxWidth='lg'
+        fullWidth
+        sx={{
+          "& .MuiDialog-paper": {
+            backgroundColor: "transparent", // Transparent background for dialog
+            boxShadow: "none",
+          },
+        }}>
+        <CardMedia
+          component='img'
+          sx={{
+            width: "100%",
+            height: "90vh", // Full viewport height
+            objectFit: "contain", // Fit image without cropping
+            backgroundColor: "black", // Black background for better contrast
+          }}
+          image={item}
+          alt='uploaded full screen'
+        />
+        <IconButton
+          onClick={handleClose}
+          sx={{
+            position: "absolute",
+            top: "10px",
+            right: "10px",
+            color: "white",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            "&:hover": {
+              backgroundColor: "rgba(0, 0, 0, 0.7)",
+            },
+          }}>
+          <Close /> {/* You can replace with a CloseIcon if preferred */}
+        </IconButton>
+      </Dialog>
+    </>
+  );
+};
