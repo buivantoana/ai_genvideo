@@ -15,7 +15,6 @@ import {
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import StepComponent from "../../components/StepComponent";
 
-const modelOptions = ["ChatGPT", "Qwen", "DeepSeek"];
 const styleOptions = ["Tải xuống dạng CSV", "Tải xuống dạng TXT"];
 const dynamicSteps = [
   { label: "Ý tưởng", status: "completed" },
@@ -24,7 +23,13 @@ const dynamicSteps = [
   { label: "Tạo Video", status: "pending" },
   { label: "Voice", status: "pending" },
 ];
-const ScriptView = ({ script, setLoading, id, genScriptFun }: any) => {
+const ScriptView = ({
+  script,
+  setLoading,
+  id,
+  genScriptFun,
+  modelList,
+}: any) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [selectedTab, setSelectedTab]: any = useState(
@@ -54,6 +59,7 @@ const ScriptView = ({ script, setLoading, id, genScriptFun }: any) => {
         script={script}
         setLoading={setLoading}
         genScriptFun={genScriptFun}
+        modelList={modelList}
       />
     </Box>
   );
@@ -75,12 +81,13 @@ const PromptEditorUI = ({
   id,
   setSelectedTab,
   genScriptFun,
+  modelList,
 }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const navigate = useNavigate();
   const [initialScenes, setInitialScenes] = useState([]);
-
+  const [model, setModel] = useState("openai");
   // Tạo bản copy để chỉnh sửa
   const [scenes, setScenes] = useState(script?.script?.scenes || []);
   const [editingField, setEditingField] = useState({}); // ví dụ: { 0: { field: 'description' } }
@@ -136,11 +143,13 @@ const PromptEditorUI = ({
       const cleanedData = removeNullKeys(script?.script?.scenes);
       try {
         let result = await updateProject(id, {
+          current_step: "gen_script",
           script: { ...script.script, scenes: cleanedData },
         });
 
         if (result && result.name) {
           localStorage.setItem("gen_script", JSON.stringify(result));
+          console.log("update");
           setTimeout(() => {
             navigate(`/create-image?id=${id}`);
           }, 500);
@@ -152,10 +161,11 @@ const PromptEditorUI = ({
       }
       setLoading(false);
     } else {
+      console.log("no update");
       navigate(`/create-image?id=${id}`);
     }
   };
-
+  console.log(modelList, "aaa");
   return (
     <Box
       px={isMobile ? 1.5 : 0}
@@ -167,7 +177,8 @@ const PromptEditorUI = ({
         sx={{ width: isMobile ? "100%" : 200 }}
         size='small'>
         <Select
-          defaultValue='ChatGPT'
+          value={model}
+          onChange={(e) => setModel(e.target.value)}
           sx={{
             background: "transparent",
             color: "#fff",
@@ -210,9 +221,9 @@ const PromptEditorUI = ({
               },
             },
           }}>
-          {modelOptions.map((option) => (
-            <MenuItem key={option} value={option}>
-              {option}
+          {modelList.map((option) => (
+            <MenuItem key={option.key} value={option.key}>
+              {option.value}
             </MenuItem>
           ))}
         </Select>

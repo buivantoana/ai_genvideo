@@ -39,7 +39,7 @@ const dynamicSteps = [
   { label: "Tạo Video", status: "pending" },
   { label: "Voice", status: "pending" },
 ];
-const IdeaView = ({ setLoading }: any) => {
+const IdeaView = ({ setLoading, modelList }: any) => {
   const [genPromptAi, setGenPromptAi] = useState(false);
   const [model, setModel] = useState("openai");
   const [projectName, setProjectName] = useState("");
@@ -272,7 +272,7 @@ const IdeaView = ({ setLoading }: any) => {
               },
             },
           }}>
-          {modelOptions.map((option) => (
+          {modelList.map((option) => (
             <MenuItem key={option.key} value={option.key}>
               {option.value}
             </MenuItem>

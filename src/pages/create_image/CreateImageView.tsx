@@ -41,7 +41,7 @@ const dynamicSteps = [
   { label: "Tạo Video", status: "pending" },
   { label: "Voice", status: "pending" },
 ];
-const CreateImageView = ({ genScript, setLoading, id }) => {
+const CreateImageView = ({ genScript, setLoading, id, modelList }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [selectedTab, setSelectedTab]: any = useState(
@@ -120,7 +120,7 @@ const CreateImageView = ({ genScript, setLoading, id }) => {
                 },
               },
             }}>
-            {modelOptions1.map((option) => (
+            {modelList.map((option) => (
               <MenuItem key={option.key} value={option.key}>
                 {option.value}
               </MenuItem>
@@ -470,7 +470,7 @@ const SceneCard = forwardRef((props, ref) => {
             let script: any = localStorage.getItem("gen_script");
             if (script) {
               script = JSON.parse(script);
-              script.prompts = values.map((item) => {
+              script.script.scenes = values.map((item) => {
                 if (item.scene == scene) {
                   return {
                     ...item,
@@ -527,7 +527,7 @@ const SceneCard = forwardRef((props, ref) => {
         let script: any = localStorage.getItem("gen_script");
         if (script) {
           script = JSON.parse(script);
-          script.prompts = values.map((item) => {
+          script.script.scenes = values.map((item) => {
             if (item.scene == scene) {
               return {
                 ...item,
@@ -788,13 +788,13 @@ const SceneCard = forwardRef((props, ref) => {
 function SceneEditor({ genScript, model, px, setLoading, id }) {
   const isMobile = useMediaQuery("(max-width:600px)");
   const navigate = useNavigate();
-  const [values, setValues] = useState(genScript?.prompts || []);
+  const [values, setValues] = useState(genScript?.script?.scenes || []);
   const [check, setCheck] = useState(false);
   const sceneRefs: any = useRef([]);
   // ví dụ: { 0: { field: 'description' } }
   useEffect(() => {
     if (genScript) {
-      const scenesData = genScript?.prompts || [];
+      const scenesData = genScript?.script?.scenes || [];
       localStorage.setItem("gen_script", JSON.stringify(genScript));
       setValues(scenesData);
     }
@@ -806,7 +806,7 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
       if (script) {
         console.log("toan update", values);
         script = JSON.parse(script);
-        script.prompts = values;
+        script.script.scenes = values;
         localStorage.setItem("gen_script", JSON.stringify(script));
       }
       setCheck(false);
@@ -1106,10 +1106,10 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                         }
                       } else {
                         updatedImage = {
-                          ...item.image,
                           id: item.image && item.image.ids[item.image.selected],
-
-                          image_url:
+                          n_prompt: item.image.n_prompt,
+                          prompt: item.image.prompt,
+                          url:
                             item.image &&
                             item.image.imageUrls[item.image.selected],
                           // Tránh URL mặc định cứng
@@ -1151,7 +1151,8 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                   );
 
                   const result = await updateProject(id, {
-                    prompts: updatedValues,
+                    current_step: "gen_image",
+                    script: updatedValues,
                   });
                   if (result && result.name) {
                     localStorage.setItem("gen_script", JSON.stringify(result));
@@ -1223,7 +1224,7 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
               }}>
               Tải hàng loạt (
               {
-                values.filter((item) => typeof item.image.selected == "number")
+                values?.filter((item) => typeof item.image.selected == "number")
                   .length
               }
               )

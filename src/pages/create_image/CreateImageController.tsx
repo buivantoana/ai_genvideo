@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import CreateImageView from "./CreateImageView";
 import { useLocation } from "react-router-dom";
-import { genScriptPromt } from "../../service/project";
+import { genScriptPromt, getImageModels } from "../../service/project";
 import { toast } from "react-toastify";
 import Loading from "../../components/Loading";
 
@@ -13,14 +13,33 @@ const CreateImageController = (props: Props) => {
   const id = query.get("id");
   const [loading, setLoading] = useState(false);
   const [genScript, setGenScript] = useState(null);
+  const [model, setModel] = useState([]);
+    useEffect(() => {
+      getModels();
+    }, []);
+    const getModels = async () => {
+      try {
+        let result = await getImageModels();
+        if (result && result.length) {
+          setModel(
+            result.map((item) => {
+              return {
+                value: item.name,
+                key: item.id,
+              };
+            })
+          );
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    };
   useEffect(() => {
     let script: any = localStorage.getItem("gen_script");
     if (script) {
       script = JSON.parse(script);
-      if (!script.prompts && id) {
-        genScriptFun();
-      } else {
-        let prompt = script.prompts.map((item) => {
+      if (script.script && id) {
+        let prompt = script.script.scenes.map((item) => {
           return {
             ...item,
             image: {
@@ -31,36 +50,44 @@ const CreateImageController = (props: Props) => {
             },
           };
         });
-        script.prompts = prompt;
+        script.script.scenes = prompt;
         setGenScript(script);
+        // genScriptFun();
+      } else {
       }
     }
   }, [id]);
-  const genScriptFun = async () => {
-    setLoading(true);
-    try {
-      let result = await genScriptPromt(id);
-      if (result) {
-        let script: any = localStorage.getItem("gen_script");
-        if (script) {
-          script = JSON.parse(script);
-          script.prompts = result;
-          setGenScript(script);
-          localStorage.setItem("gen_script", JSON.stringify(script));
-        }
-      } else {
-        toast.warning(result.detail);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-    setLoading(false);
-  };
+  // const genScriptFun = async () => {
+  //   setLoading(true);
+  //   try {
+  //     let result = await genScriptPromt(id);
+  //     if (result) {
+  //       let script: any = localStorage.getItem("gen_script");
+  //       if (script) {
+  //         script = JSON.parse(script);
+  //         script.prompts = result;
+  //         setGenScript(script);
+  //         localStorage.setItem("gen_script", JSON.stringify(script));
+  //       }
+  //     } else {
+  //       toast.warning(result.detail);
+  //     }
+  //   } catch (error) {
+  //     console.log(error);
+  //   }
+  //   setLoading(false);
+  // };
   console.log(genScript);
   return (
     <>
       {loading && <Loading />}
-      <CreateImageView genScript={genScript} setLoading={setLoading} id={id} />;
+      <CreateImageView
+        genScript={genScript}
+        setLoading={setLoading}
+        id={id}
+        modelList={model}
+      />
+      ;
     </>
   );
 };

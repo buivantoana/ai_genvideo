@@ -24,7 +24,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 const menuItems = [
   { icon: <AddBox />, label: "Tạo dự án", path: "/" },
   { icon: <ListAlt />, label: "Danh sách dự án", path: "/project-manager" },
-  { icon: <RecordVoiceOver />, label: "Cấu hình giọng nói" },
+  // { icon: <RecordVoiceOver />, label: "Cấu hình giọng nói" },
   { icon: <Settings />, label: "Cài đặt tài khoản", path: "/account" },
 ];
 const menuItemsMobile = [

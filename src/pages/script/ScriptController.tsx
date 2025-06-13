@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import ScriptView from "./ScriptView";
 import Loading from "../../components/Loading";
 import { useLocation } from "react-router-dom";
-import { genScriptProject } from "../../service/project";
+import { genScriptProject, getScriptModels } from "../../service/project";
 import { toast } from "react-toastify";
 
 type Props = {};
@@ -13,13 +13,32 @@ const ScriptController = (props: Props) => {
   const id = query.get("id");
   const [loading, setLoading] = useState(false);
   const [genScript, setGenScript] = useState(null);
+  const [model, setModel] = useState([]);
+  useEffect(() => {
+    getScript();
+  }, []);
+  const getScript = async () => {
+    try {
+      let result = await getScriptModels();
+      if (result && result.length) {
+        setModel(
+          result.map((item) => {
+            return {
+              value: item.name,
+              key: item.id,
+            };
+          })
+        );
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
   useEffect(() => {
     let script: any = localStorage.getItem("gen_script");
     if (script) {
       script = JSON.parse(script);
-      if (!script.script && id) {
-        genScriptFun();
-      } else {
+      if (script.script && id) {
         setGenScript(script);
       }
     }
@@ -53,6 +72,7 @@ const ScriptController = (props: Props) => {
         id={id}
         genScriptFun={genScriptFun}
         setLoading={setLoading}
+        modelList={model}
       />
     </>
   );

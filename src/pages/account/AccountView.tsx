@@ -111,7 +111,7 @@ const Field = styled(TextField)({
 function AccountManager({ setAction, setOpen, users }) {
   const [expanded, setExpanded] = useState(null);
   const isMobile = useMediaQuery("(max-width:600px)");
-
+  const navigate = useNavigate();
   const handleExpand = (id) => {
     setExpanded(expanded === id ? null : id);
   };
@@ -119,27 +119,44 @@ function AccountManager({ setAction, setOpen, users }) {
   return (
     <Box>
       <Box display='flex' justifyContent='flex-start' gap={2} mb={2}>
-        <Button
-          variant='contained'
-          onClick={() => setAction("add")}
-          startIcon={<RiAddCircleLine />}
-          sx={{
-            color: "white",
-            background: "rgba(89, 50, 234, 1)",
+        {JSON.parse(localStorage.getItem("user")).role == "admin" && (
+          <Button
+            variant='contained'
+            onClick={() => setAction("add")}
+            startIcon={<RiAddCircleLine />}
+            sx={{
+              color: "white",
+              background: "rgba(89, 50, 234, 1)",
 
-            borderRadius: 1,
-          }}>
-          Thêm người dùng
-        </Button>
+              borderRadius: 1,
+            }}>
+            Thêm người dùng
+          </Button>
+        )}
         <Button
           variant='contained'
           onClick={() => setAction("reset")}
           sx={{
-            color: "wwhite",
+            color: "white",
             background: "rgba(89, 50, 234, 0.3)",
             borderRadius: 1,
           }}>
           Đổi mật khẩu
+        </Button>
+        <Button
+          variant='contained'
+          onClick={() => {
+            localStorage.removeItem("token");
+            setTimeout(() => {
+              navigate("/login");
+            }, 200);
+          }}
+          sx={{
+            color: "black",
+            background: "white",
+            borderRadius: 1,
+          }}>
+          Logout
         </Button>
       </Box>
 
@@ -584,6 +601,32 @@ function AddUser({ setLoading, setAction, getAllUser }: any) {
 
 function ResetPassword({ setAction }) {
   const isMobile = useMediaQuery("(max-width:600px)");
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Hàm xử lý reset
+  const handleReset = async () => {
+    if (newPassword !== confirmPassword) {
+      toast.warning("Mật khẩu mới và xác nhận mật khẩu không khớp!");
+      return;
+    }
+    try {
+      let result = await resetPassword({
+        old_password: oldPassword,
+        new_password: newPassword,
+      });
+      if (result && result.message) {
+        toast.success(result.message);
+      } else {
+        toast.warning(result.detail);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    // Gửi dữ liệu đi hoặc xử lý tiếp theo ở đây
+  };
+
   return (
     <Box>
       <Box
@@ -595,6 +638,7 @@ function ResetPassword({ setAction }) {
         <RiArrowLeftLine />
         <Typography>Quay lại</Typography>
       </Box>
+
       <Typography
         variant='h5'
         my={3}
@@ -602,12 +646,16 @@ function ResetPassword({ setAction }) {
         fontWeight={"bold"}>
         Đổi mật khẩu
       </Typography>
+
       <Box display={"flex"} gap={2} flexDirection={"column"}>
         <Box width={"100%"}>
           <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
             Mật khẩu cũ
           </Typography>
           <Field
+            type='password'
+            value={oldPassword}
+            onChange={(e) => setOldPassword(e.target.value)}
             sx={{
               "& .MuiInputBase-root": { height: { xs: "35px", md: "45px" } },
             }}
@@ -615,11 +663,15 @@ function ResetPassword({ setAction }) {
             placeholder='Example123'
           />
         </Box>
+
         <Box width={"100%"}>
           <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
-            Mật khẩu mới{" "}
+            Mật khẩu mới
           </Typography>
           <Field
+            type='password'
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
             sx={{
               "& .MuiInputBase-root": { height: { xs: "35px", md: "45px" } },
             }}
@@ -627,11 +679,15 @@ function ResetPassword({ setAction }) {
             placeholder='Ít nhất 8 ký tự'
           />
         </Box>
+
         <Box width={"100%"}>
           <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
             Xác nhận mật khẩu mới
           </Typography>
           <Field
+            type='password'
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
             sx={{
               "& .MuiInputBase-root": { height: { xs: "35px", md: "45px" } },
             }}
@@ -644,6 +700,7 @@ function ResetPassword({ setAction }) {
       <Box textAlign={"center"} my={4}>
         <Button
           variant='contained'
+          onClick={handleReset}
           sx={{
             backgroundColor: "rgba(89, 50, 234, 1)",
             borderRadius: "12px",
@@ -665,8 +722,9 @@ import {
   DialogActions,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { Register } from "../../service/auth";
+import { Register, resetPassword } from "../../service/auth";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const DeleteAccountModal = ({ open, onClose, onConfirm }) => {
   return (
