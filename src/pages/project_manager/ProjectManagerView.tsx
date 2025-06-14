@@ -99,6 +99,7 @@ const ProjectList = ({ project, functions, setLoading, getAll }: any) => {
               setOpenDetail={setOpenDetail}
               setMember={setMember}
               setIdProject={() => setIdProject(project.id)}
+              project={project}
             />
           </Grid>
         ))}
@@ -135,10 +136,11 @@ const ProjectCard = ({
   setOpenDetail,
   setMember,
   setIdProject,
+  project,
 }: any) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
+  const navigate = useNavigate();
   return (
     <Card
       sx={{
@@ -203,8 +205,18 @@ const ProjectCard = ({
               },
             }}
             onClick={() => {
-              setIdProject();
-              setOpenDetail(true);
+              if (project?.current_step == "gen_script") {
+                navigate(`/create-image?id=${project.id}`);
+              }
+              if (project?.current_step == "gen_image") {
+                navigate(`/create-video?id=${project.id}`);
+              }
+              if (project?.current_step == "gen_video") {
+                navigate(`/narrator?id=${project.id}`);
+              }
+              if (!project?.current_step) {
+                navigate(`/script?id=${project.id}`);
+              }
             }}>
             Chi tiết dự án
           </Button>
@@ -220,6 +232,7 @@ import { Dialog, DialogContent, DialogTitle } from "@mui/material";
 import { RiAddCircleLine, RiDeleteBin5Line } from "react-icons/ri";
 import { updateProjectMember } from "../../service/project";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const Member = ({
   open,

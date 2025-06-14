@@ -35,13 +35,13 @@ const modelOptions2 = [
   "1024x1024 (1:1)",
 ];
 
-const CreateVideoView = ({ genScript, setLoading }: any) => {
+const CreateVideoView = ({ genScript, setLoading, modelList, id }: any) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [selectedTab, setSelectedTab]: any = useState(
     genScript && genScript.video_type == "video2video" ? 1 : 0
   );
-  const [model, setModel] = useState("Klling");
+  const [model, setModel] = useState("framepack");
   const [px, setPx] = useState("1920x1080 (16:9)");
   useEffect(() => {
     if (genScript) {
@@ -69,7 +69,6 @@ const CreateVideoView = ({ genScript, setLoading }: any) => {
       <Box display={"flex"} gap={3}>
         <FormControl variant='outlined' size='small'>
           <Select
-            defaultValue='Klling'
             value={model}
             onChange={(e) => setModel(e.target.value)}
             sx={{
@@ -115,9 +114,9 @@ const CreateVideoView = ({ genScript, setLoading }: any) => {
                 },
               },
             }}>
-            {modelOptions1.map((option) => (
-              <MenuItem key={option} value={option}>
-                {option}
+            {modelList.map((option) => (
+              <MenuItem key={option.key} value={option.key}>
+                {option.value}
               </MenuItem>
             ))}
           </Select>
@@ -196,6 +195,7 @@ const CreateVideoView = ({ genScript, setLoading }: any) => {
         model={model}
         px={px}
         setLoading={setLoading}
+        id={id}
       />
     </Box>
   );
@@ -209,7 +209,11 @@ import UploadFileIcon from "@mui/icons-material/UploadFile";
 import { RiPlayFill, RiRefreshLine } from "react-icons/ri";
 import ResponsiveBox from "../../components/ResponsiveBox";
 import { useNavigate } from "react-router-dom";
-import { genScriptVideo, genScriptVideoStatus } from "../../service/project";
+import {
+  genScriptVideo,
+  genScriptVideoStatus,
+  updateProject,
+} from "../../service/project";
 
 // const SceneCard = ({ sceneNumber, imageUrl, narrationText, dialogText }) => {
 //   const theme = useTheme();
@@ -382,7 +386,7 @@ const SceneCard = forwardRef((props, ref) => {
     let script: any = localStorage.getItem("gen_script");
     if (script) {
       script = JSON.parse(script);
-      script.prompts = script.prompts.map((item) =>
+      script.script.scenes = script.script.scenes.map((item) =>
         item.scene === scene
           ? {
               ...item,
@@ -405,13 +409,13 @@ const SceneCard = forwardRef((props, ref) => {
     }
     const [width, height] = px.split(" ")[0].split("x").map(Number);
     let formData = new FormData();
-    formData.set("width", width);
-    formData.set("height", height);
-    formData.set("prompt", sceneData.video.prompt);
-    formData.set("n_prompt", sceneData.video.n_prompt);
-    formData.set("model", model);
+    formData.append("width", width);
+    formData.append("height", height);
+    formData.append("prompt", sceneData.video.prompt);
+    formData.append("n_prompt", sceneData.video.n_prompt);
+    formData.append("model", model);
     if (fileImage) {
-      formData.set("input_image_file", fileImage);
+      formData.append("input_image_file", fileImage);
     }
     try {
       let result = await genScriptVideo(formData);
@@ -419,11 +423,11 @@ const SceneCard = forwardRef((props, ref) => {
       if (result && result.code === 2) {
         const poll = setInterval(async () => {
           const status = await genScriptVideoStatus(result.id);
-          if (status?.code === 0 && status?.image_url) {
+          if (status?.code === 0 && status?.video_url) {
             let script: any = localStorage.getItem("gen_script");
             if (script) {
               script = JSON.parse(script);
-              script.prompts = values.map((item) => {
+              script.script.scenes = values.map((item) => {
                 if (item.scene == scene) {
                   return {
                     ...item,
@@ -432,7 +436,7 @@ const SceneCard = forwardRef((props, ref) => {
                       ids: [...(item.video.ids || []), result.id],
                       imageUrls: [
                         ...(item.video.imageUrls || []),
-                        status.image_url,
+                        status.video_url,
                       ],
                       selected:
                         (item.video.imageUrls?.length || 0) === 0
@@ -455,7 +459,7 @@ const SceneCard = forwardRef((props, ref) => {
                         ids: [...(item.video.ids || []), result.id],
                         imageUrls: [
                           ...(item.video.imageUrls || []),
-                          status.image_url,
+                          status.video_url,
                         ],
                         selected:
                           (item.video.imageUrls?.length || 0) === 0
@@ -480,7 +484,7 @@ const SceneCard = forwardRef((props, ref) => {
         let script: any = localStorage.getItem("gen_script");
         if (script) {
           script = JSON.parse(script);
-          script.prompts = values.map((item) => {
+          script.script.scenes = values.map((item) => {
             if (item.scene == scene) {
               return {
                 ...item,
@@ -489,7 +493,7 @@ const SceneCard = forwardRef((props, ref) => {
                   ids: [...(item.video.ids || []), result.id],
                   imageUrls: [
                     ...(item.video.imageUrls || []),
-                    result.image_url,
+                    result.video_url,
                   ],
                   selected:
                     (item.video.imageUrls?.length || 0) === 0
@@ -502,7 +506,7 @@ const SceneCard = forwardRef((props, ref) => {
           });
           localStorage.setItem("gen_script", JSON.stringify(script));
         }
-        const newImageUrl = result?.image_url || "";
+        const newImageUrl = result?.video_url || "";
         setValues((prev) =>
           prev.map((item) =>
             item.scene === scene
@@ -717,13 +721,13 @@ const SceneCard = forwardRef((props, ref) => {
   );
 });
 
-function SceneEditor({ genScript, model, px, setLoading }) {
+function SceneEditor({ genScript, model, px, setLoading, id }) {
   const isMobile = useMediaQuery("(max-width:600px)");
   const navigate = useNavigate();
-  const [values, setValues] = useState(genScript?.prompts || []);
+  const [values, setValues] = useState(genScript?.script.scenes || []);
   useEffect(() => {
     if (genScript) {
-      const scenesData = genScript?.prompts || [];
+      const scenesData = genScript?.script.scenes || [];
       localStorage.setItem("gen_script", JSON.stringify(genScript));
       setValues(scenesData);
     }
@@ -755,7 +759,40 @@ function SceneEditor({ genScript, model, px, setLoading }) {
           }}>
           <Button
             variant='contained'
-            onClick={() => navigate("/narrator")}
+            onClick={async () => {
+              setLoading(true);
+              try {
+                const result = await updateProject(id, {
+                  current_step: "gen_video",
+                  script: {
+                    ...genScript.script,
+                    scenes: values.map((item) => {
+                      return {
+                        ...item,
+                        video: {
+                          ...item.video,
+                          id: item.video && item.video.ids[item.video.selected],
+                          url:
+                            item.video &&
+                            item.video.imageUrls[item.video.selected],
+                        },
+                      };
+                    }),
+                  },
+                });
+                if (result && result.name) {
+                  localStorage.setItem("gen_script", JSON.stringify(result));
+                  // setTimeout(() => {
+                  //   navigate(`/create-video?id=${id}`);
+                  // }, 500);
+                } else {
+                  throw new Error("Cập nhật dự án thất bại");
+                }
+              } catch (error) {
+                console.log(error);
+              }
+              setLoading(false);
+            }}
             sx={{
               background: "#6E00FF",
               textTransform: "none",

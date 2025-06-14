@@ -234,7 +234,7 @@ const PromptEditorUI = ({
       {scenes.map((scene, index) => (
         <Box key={index} mb={4} borderRadius={2}>
           <Typography fontWeight='bold' mb={1.5}>
-            Phần cảnh {index + 1}
+            Phần cảnh {index + 1} : {scene.title}
           </Typography>
 
           {/* Description */}
@@ -299,7 +299,7 @@ const PromptEditorUI = ({
                         fullWidth
                         minRows={2}
                         maxRows={4}
-                        value={item.description}
+                        value={item.talk}
                         onChange={(e) =>
                           handleDialogueChange(index, dIndex, e.target.value)
                         }

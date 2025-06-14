@@ -450,6 +450,10 @@ const SceneCard = forwardRef((props, ref) => {
     } else {
       setLoading(true);
     }
+    let image = values.find((item) => item.scene == scene)?.image;
+    if (image && Object.keys(image).length > 0) {
+      image = image?.imageUrls[image?.selected];
+    }
     const [width, height] = px.split(" ")[0].split("x").map(Number);
     let formData = new FormData();
     formData.append("width", width);
@@ -457,6 +461,14 @@ const SceneCard = forwardRef((props, ref) => {
     formData.append("prompt", sceneData.image.prompt);
     formData.append("n_prompt", sceneData.image.n_prompt);
     formData.append("model", model);
+    const isUploadedImage = (url) => {
+      return typeof url === "string" && url.startsWith("blob:");
+    };
+    if (isUploadedImage(image)) {
+      formData.append("input_image_file", sceneData.image.file);
+    } else {
+      formData.append("input_image_url", image);
+    }
     if (fileImage) {
       formData.append("input_image_file", fileImage);
     }
@@ -1152,7 +1164,10 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
 
                   const result = await updateProject(id, {
                     current_step: "gen_image",
-                    script: updatedValues,
+                    script: {
+                      ...genScript.script,
+                      scenes: updatedValues,
+                    },
                   });
                   if (result && result.name) {
                     localStorage.setItem("gen_script", JSON.stringify(result));
@@ -1239,7 +1254,7 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
 import { Dialog } from "@mui/material";
 import ZoomInIcon from "@mui/icons-material/ZoomIn";
 import { Close } from "@mui/icons-material";
-
+import ZoomOutMapIcon from "@mui/icons-material/ZoomOutMap";
 const ImageGridItem = ({
   item,
   index,
@@ -1297,7 +1312,7 @@ const ImageGridItem = ({
               backgroundColor: "rgba(0, 0, 0, 0.7)",
             },
           }}>
-          <ZoomInIcon />
+          <ZoomOutMapIcon />
         </IconButton>
       </Grid>
       <Dialog

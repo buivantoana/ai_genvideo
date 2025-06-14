@@ -14,26 +14,26 @@ const CreateImageController = (props: Props) => {
   const [loading, setLoading] = useState(false);
   const [genScript, setGenScript] = useState(null);
   const [model, setModel] = useState([]);
-    useEffect(() => {
-      getModels();
-    }, []);
-    const getModels = async () => {
-      try {
-        let result = await getImageModels();
-        if (result && result.length) {
-          setModel(
-            result.map((item) => {
-              return {
-                value: item.name,
-                key: item.id,
-              };
-            })
-          );
-        }
-      } catch (error) {
-        console.log(error);
+  useEffect(() => {
+    getModels();
+  }, []);
+  const getModels = async () => {
+    try {
+      let result = await getImageModels();
+      if (result && result.length) {
+        setModel(
+          result.map((item) => {
+            return {
+              value: item.name,
+              key: item.id,
+            };
+          })
+        );
       }
-    };
+    } catch (error) {
+      console.log(error);
+    }
+  };
   useEffect(() => {
     let script: any = localStorage.getItem("gen_script");
     if (script) {
@@ -45,7 +45,7 @@ const CreateImageController = (props: Props) => {
             image: {
               ...item.image,
               ids: item.image?.id ? [item.image?.id] : null,
-              imageUrls: item.image?.image_url ? [item.image?.image_url] : null,
+              imageUrls: item.image?.url ? [item.image?.url] : null,
               selected: 0,
             },
           };
