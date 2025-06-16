@@ -25,10 +25,25 @@ const AccountView = ({ setLoading, users, getAllUser }: any) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [action, setAction] = useState("manage");
   const [open, setOpen] = React.useState(false);
-
-  const handleDelete = () => {
-    // Xử lý xóa tài khoản
-    console.log("Đã xóa tài khoản!");
+  const [idUser, setIdUser] = useState(null);
+  const handleDeleteUser = (id) => {
+    setOpen(true);
+    setIdUser(id);
+  };
+  const handleDelete = async () => {
+    try {
+      if (idUser) {
+        let result = await deleteUser(idUser);
+        if (result && result.message) {
+          toast.success(result.message);
+          getAllUser();
+        } else {
+          toast.warning(result.detail);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
     setOpen(false);
   };
   return (
@@ -54,7 +69,11 @@ const AccountView = ({ setLoading, users, getAllUser }: any) => {
         />
       )}
       {action == "manage" && (
-        <AccountManager setOpen={setOpen} users={users} setAction={setAction} />
+        <AccountManager
+          handleDeleteUser={handleDeleteUser}
+          users={users}
+          setAction={setAction}
+        />
       )}
       <DeleteAccountModal
         open={open}
@@ -108,8 +127,9 @@ const Field = styled(TextField)({
   },
 });
 
-function AccountManager({ setAction, setOpen, users }) {
+function AccountManager({ setAction, users, handleDeleteUser }) {
   const [expanded, setExpanded] = useState(null);
+
   const isMobile = useMediaQuery("(max-width:600px)");
   const navigate = useNavigate();
   const handleExpand = (id) => {
@@ -225,7 +245,7 @@ function AccountManager({ setAction, setOpen, users }) {
                   justifyContent: "end",
                 }}>
                 <RiDeleteBin5Line
-                  onClick={() => setOpen(true)}
+                  onClick={() => handleDeleteUser(user)}
                   size={20}
                   color='rgba(115, 115, 151, 1)'
                 />
@@ -722,7 +742,7 @@ import {
   DialogActions,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { Register, resetPassword } from "../../service/auth";
+import { deleteUser, Register, resetPassword } from "../../service/auth";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 

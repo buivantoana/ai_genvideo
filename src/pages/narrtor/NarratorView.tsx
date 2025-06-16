@@ -427,7 +427,7 @@ const dynamicSteps = [
   { label: "Tạo Video", status: "completed" },
   { label: "Voice", status: "active" },
 ];
-const NarratorView = ({ model, genScript }) => {
+const NarratorView = ({ model, genScript, setLoading, id }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -447,7 +447,12 @@ const NarratorView = ({ model, genScript }) => {
       {/* Toggle Tabs */}
       <ResponsiveBox />
 
-      <VoiceScene model={model} genScript={genScript} />
+      <VoiceScene
+        model={model}
+        genScript={genScript}
+        setLoading={setLoading}
+        id={id}
+      />
     </Box>
   );
 };
@@ -480,9 +485,17 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import TagFacesIcon from "@mui/icons-material/TagFaces";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 import image1 from "../../images/bf053d80d9782e45442f9fd54f729b5a17616751.png";
+import speed from "../../images/speedometer.png";
+import voice_high from "../../images/volume-high.png";
 import StepComponent from "../../components/StepComponent";
 import ResponsiveBox from "../../components/ResponsiveBox";
-import { genScriptVoice, genScriptVoiceStatus } from "../../service/project";
+import {
+  genScriptVoice,
+  genScriptVoiceStatus,
+  updateProject,
+} from "../../service/project";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const VoiceItem = ({
   title,
@@ -498,16 +511,115 @@ const VoiceItem = ({
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   console.log("model", model);
   // State for form inputs
-  const [selectedModel, setSelectedModel] = useState(model[0]?.id || "dia"); // Default to first model (Dia)
+  const [selectedModel, setSelectedModel] = useState(
+    values.find((item) => item.scene === scene)?.voice?.model ||
+      model[0]?.id ||
+      "dia"
+  );
+
+  const [selectedCharacter, setSelectedCharacter] = useState(
+    values.find((item) => item.scene === scene)?.voice?.voice || ""
+  );
+
+  const [readingSpeed, setReadingSpeed] = useState(
+    values.find((item) => item.scene === scene)?.voice?.speed || 1
+  );
+
+  const [duration, setDuration] = useState(
+    values.find((item) => item.scene === scene)?.voice?.delay || "0.5"
+  );
   const [selectedVoice, setSelectedVoice] = useState(""); // Voice for "Lời thoại"
-  const [selectedCharacter, setSelectedCharacter] = useState(""); // Voice for "Nhân vật"
-  const [duration, setDuration] = useState(""); // Duration input
-  const [readingSpeed, setReadingSpeed] = useState(1); // Default reading speed
+
   const [narrationText, setNarrationText] = useState(text); // Narration text input
   const [intervalId, setIntervalId] = useState(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentAudio, setCurrentAudio] = useState<HTMLAudioElement | null>(
+    null
+  );
+  const [currentTime, setCurrentTime] = useState(0);
   const selectedModelData = model.find((m) => m.id === selectedModel);
-  const voices = selectedModelData?.voices[0] || [];
+  const voices = Array.isArray(selectedModelData?.voices)
+    ? selectedModelData.voices.length > 0 &&
+      Array.isArray(selectedModelData.voices[0])
+      ? selectedModelData.voices[0]
+      : selectedModelData.voices
+    : [];
   const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    const currentScene = values.find((item) => item.scene === scene);
+    if (currentScene?.voice) {
+      // Điền model nếu có
+      if (currentScene.voice.model) {
+        setSelectedModel(currentScene.voice.model);
+      }
+
+      // Điền nhân vật nếu có
+      if (currentScene.voice.voice) {
+        setSelectedCharacter(currentScene.voice.voice);
+      }
+
+      // Điền tốc độ nếu có
+      if (currentScene.voice.speed) {
+        setReadingSpeed(currentScene.voice.speed);
+      }
+
+      // Điền độ trễ nếu có
+      if (currentScene.voice.delay) {
+        setDuration(currentScene.voice.delay);
+      }
+    }
+  }, [scene, values]);
+  const handlePlayAudio = () => {
+    const voiceData = values.find((item) => item.scene === scene)?.voice;
+
+    if (!voiceData?.url) return;
+
+    if (isPlaying && currentAudio) {
+      currentAudio.pause();
+      setIsPlaying(false);
+      return;
+    }
+
+    if (currentAudio) {
+      currentAudio.pause();
+    }
+
+    const audio = new Audio(voiceData.url);
+
+    audio.onplay = () => setIsPlaying(true);
+    audio.onpause = () => setIsPlaying(false);
+    audio.onended = () => {
+      setIsPlaying(false);
+      setCurrentTime(0); // Reset khi kết thúc
+    };
+
+    // Thêm sự kiện cập nhật thời gian
+    audio.ontimeupdate = () => {
+      setCurrentTime(audio.currentTime);
+    };
+
+    audio
+      .play()
+      .then(() => {
+        setCurrentAudio(audio);
+      })
+      .catch((error) => {
+        console.error("Lỗi khi phát audio:", error);
+      });
+  };
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
+  };
+  useEffect(() => {
+    return () => {
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.ontimeupdate = null; // Xóa sự kiện
+      }
+    };
+  }, [currentAudio]);
   const handleGenerateDialogue = async () => {
     console.log({
       selectedModel,
@@ -527,6 +639,7 @@ const VoiceItem = ({
     formData.append("model", selectedModel);
     formData.append("speed", String(readingSpeed));
     formData.append("voice", selectedCharacter);
+    formData.append("delay", duration);
     if (voice) {
       formData.append("sample_url", voice);
     }
@@ -535,7 +648,16 @@ const VoiceItem = ({
       let result = await genScriptVoice(formData);
 
       if (result && result.code === 2) {
+        let retryCount = 0;
+        const maxRetries = 60;
         const poll = setInterval(async () => {
+          retryCount++;
+          if (retryCount > maxRetries) {
+            clearInterval(poll);
+            setLoading(false);
+            toast.warning("Quá thời gian chờ 2 phút. Vui lòng thử lại sau.");
+            return;
+          }
           const status = await genScriptVoiceStatus(result.id);
           if (status?.code === 0 && status?.voice_url) {
             console.log(status);
@@ -553,6 +675,7 @@ const VoiceItem = ({
                       voice: selectedCharacter,
                       model: selectedModel,
                       speed: readingSpeed,
+                      delay: duration,
                     },
                   };
                 }
@@ -572,6 +695,7 @@ const VoiceItem = ({
                         voice: selectedCharacter,
                         model: selectedModel,
                         speed: readingSpeed,
+                        delay: duration,
                       },
                     }
                   : item
@@ -599,6 +723,7 @@ const VoiceItem = ({
                   voice: selectedCharacter,
                   model: selectedModel,
                   speed: readingSpeed,
+                  delay: duration,
                 },
               };
             }
@@ -620,6 +745,7 @@ const VoiceItem = ({
                     voice: selectedCharacter,
                     model: selectedModel,
                     speed: readingSpeed,
+                    delay: duration,
                   },
                 }
               : item
@@ -634,365 +760,432 @@ const VoiceItem = ({
   };
 
   return (
-    <Box
-      sx={{
-        border: "1px solid #2A274B",
-        borderRadius: 2,
-        backgroundColor: "#1B1A3C",
-        mb: 2,
-      }}>
+    <>
+      <Typography fontSize={isMobile ? 20 : 24} fontWeight='bold' mb={2}>
+        Video phân cảnh {scene}:
+      </Typography>
       <Box
-        display='flex'
-        alignItems={isMobile ? "start" : "center"}
-        justifyContent='space-between'
-        flexDirection={isMobile ? "column" : "row"}
-        p={2}
-        sx={{ cursor: "pointer" }}
-        onClick={() => setOpen(!open)}>
-        <Box display='flex' alignItems={isMobile ? "left" : "center"} gap={2}>
-          <Box>
-            <Typography variant='h6' fontWeight='bold'>
-              {title}
-            </Typography>
-            <Typography my={2} sx={{ fontStyle: "italic" }}>
-              {text}
-            </Typography>
-          </Box>
-        </Box>
-        <Box display='flex' alignItems='center' gap={3}>
-          <img
-            src={image1}
-            alt='scene'
-            style={{
-              width: isMobile ? 100 : 201,
-              height: isMobile ? 50 : 108,
-              borderRadius: 8,
-              objectFit: "cover",
-            }}
-          />
-          <AccessTimeIcon sx={{ color: "#ccc" }} />
-          <TagFacesIcon sx={{ color: "orange" }} />
-          <Typography>1x</Typography>
-          <IconButton>
-            {open ? (
-              <ExpandLessIcon sx={{ color: "#fff" }} />
-            ) : (
-              <ExpandMoreIcon sx={{ color: "#fff" }} />
-            )}
-          </IconButton>
-        </Box>
-      </Box>
-
-      <Collapse in={open} sx={{ borderTop: "2px solid rgba(65, 65, 136, 1)" }}>
-        <Box p={2}>
-          <Typography fontWeight='bold' mb={3}>
-            Lời dẫn truyện
-          </Typography>
-          <TextField
-            fullWidth
-            placeholder='Nhập lời dẫn truyện'
-            variant='outlined'
-            size='small'
-            value={narrationText}
-            onChange={(e) => setNarrationText(e.target.value)}
-            sx={{
-              backgroundColor: "#1A1836",
-              borderRadius: 2,
-              input: { color: "white" },
-              "& .MuiOutlinedInput-root": {
-                height: isMobile ? "40px" : "50px",
-                alignItems: "center",
-              },
-              "& .MuiOutlinedInput-notchedOutline": {
-                border: "2px solid",
-                borderColor: "#414188",
-              },
-            }}
-          />
-
-          <Box mt={3}>
-            <Typography fontWeight='bold' mb={3}>
-              Cài đặt hệ thống và âm thanh
-            </Typography>
-
-            <Box
-              display='flex'
-              gap={2}
-              sx={{ flexDirection: isMobile ? "column" : "row" }}>
-              <FormControl fullWidth>
-                <InputLabel sx={{ color: "white" }}>Mô hình</InputLabel>
-                <Select
-                  value={selectedModel}
-                  onChange={(e) => {
-                    setSelectedModel(e.target.value);
-                    setSelectedCharacter(""); // Reset character when model changes
-                  }}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: {
-                        backgroundColor: "#2A274B",
-                        color: "#fff",
-                        borderRadius: 2,
-                        mt: 1,
-                        textAlign: "center",
-                        "& .MuiMenuItem-root": {
-                          "&:hover": {
-                            backgroundColor: "#3A375F",
-                            borderRadius: 1,
-                          },
-                          "&.Mui-selected": {
-                            backgroundColor: "#4B3A79",
-                            borderRadius: 1,
-                          },
-                        },
-                      },
-                    },
-                  }}
-                  sx={{
-                    background: "transparent",
-                    color: "#fff",
-                    borderRadius: 2,
-                    width: isMobile ? "100%" : "unset",
-                    height: isMobile ? 40 : 50,
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      border: "2px solid",
-                      borderColor: "#414188",
-                    },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      border: "2px solid",
-                      borderColor: "#414188",
-                    },
-                    "& .MuiSelect-select": {
-                      display: "flex",
-                      alignItems: "center",
-                      height: "100%",
-                      padding: "0 14px",
-                    },
-                    ".MuiSelect-icon": { color: "#fff" },
-                  }}
-                  label='Mô hình'>
-                  {model.map((m) => (
-                    <MenuItem key={m.id} value={m.id}>
-                      {m.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-              <FormControl fullWidth>
-                <InputLabel sx={{ color: "white" }}>Lời thoại</InputLabel>
-                <Select
-                  value={selectedVoice}
-                  onChange={(e) => setSelectedVoice(e.target.value)}
-                  MenuProps={{
-                    PaperProps: {
-                      sx: {
-                        backgroundColor: "#2A274B",
-                        color: "#fff",
-                        borderRadius: 2,
-                        mt: 1,
-                        textAlign: "center",
-                        "& .MuiMenuItem-root": {
-                          "&:hover": {
-                            backgroundColor: "#3A375F",
-                            borderRadius: 1,
-                          },
-                          "&.Mui-selected": {
-                            backgroundColor: "#4B3A79",
-                            borderRadius: 1,
-                          },
-                        },
-                      },
-                    },
-                  }}
-                  sx={{
-                    background: "transparent",
-                    color: "#fff",
-                    borderRadius: 2,
-                    width: isMobile ? "100%" : "unset",
-                    height: isMobile ? 40 : 50,
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      border: "2px solid",
-                      borderColor: "#414188",
-                    },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      border: "2px solid",
-                      borderColor: "#414188",
-                    },
-                    "& .MuiSelect-select": {
-                      display: "flex",
-                      alignItems: "center",
-                      height: "100%",
-                      padding: "0 14px",
-                    },
-                    ".MuiSelect-icon": { color: "#fff" },
-                  }}
-                  label='Lời thoại'>
-                  <MenuItem value='MC Tung'>MC Tung</MenuItem>
-                  {/* Add more static voice options if needed */}
-                </Select>
-              </FormControl>
-              <FormControl fullWidth>
-                <InputLabel sx={{ color: "white" }}>Nhân vật</InputLabel>
-                <Select
-                  value={selectedCharacter}
-                  onChange={(e) => setSelectedCharacter(e.target.value)}
-                  disabled={voices.length === 0} // Disable if no voices available
-                  MenuProps={{
-                    PaperProps: {
-                      sx: {
-                        backgroundColor: "#2A274B",
-                        color: "#fff",
-                        borderRadius: 2,
-                        mt: 1,
-                        textAlign: "center",
-                        "& .MuiMenuItem-root": {
-                          "&:hover": {
-                            backgroundColor: "#3A375F",
-                            borderRadius: 1,
-                          },
-                          "&.Mui-selected": {
-                            backgroundColor: "#4B3A79",
-                            borderRadius: 1,
-                          },
-                        },
-                      },
-                    },
-                  }}
-                  sx={{
-                    background: "transparent",
-                    color: "#fff",
-                    borderRadius: 2,
-                    width: isMobile ? "100%" : "unset",
-                    height: isMobile ? 40 : 50,
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      border: "2px solid",
-                      borderColor: "#414188",
-                    },
-                    "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                      border: "2px solid",
-                      borderColor: "#414188",
-                    },
-                    "& .MuiSelect-select": {
-                      display: "flex",
-                      alignItems: "center",
-                      height: "100%",
-                      padding: "0 14px",
-                    },
-                    ".MuiSelect-icon": { color: "#fff" },
-                  }}
-                  label='Nhân vật'>
-                  {voices.length > 0 ? (
-                    voices.map((voice) => (
-                      <MenuItem key={voice.id} value={voice.id}>
-                        {voice.name}
-                      </MenuItem>
-                    ))
-                  ) : (
-                    <MenuItem value='' disabled>
-                      No voices available
-                    </MenuItem>
-                  )}
-                </Select>
-              </FormControl>
-              <FormControl fullWidth>
-                <TextField
-                  fullWidth
-                  placeholder='Thời lượng'
-                  variant='outlined'
-                  size='small'
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
-                  sx={{
-                    backgroundColor: "#1A1836",
-                    borderRadius: 2,
-                    input: { color: "white" },
-                    "& .MuiOutlinedInput-root": {
-                      height: isMobile ? "40px" : "50px",
-                      alignItems: "center",
-                    },
-                    "& .MuiOutlinedInput-notchedOutline": {
-                      border: "2px solid",
-                      borderColor: "#414188",
-                    },
-                  }}
-                />
-              </FormControl>
+        sx={{
+          border: "1px solid #2A274B",
+          borderRadius: 2,
+          backgroundColor: "#1B1A3C",
+          mb: 2,
+        }}>
+        <Box
+          display='flex'
+          alignItems={isMobile ? "start" : "center"}
+          justifyContent='space-between'
+          flexDirection={isMobile ? "column" : "row"}
+          p={2}
+          sx={{ cursor: "pointer" }}>
+          <Box display='flex' alignItems={isMobile ? "left" : "center"} gap={2}>
+            <Box>
+              <Typography variant='h6' fontWeight='bold'>
+                {title}
+              </Typography>
+              <Typography my={2} sx={{ fontStyle: "italic" }}>
+                {text}
+              </Typography>
             </Box>
-            <Box
-              mt={3}
-              display={"flex"}
-              sx={{ flexDirection: isMobile ? "column" : "row" }}
-              justifyContent={"space-between"}
-              alignItems={"center"}>
-              <Box width={isMobile ? "100%" : "60%"}>
-                <Typography gutterBottom>Tốc độ đọc</Typography>
-                <Slider
-                  value={readingSpeed}
-                  onChange={(e, newValue) => setReadingSpeed(newValue)}
-                  step={0.25}
-                  min={0.5}
-                  max={2}
-                  marks={[
-                    { value: 0.5, label: "0.5" },
-                    { value: 1, label: "1.0" },
-                    { value: 1.5, label: "1.5" },
-                    { value: 2, label: "2.0" },
-                  ]}
-                  valueLabelDisplay='auto'
+          </Box>
+          <Box display='flex' alignItems='center' gap={3}>
+            <img
+              src={image1}
+              alt='scene'
+              style={{
+                width: isMobile ? 100 : 201,
+                height: isMobile ? 50 : 108,
+                borderRadius: 8,
+                objectFit: "cover",
+              }}
+            />
+            {values &&
+              values.find((item) => item.scene === scene)?.voice &&
+              values.find((item) => item.scene === scene)?.voice.url && (
+                <Box
                   sx={{
-                    color: "#6b5bfc",
-                    "& .MuiSlider-markLabel": {
-                      color: "#fff", // đổi màu label dưới thành trắng
-                    },
-                    "& .MuiSlider-valueLabel": {
-                      backgroundColor: "#6b5bfc", // màu tooltip hiện khi kéo
-                      color: "#fff",
-                    },
+                    border: "1px solid rgba(139, 139, 168, 1)",
+                    borderRadius: "16px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    padding: "5px 8px",
+                    gap: 1,
                   }}
-                />
-              </Box>
-              <Box textAlign='right' width={isMobile ? "100%" : "30%"}>
-                <Button
-                  variant='contained'
-                  onClick={handleGenerateDialogue}
+                  onClick={handlePlayAudio}>
+                  <img src={voice_high} alt='' />
+                  <Typography color='rgba(139, 139, 168, 1)'>
+                    {isPlaying
+                      ? formatTime(currentTime)
+                      : formatTime(
+                          values.find((item) => item.scene === scene)?.voice
+                            ?.duration || 0
+                        )}
+                  </Typography>
+                </Box>
+              )}
+            {selectedCharacter &&
+              voices.find((item) => item.id == selectedCharacter) &&
+              voices.find((item) => item.id == selectedCharacter).name && (
+                <Box
                   sx={{
-                    background: "#6E00FF",
-                    textTransform: "none",
-                    borderRadius: 1,
-                    flex: 1,
-                    fontWeight: 600,
-                    px: 3,
-                    "&:hover": {
-                      background: "#5900cc",
-                    },
-                    height: 40,
-                    fontSize: isMobile ? "13px" : "16px",
-                    width: "100%",
-                    opacity: loading ? 0.8 : 1,
-                    pointerEvents: loading ? "none" : "unset",
+                    border: "1px solid rgba(139, 139, 168, 1)",
+                    borderRadius: "16px",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    padding: "5px 8px",
                   }}>
-                  {loading ? (
-                    <Stack direction='row' alignItems='center' spacing={1}>
-                      <CircularProgress size={16} color='inherit' />
-                      <span>Tạo lời thoại...</span>
-                    </Stack>
-                  ) : (
-                    "Tạo lời thoại"
-                  )}
-                </Button>
+                  <Typography>
+                    {selectedCharacter &&
+                      voices.find((item) => item.id == selectedCharacter) &&
+                      voices.find((item) => item.id == selectedCharacter).name}
+                  </Typography>
+                </Box>
+              )}
+            <Box
+              sx={{
+                border: "1px solid rgba(139, 139, 168, 1)",
+                borderRadius: "16px",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                padding: "5px 8px",
+              }}>
+              <img src={speed} alt='' />
+              <Typography color='rgba(139, 139, 168, 1)'>
+                {Math.floor(readingSpeed)}x
+              </Typography>
+            </Box>
+            <IconButton onClick={() => setOpen(!open)}>
+              {open ? (
+                <ExpandLessIcon sx={{ color: "#fff" }} />
+              ) : (
+                <ExpandMoreIcon sx={{ color: "#fff" }} />
+              )}
+            </IconButton>
+          </Box>
+        </Box>
+
+        <Collapse
+          in={open}
+          sx={{ borderTop: "2px solid rgba(65, 65, 136, 1)" }}>
+          <Box p={2}>
+            <Typography fontWeight='bold' mb={3}>
+              Lời dẫn truyện
+            </Typography>
+            <TextField
+              fullWidth
+              placeholder='Nhập lời dẫn truyện'
+              variant='outlined'
+              size='small'
+              value={narrationText}
+              onChange={(e) => setNarrationText(e.target.value)}
+              sx={{
+                backgroundColor: "#1A1836",
+                borderRadius: 2,
+                input: { color: "white" },
+                "& .MuiOutlinedInput-root": {
+                  height: isMobile ? "40px" : "50px",
+                  alignItems: "center",
+                },
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: "2px solid",
+                  borderColor: "#414188",
+                },
+              }}
+            />
+
+            <Box mt={3}>
+              <Typography fontWeight='bold' mb={3}>
+                Cài đặt hệ thống và âm thanh
+              </Typography>
+
+              <Box
+                display='flex'
+                gap={2}
+                sx={{ flexDirection: isMobile ? "column" : "row" }}>
+                <FormControl fullWidth>
+                  <InputLabel sx={{ color: "white" }}>Mô hình</InputLabel>
+                  <Select
+                    value={selectedModel}
+                    onChange={(e) => {
+                      setSelectedModel(e.target.value);
+                      setSelectedCharacter(""); // Reset character when model changes
+                    }}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          backgroundColor: "#2A274B",
+                          color: "#fff",
+                          borderRadius: 2,
+                          mt: 1,
+                          textAlign: "center",
+                          "& .MuiMenuItem-root": {
+                            "&:hover": {
+                              backgroundColor: "#3A375F",
+                              borderRadius: 1,
+                            },
+                            "&.Mui-selected": {
+                              backgroundColor: "#4B3A79",
+                              borderRadius: 1,
+                            },
+                          },
+                        },
+                      },
+                    }}
+                    sx={{
+                      background: "transparent",
+                      color: "#fff",
+                      borderRadius: 2,
+                      width: isMobile ? "100%" : "unset",
+                      height: isMobile ? 40 : 50,
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        border: "2px solid",
+                        borderColor: "#414188",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        border: "2px solid",
+                        borderColor: "#414188",
+                      },
+                      "& .MuiSelect-select": {
+                        display: "flex",
+                        alignItems: "center",
+                        height: "100%",
+                        padding: "0 14px",
+                      },
+                      ".MuiSelect-icon": { color: "#fff" },
+                    }}
+                    label='Mô hình'>
+                    {model.map((m) => (
+                      <MenuItem key={m.id} value={m.id}>
+                        {m.name}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </FormControl>
+                <FormControl fullWidth>
+                  <InputLabel sx={{ color: "white" }}>Lời thoại</InputLabel>
+                  <Select
+                    value={selectedVoice}
+                    onChange={(e) => setSelectedVoice(e.target.value)}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          backgroundColor: "#2A274B",
+                          color: "#fff",
+                          borderRadius: 2,
+                          mt: 1,
+                          textAlign: "center",
+                          "& .MuiMenuItem-root": {
+                            "&:hover": {
+                              backgroundColor: "#3A375F",
+                              borderRadius: 1,
+                            },
+                            "&.Mui-selected": {
+                              backgroundColor: "#4B3A79",
+                              borderRadius: 1,
+                            },
+                          },
+                        },
+                      },
+                    }}
+                    sx={{
+                      background: "transparent",
+                      color: "#fff",
+                      borderRadius: 2,
+                      width: isMobile ? "100%" : "unset",
+                      height: isMobile ? 40 : 50,
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        border: "2px solid",
+                        borderColor: "#414188",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        border: "2px solid",
+                        borderColor: "#414188",
+                      },
+                      "& .MuiSelect-select": {
+                        display: "flex",
+                        alignItems: "center",
+                        height: "100%",
+                        padding: "0 14px",
+                      },
+                      ".MuiSelect-icon": { color: "#fff" },
+                    }}
+                    label='Lời thoại'>
+                    <MenuItem value='MC Tung'>MC Tung</MenuItem>
+                    {/* Add more static voice options if needed */}
+                  </Select>
+                </FormControl>
+                <FormControl fullWidth>
+                  <InputLabel sx={{ color: "white" }}>Nhân vật</InputLabel>
+                  <Select
+                    value={selectedCharacter}
+                    onChange={(e) => setSelectedCharacter(e.target.value)}
+                    disabled={voices.length === 0} // Disable if no voices available
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          backgroundColor: "#2A274B",
+                          color: "#fff",
+                          borderRadius: 2,
+                          mt: 1,
+                          textAlign: "center",
+                          "& .MuiMenuItem-root": {
+                            "&:hover": {
+                              backgroundColor: "#3A375F",
+                              borderRadius: 1,
+                            },
+                            "&.Mui-selected": {
+                              backgroundColor: "#4B3A79",
+                              borderRadius: 1,
+                            },
+                          },
+                        },
+                      },
+                    }}
+                    sx={{
+                      background: "transparent",
+                      color: "#fff",
+                      borderRadius: 2,
+                      width: isMobile ? "100%" : "unset",
+                      height: isMobile ? 40 : 50,
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        border: "2px solid",
+                        borderColor: "#414188",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        border: "2px solid",
+                        borderColor: "#414188",
+                      },
+                      "& .MuiSelect-select": {
+                        display: "flex",
+                        alignItems: "center",
+                        height: "100%",
+                        padding: "0 14px",
+                      },
+                      ".MuiSelect-icon": { color: "#fff" },
+                    }}
+                    label='Nhân vật'>
+                    {voices.length > 0 ? (
+                      voices.map((voice) => (
+                        <MenuItem key={voice.id} value={voice.id}>
+                          {voice.name}
+                        </MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem value='' disabled>
+                        No voices available
+                      </MenuItem>
+                    )}
+                  </Select>
+                </FormControl>
+                <FormControl fullWidth>
+                  <TextField
+                    fullWidth
+                    placeholder='Thời lượng'
+                    label='Độ trễ (s)'
+                    variant='outlined'
+                    size='small'
+                    value={duration}
+                    onChange={(e) => setDuration(e.target.value)}
+                    sx={{
+                      backgroundColor: "#1A1836",
+                      borderRadius: 2,
+
+                      input: { color: "white" },
+                      "& .MuiInputLabel-root": {
+                        color: "white", // Label màu trắng
+                      },
+                      "& .MuiOutlinedInput-root": {
+                        height: isMobile ? "40px" : "50px",
+                        alignItems: "center",
+                      },
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        border: "2px solid",
+                        borderColor: "#414188",
+                      },
+                    }}
+                  />
+                </FormControl>
+              </Box>
+              <Box
+                mt={3}
+                display={"flex"}
+                sx={{ flexDirection: isMobile ? "column" : "row" }}
+                justifyContent={"space-between"}
+                alignItems={"center"}>
+                <Box width={isMobile ? "100%" : "60%"}>
+                  <Typography gutterBottom>Tốc độ đọc</Typography>
+                  <Slider
+                    value={readingSpeed}
+                    onChange={(e, newValue) => setReadingSpeed(newValue)}
+                    step={0.25}
+                    min={0.5}
+                    max={2}
+                    marks={[
+                      { value: 0.5, label: "0.5" },
+                      { value: 1, label: "1.0" },
+                      { value: 1.5, label: "1.5" },
+                      { value: 2, label: "2.0" },
+                    ]}
+                    valueLabelDisplay='auto'
+                    sx={{
+                      color: "#6b5bfc",
+                      "& .MuiSlider-markLabel": {
+                        color: "#fff", // đổi màu label dưới thành trắng
+                      },
+                      "& .MuiSlider-valueLabel": {
+                        backgroundColor: "#6b5bfc", // màu tooltip hiện khi kéo
+                        color: "#fff",
+                      },
+                    }}
+                  />
+                </Box>
+                <Box textAlign='right' width={isMobile ? "100%" : "30%"}>
+                  <Button
+                    variant='contained'
+                    onClick={handleGenerateDialogue}
+                    sx={{
+                      background: "#6E00FF",
+                      textTransform: "none",
+                      borderRadius: 1,
+                      flex: 1,
+                      fontWeight: 600,
+                      px: 3,
+                      "&:hover": {
+                        background: "#5900cc",
+                      },
+                      height: 40,
+                      fontSize: isMobile ? "13px" : "16px",
+                      width: "100%",
+                      opacity: loading ? 0.8 : 1,
+                      pointerEvents: loading ? "none" : "unset",
+                    }}>
+                    {loading ? (
+                      <Stack direction='row' alignItems='center' spacing={1}>
+                        <CircularProgress size={16} color='inherit' />
+                        <span>Tạo lời thoại...</span>
+                      </Stack>
+                    ) : (
+                      "Tạo lời thoại"
+                    )}
+                  </Button>
+                </Box>
               </Box>
             </Box>
           </Box>
-        </Box>
-      </Collapse>
-    </Box>
+        </Collapse>
+      </Box>
+    </>
   );
 };
 
-const VoiceScene = ({ model, genScript }) => {
+const VoiceScene = ({ model, genScript, setLoading, id }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [values, setValues] = useState(genScript?.script.scenes || []);
+  const navigate = useNavigate();
   useEffect(() => {
     if (genScript) {
       const scenesData = genScript?.script.scenes || [];
@@ -1002,10 +1195,6 @@ const VoiceScene = ({ model, genScript }) => {
   }, [genScript]);
   return (
     <Box sx={{ p: isMobile ? 2 : 4, color: "#fff", background: "#0D0C2B" }}>
-      <Typography fontSize={isMobile ? 20 : 24} fontWeight='bold' mb={2}>
-        Video phân cảnh 1:
-      </Typography>
-
       {values.map((item) => {
         return (
           <VoiceItem
@@ -1035,6 +1224,39 @@ const VoiceScene = ({ model, genScript }) => {
       <Box textAlign='center' mt={4}>
         <Button
           variant='contained'
+          onClick={async () => {
+            setLoading(true);
+            try {
+              let isCreateVoice = values.filter((item) => !item.voice)[0];
+              if (isCreateVoice) {
+                toast.warning("Cần tạo đủ voice");
+              } else {
+                const result = await updateProject(id, {
+                  current_step: "gen_voice",
+                  script: {
+                    ...genScript.script,
+                    scenes: values.map((item) => {
+                      return {
+                        ...item,
+                        voice: item.voice,
+                      };
+                    }),
+                  },
+                });
+                if (result && result.name) {
+                  localStorage.setItem("gen_script", JSON.stringify(result));
+                  setTimeout(() => {
+                    navigate(`/sub?id=${id}`);
+                  }, 500);
+                } else {
+                  throw new Error("Cập nhật dự án thất bại");
+                }
+              }
+            } catch (error) {
+              console.log(error);
+            }
+            setLoading(false);
+          }}
           sx={{
             background: "#6E00FF",
             textTransform: "none",

@@ -205,7 +205,7 @@ const ProjectCard = ({
               },
             }}
             onClick={() => {
-              console.log("pro",project)
+              console.log("pro", project);
               if (project?.current_step == "gen_script") {
                 navigate(`/create-image?id=${project.id}`);
               }
@@ -319,9 +319,8 @@ import {
   ListItemText,
   FormControl,
   InputLabel,
-  OutlinedInput
+  OutlinedInput,
 } from "@mui/material";
-
 
 const options = ["Voice", "Video", "Lorem"];
 
@@ -330,7 +329,7 @@ function RolePermissionSelect() {
 
   const handleChange = (event) => {
     const {
-      target: { value }
+      target: { value },
     } = event;
     setSelected(typeof value === "string" ? value.split(",") : value);
   };
@@ -342,7 +341,7 @@ function RolePermissionSelect() {
         multiple
         value={selected}
         onChange={handleChange}
-        input={<OutlinedInput label="Phân quyền" />}
+        input={<OutlinedInput label='Phân quyền' />}
         renderValue={(selected) => selected.join(", ")}
         MenuProps={{
           PaperProps: {
@@ -354,15 +353,15 @@ function RolePermissionSelect() {
               "& .MuiMenuItem-root": {
                 "&:hover": {
                   backgroundColor: "#3A375F",
-                  borderRadius: 1
+                  borderRadius: 1,
                 },
                 "&.Mui-selected": {
                   backgroundColor: "#4B3A79",
-                  borderRadius: 1
-                }
-              }
-            }
-          }
+                  borderRadius: 1,
+                },
+              },
+            },
+          },
         }}
         sx={{
           backgroundColor: "rgba(29, 29, 65, 1)",
@@ -370,14 +369,13 @@ function RolePermissionSelect() {
           borderRadius: "8px",
           "& .MuiOutlinedInput-notchedOutline": {
             border: "2px solid",
-            borderColor: "#414188"
+            borderColor: "#414188",
           },
           "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#414188"
+            borderColor: "#414188",
           },
-          ".MuiSelect-icon": { color: "#fff" }
-        }}
-      >
+          ".MuiSelect-icon": { color: "#fff" },
+        }}>
         {options.map((name) => (
           <MenuItem key={name} value={name}>
             <Checkbox
@@ -385,8 +383,8 @@ function RolePermissionSelect() {
               sx={{
                 color: "#888",
                 "&.Mui-checked": {
-                  color: "#8A6EFF"
-                }
+                  color: "#8A6EFF",
+                },
               }}
             />
             <ListItemText primary={name} />
@@ -408,6 +406,31 @@ function AccountManager({
   const [expanded, setExpanded] = useState(null);
   const isMobile = useMediaQuery("(max-width:600px)");
   const [openAdd, setOpenAdd] = React.useState(false);
+  const [openDelete, setOpenDelete] = React.useState(false);
+  const [idUser, setIdUser] = useState(null);
+  const handleDeleteUser = (id) => {
+    setOpenDelete(true);
+    setIdUser(id);
+  };
+  const handleDelete = async () => {
+    try {
+      if (idUser) {
+        let result = await deleteUser({
+          username: idUser.username,
+          project_id: idProject,
+        });
+        if (result && result.message) {
+          toast.success(result.message);
+          getAll();
+        } else {
+          toast.warning(result.detail);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
+    setOpenDelete(false);
+  };
   console.log("member", member);
   const handleClose = async (body) => {
     if (!body.userName.trim()) {
@@ -444,6 +467,11 @@ function AccountManager({
 
   return (
     <Box>
+      <DeleteAccountModal
+        open={openDelete}
+        onClose={() => setOpenDelete(false)}
+        onConfirm={handleDelete}
+      />
       <AddMemberModal
         open={openAdd}
         onClose={() => setOpenAdd(false)}
@@ -527,7 +555,7 @@ function AccountManager({
                   justifyContent: "end",
                 }}>
                 <RiDeleteBin5Line
-                  onClick={() => setOpen(true)}
+                  onClick={() => handleDeleteUser(user)}
                   size={20}
                   color='rgba(115, 115, 151, 1)'
                 />
@@ -546,7 +574,7 @@ function AccountManager({
                   gap={isMobile ? 1 : 0}
                   alignItems={"end"}>
                   <Box width={isMobile ? "100%" : "47%"}>
-                   <RolePermissionSelect/>
+                    <RolePermissionSelect />
                   </Box>
                   <Box width={isMobile ? "100%" : "47%"} textAlign={"end"}>
                     <Button
@@ -569,7 +597,91 @@ function AccountManager({
     </Box>
   );
 }
+import { DialogActions } from "@mui/material";
+import { deleteUser } from "../../service/auth";
 
+const DeleteAccountModal = ({ open, onClose, onConfirm }) => {
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      PaperProps={{
+        sx: {
+          backgroundColor: "rgba(29, 29, 65, 1)",
+          color: "#fff",
+          borderRadius: "16px",
+          padding: 2,
+          minWidth: 300,
+        },
+      }}>
+      <DialogTitle
+        sx={{
+          position: "relative",
+          textAlign: "center",
+          fontWeight: "bold",
+          fontSize: { xs: "1rem", md: "1.25rem" },
+        }}>
+        Bạn muốn xóa tài khoản này?
+        <IconButton
+          aria-label='close'
+          onClick={onClose}
+          sx={{
+            position: "absolute",
+            right: 0,
+            top: 0,
+            color: "white",
+          }}>
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+
+      <DialogContent sx={{ textAlign: "center" }}>
+        <Typography
+          color='rgba(255, 255, 255, .8)'
+          sx={{ fontSize: { xs: ".7rem", md: "1rem" } }}>
+          Bạn có muốn xóa tài khoản này ngay bây giờ không?
+          <br />
+          Bạn không thể hoàn tác hành động này.
+        </Typography>
+      </DialogContent>
+
+      <DialogActions sx={{ justifyContent: "center", pb: 2 }}>
+        <Button
+          onClick={onClose}
+          variant='contained'
+          sx={{
+            borderColor: "#7F7EFF",
+            color: "#fff",
+            backgroundColor: "rgba(47, 35, 116, 1)",
+            borderRadius: "12px",
+            px: 4,
+            height: { xs: "30px", md: "unset" },
+            "&:hover": {
+              backgroundColor: "#3A3960",
+            },
+          }}>
+          Hủy bỏ
+        </Button>
+        <Button
+          onClick={onConfirm}
+          variant='contained'
+          sx={{
+            backgroundColor: "rgba(89, 50, 234, 1)",
+            color: "#fff",
+            borderRadius: "12px",
+            px: 4,
+            ml: 2,
+            height: { xs: "30px", md: "unset" },
+            "&:hover": {
+              backgroundColor: "#6F6EFF",
+            },
+          }}>
+          Đồng ý
+        </Button>
+      </DialogActions>
+    </Dialog>
+  );
+};
 function DetailProjectManager({ setAction, setOpen, functions }) {
   const [expanded, setExpanded] = useState(null);
   const isMobile = useMediaQuery("(max-width:600px)");

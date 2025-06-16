@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import NarratorView from "./NarratorView";
 import { getVoiceModels } from "../../service/project";
 import { useLocation } from "react-router-dom";
+import Loading from "../../components/Loading";
 
 type Props = {};
 
@@ -37,7 +38,17 @@ const NarratorController = (props: Props) => {
       }
     }
   }, [id]);
-  return <NarratorView model={model} genScript={genScript} />;
+  return (
+    <>
+      {loading && <Loading />}
+      <NarratorView
+        model={model}
+        genScript={genScript}
+        setLoading={setLoading}
+        id={id}
+      />
+    </>
+  );
 };
 
 export default NarratorController;

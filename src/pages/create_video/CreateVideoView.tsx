@@ -762,31 +762,39 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
             onClick={async () => {
               setLoading(true);
               try {
-                const result = await updateProject(id, {
-                  current_step: "gen_video",
-                  script: {
-                    ...genScript.script,
-                    scenes: values.map((item) => {
-                      return {
-                        ...item,
-                        video: {
-                          ...item.video,
-                          id: item.video && item.video.ids[item.video.selected],
-                          url:
-                            item.video &&
-                            item.video.imageUrls[item.video.selected],
-                        },
-                      };
-                    }),
-                  },
-                });
-                if (result && result.name) {
-                  localStorage.setItem("gen_script", JSON.stringify(result));
-                  setTimeout(() => {
-                    navigate(`/narrator?id=${id}`);
-                  }, 500);
+                let isCheckCreateVideo = values.filter(
+                  (item) => !(typeof item.selected == "number")
+                )[0];
+                if (isCheckCreateVideo) {
+                  toast.warning("Cần tạo đủ video");
                 } else {
-                  throw new Error("Cập nhật dự án thất bại");
+                  const result = await updateProject(id, {
+                    current_step: "gen_video",
+                    script: {
+                      ...genScript.script,
+                      scenes: values.map((item) => {
+                        return {
+                          ...item,
+                          video: {
+                            ...item.video,
+                            id:
+                              item.video && item.video.ids[item.video.selected],
+                            url:
+                              item.video &&
+                              item.video.imageUrls[item.video.selected],
+                          },
+                        };
+                      }),
+                    },
+                  });
+                  if (result && result.name) {
+                    localStorage.setItem("gen_script", JSON.stringify(result));
+                    setTimeout(() => {
+                      navigate(`/narrator?id=${id}`);
+                    }, 500);
+                  } else {
+                    throw new Error("Cập nhật dự án thất bại");
+                  }
                 }
               } catch (error) {
                 console.log(error);
