@@ -451,9 +451,10 @@ const SceneCard = forwardRef((props, ref) => {
       setLoading(true);
     }
     let image = values.find((item) => item.scene == scene)?.image;
-    if (image && Object.keys(image).length > 0 && image.selected && image?.imageUrls.length>0 ) {
+    if (image && Object.keys(image).length > 0 && (typeof image.selected =="number") && image?.imageUrls && image?.imageUrls.length > 0 ) {
       image = image?.imageUrls[image?.selected];
     }
+    console.log("image",image)
     const [width, height] = px.split(" ")[0].split("x").map(Number);
     let formData = new FormData();
     formData.append("width", width);
