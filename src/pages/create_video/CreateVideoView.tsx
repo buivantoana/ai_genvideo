@@ -782,9 +782,9 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                 });
                 if (result && result.name) {
                   localStorage.setItem("gen_script", JSON.stringify(result));
-                  // setTimeout(() => {
-                  //   navigate(`/create-video?id=${id}`);
-                  // }, 500);
+                  setTimeout(() => {
+                    navigate(`/narrator?id=${id}`);
+                  }, 500);
                 } else {
                   throw new Error("Cập nhật dự án thất bại");
                 }

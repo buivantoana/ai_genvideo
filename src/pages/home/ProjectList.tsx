@@ -70,8 +70,23 @@ const ProjectList = ({ project }: any) => {
             <Card
               onClick={() => {
                 localStorage.setItem("gen_script", JSON.stringify(item));
+                console.log("AAA toan",item)
                 setTimeout(() => {
-                  navigate(`/idea?id=${item.id}`);
+                  if (item?.current_step == "gen_script") {
+                    navigate(`/create-image?id=${item.id}`);
+                  }
+                  if (item?.current_step == "gen_image") {
+                    navigate(`/create-video?id=${item.id}`);
+                  }
+                  if (item?.current_step == "gen_video") {
+                    navigate(`/narrator?id=${item.id}`);
+                  }
+                  if (item?.current_step == "gen_voice") {
+                    navigate(`/narrator?id=${item.id}`);
+                  }
+                  if (!item?.current_step) {
+                    navigate(`/script?id=${item.id}`);
+                  }
                 }, 200);
               }}
               key={index}

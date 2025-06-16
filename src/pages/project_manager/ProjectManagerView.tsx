@@ -205,6 +205,7 @@ const ProjectCard = ({
               },
             }}
             onClick={() => {
+              console.log("pro",project)
               if (project?.current_step == "gen_script") {
                 navigate(`/create-image?id=${project.id}`);
               }
@@ -313,6 +314,88 @@ const Field = styled(TextField)({
   },
 });
 
+import {
+  Checkbox,
+  ListItemText,
+  FormControl,
+  InputLabel,
+  OutlinedInput
+} from "@mui/material";
+
+
+const options = ["Voice", "Video", "Lorem"];
+
+function RolePermissionSelect() {
+  const [selected, setSelected] = useState(["Voice", "Video"]);
+
+  const handleChange = (event) => {
+    const {
+      target: { value }
+    } = event;
+    setSelected(typeof value === "string" ? value.split(",") : value);
+  };
+
+  return (
+    <FormControl fullWidth>
+      <InputLabel sx={{ color: "#fff" }}>Phân quyền</InputLabel>
+      <Select
+        multiple
+        value={selected}
+        onChange={handleChange}
+        input={<OutlinedInput label="Phân quyền" />}
+        renderValue={(selected) => selected.join(", ")}
+        MenuProps={{
+          PaperProps: {
+            sx: {
+              backgroundColor: "#2A274B",
+              color: "#fff",
+              borderRadius: 2,
+              mt: 1,
+              "& .MuiMenuItem-root": {
+                "&:hover": {
+                  backgroundColor: "#3A375F",
+                  borderRadius: 1
+                },
+                "&.Mui-selected": {
+                  backgroundColor: "#4B3A79",
+                  borderRadius: 1
+                }
+              }
+            }
+          }
+        }}
+        sx={{
+          backgroundColor: "rgba(29, 29, 65, 1)",
+          color: "#fff",
+          borderRadius: "8px",
+          "& .MuiOutlinedInput-notchedOutline": {
+            border: "2px solid",
+            borderColor: "#414188"
+          },
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#414188"
+          },
+          ".MuiSelect-icon": { color: "#fff" }
+        }}
+      >
+        {options.map((name) => (
+          <MenuItem key={name} value={name}>
+            <Checkbox
+              checked={selected.indexOf(name) > -1}
+              sx={{
+                color: "#888",
+                "&.Mui-checked": {
+                  color: "#8A6EFF"
+                }
+              }}
+            />
+            <ListItemText primary={name} />
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  );
+}
 function AccountManager({
   setAction,
   setOpen,
@@ -463,51 +546,7 @@ function AccountManager({
                   gap={isMobile ? 1 : 0}
                   alignItems={"end"}>
                   <Box width={isMobile ? "100%" : "47%"}>
-                    <Typography fontSize={isMobile ? ".7rem" : "1rem"} mb={1}>
-                      Phân quyền dự án
-                    </Typography>
-                    <Select
-                      fullWidth
-                      defaultValue={user.role}
-                      MenuProps={{
-                        PaperProps: {
-                          sx: {
-                            backgroundColor: "#2A274B", // nền của dropdown list
-                            color: "#fff",
-                            borderRadius: 2,
-                            mt: 1,
-                            "& .MuiMenuItem-root": {
-                              "&:hover": {
-                                backgroundColor: "#3A375F", // màu hover
-                                borderRadius: 1,
-                              },
-                              "&.Mui-selected": {
-                                backgroundColor: "#4B3A79", // màu selected
-                                borderRadius: 1,
-                              },
-                            },
-                          },
-                        },
-                      }}
-                      sx={{
-                        backgroundColor: "rgba(29, 29, 65, 1)",
-                        color: "#fff",
-                        height: isMobile ? "35px" : "45px",
-                        borderRadius: "8px",
-                        "& .MuiOutlinedInput-notchedOutline": {
-                          border: "2px solid",
-                          borderColor: "#414188", // 👈 Viền mặc định
-                        },
-                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                          border: "2px solid",
-                          borderColor: "#414188", // 👈 Viền khi focus
-                        },
-                        ".MuiSelect-icon": { color: "#fff" },
-                      }}>
-                      <MenuItem value='Admin'>Admin</MenuItem>
-                      <MenuItem value='Editor'>Editor</MenuItem>
-                      <MenuItem value='Viewer'>Viewer</MenuItem>
-                    </Select>
+                   <RolePermissionSelect/>
                   </Box>
                   <Box width={isMobile ? "100%" : "47%"} textAlign={"end"}>
                     <Button

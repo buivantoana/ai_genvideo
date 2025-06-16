@@ -498,14 +498,14 @@ const VoiceItem = ({
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   console.log("model", model);
   // State for form inputs
-  const [selectedModel, setSelectedModel] = useState(model[0]?.name || "Dia"); // Default to first model (Dia)
+  const [selectedModel, setSelectedModel] = useState(model[0]?.id || "dia"); // Default to first model (Dia)
   const [selectedVoice, setSelectedVoice] = useState(""); // Voice for "Lời thoại"
   const [selectedCharacter, setSelectedCharacter] = useState(""); // Voice for "Nhân vật"
   const [duration, setDuration] = useState(""); // Duration input
   const [readingSpeed, setReadingSpeed] = useState(1); // Default reading speed
   const [narrationText, setNarrationText] = useState(text); // Narration text input
   const [intervalId, setIntervalId] = useState(null);
-  const selectedModelData = model.find((m) => m.name === selectedModel);
+  const selectedModelData = model.find((m) => m.id === selectedModel);
   const voices = selectedModelData?.voices[0] || [];
   const [loading, setLoading] = useState(false);
   const handleGenerateDialogue = async () => {
@@ -526,7 +526,7 @@ const VoiceItem = ({
     formData.append("text", narrationText);
     formData.append("model", selectedModel);
     formData.append("speed", String(readingSpeed));
-    formData.append("voice", selectedVoice);
+    formData.append("voice", selectedCharacter);
     if (voice) {
       formData.append("sample_url", voice);
     }
@@ -550,7 +550,7 @@ const VoiceItem = ({
                       id: status.id,
                       url: status.voice_url,
                       text: narrationText,
-                      voice: selectedVoice,
+                      voice: selectedCharacter,
                       model: selectedModel,
                       speed: readingSpeed,
                     },
@@ -569,7 +569,7 @@ const VoiceItem = ({
                         id: status.id,
                         url: status.voice_url,
                         text: narrationText,
-                        voice: selectedVoice,
+                        voice: selectedCharacter,
                         model: selectedModel,
                         speed: readingSpeed,
                       },
@@ -596,7 +596,7 @@ const VoiceItem = ({
                   id: result.id,
                   url: result.voice_url,
                   text: narrationText,
-                  voice: selectedVoice,
+                  voice: selectedCharacter,
                   model: selectedModel,
                   speed: readingSpeed,
                 },
@@ -617,7 +617,7 @@ const VoiceItem = ({
                     id: result.id,
                     url: result.voice_url,
                     text: narrationText,
-                    voice: selectedVoice,
+                    voice: selectedCharacter,
                     model: selectedModel,
                     speed: readingSpeed,
                   },
@@ -772,7 +772,7 @@ const VoiceItem = ({
                   }}
                   label='Mô hình'>
                   {model.map((m) => (
-                    <MenuItem key={m.id} value={m.name}>
+                    <MenuItem key={m.id} value={m.id}>
                       {m.name}
                     </MenuItem>
                   ))}
@@ -883,7 +883,7 @@ const VoiceItem = ({
                   label='Nhân vật'>
                   {voices.length > 0 ? (
                     voices.map((voice) => (
-                      <MenuItem key={voice.id} value={voice.name}>
+                      <MenuItem key={voice.id} value={voice.id}>
                         {voice.name}
                       </MenuItem>
                     ))
