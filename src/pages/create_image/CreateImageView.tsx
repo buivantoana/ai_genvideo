@@ -451,7 +451,7 @@ const SceneCard = forwardRef((props, ref) => {
       setLoading(true);
     }
     let image = values.find((item) => item.scene == scene)?.image;
-    if (image && Object.keys(image).length > 0) {
+    if (image && Object.keys(image).length > 0 && image.selected && image?.imageUrls.length>0 ) {
       image = image?.imageUrls[image?.selected];
     }
     const [width, height] = px.split(" ")[0].split("x").map(Number);
@@ -464,10 +464,12 @@ const SceneCard = forwardRef((props, ref) => {
     const isUploadedImage = (url) => {
       return typeof url === "string" && url.startsWith("blob:");
     };
-    if (isUploadedImage(image)) {
-      formData.append("input_image_file", sceneData.image.file);
-    } else {
-      formData.append("input_image_url", image);
+    if(image){
+      if ( isUploadedImage(image)) {
+        formData.append("input_image_file", sceneData.image.file);
+      } else {
+        formData.append("input_image_url", image);
+      }
     }
     if (fileImage) {
       formData.append("input_image_file", fileImage);
