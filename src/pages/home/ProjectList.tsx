@@ -70,7 +70,7 @@ const ProjectList = ({ project }: any) => {
             <Card
               onClick={() => {
                 localStorage.setItem("gen_script", JSON.stringify(item));
-                console.log("AAA toan",item)
+                console.log("AAA toan", item);
                 setTimeout(() => {
                   if (item?.current_step == "gen_script") {
                     navigate(`/create-image?id=${item.id}`);
@@ -85,7 +85,7 @@ const ProjectList = ({ project }: any) => {
                     navigate(`/narrator?id=${item.id}`);
                   }
                   if (item?.current_step == "gen_audio_sub") {
-                    navigate(`/sub?id=${project.id}`);
+                    navigate(`/sub?id=${item.id}`);
                   }
                   if (!item?.current_step) {
                     navigate(`/script?id=${item.id}`);

@@ -461,7 +461,7 @@ const NarratorView = ({ model, genScript, setLoading, id }) => {
 
 export default NarratorView;
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Accordion,
   AccordionSummary,
@@ -498,6 +498,7 @@ import {
 } from "../../service/project";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { RiPlayFill } from "react-icons/ri";
 
 const VoiceItem = ({
   title,
@@ -515,14 +516,17 @@ const VoiceItem = ({
   // State for form inputs
   const [selectedModel, setSelectedModel] = useState(
     values.find((item) => item.scene === scene)?.voice?.model ||
-    model[0]?.id ||
-    "dia"
+      model[0]?.id ||
+      "dia"
   );
 
   const [selectedCharacter, setSelectedCharacter] = useState(
-    values.find((item) => item.scene === scene)?.voice?.voice || ""
+    values.find((item) => item.scene === scene)?.charactors[0] || ""
   );
-
+  console.log(
+    "selectedCharacter",
+    values.find((item) => item.scene === scene)?.charactors[0]
+  );
   const [readingSpeed, setReadingSpeed] = useState(
     values.find((item) => item.scene === scene)?.voice?.speed || 1
   );
@@ -546,6 +550,18 @@ const VoiceItem = ({
       ? selectedModelData.voices[0]
       : selectedModelData.voices
     : [];
+  const character = values.find((item) => item.scene === scene)?.charactors
+    ? values.find((item) => item.scene === scene)?.charactors &&
+      values
+        .find((item) => item.scene === scene)
+        ?.charactors.map((item) => {
+          return {
+            id: item,
+            value: item,
+          };
+        })
+    : [];
+  console.log("character", character);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     const currentScene = values.find((item) => item.scene === scene);
@@ -557,7 +573,7 @@ const VoiceItem = ({
 
       // Điền nhân vật nếu có
       if (currentScene.voice.voice) {
-        setSelectedCharacter(currentScene.voice.voice);
+        setSelectedVoice(currentScene.voice.voice);
       }
 
       // Điền tốc độ nếu có
@@ -689,17 +705,17 @@ const VoiceItem = ({
               prev.map((item) =>
                 item.scene === scene
                   ? {
-                    ...item,
-                    voice: {
-                      id: status.id,
-                      url: status.voice_url,
-                      text: narrationText,
-                      voice: selectedVoice,
-                      model: selectedModel,
-                      speed: readingSpeed,
-                      delay: duration,
-                    },
-                  }
+                      ...item,
+                      voice: {
+                        id: status.id,
+                        url: status.voice_url,
+                        text: narrationText,
+                        voice: selectedVoice,
+                        model: selectedModel,
+                        speed: readingSpeed,
+                        delay: duration,
+                      },
+                    }
                   : item
               )
             );
@@ -739,17 +755,17 @@ const VoiceItem = ({
           prev.map((item) =>
             item.scene === scene
               ? {
-                ...item,
-                voice: {
-                  id: result.id,
-                  url: result.voice_url,
-                  text: narrationText,
-                  voice: selectedVoice,
-                  model: selectedModel,
-                  speed: readingSpeed,
-                  delay: duration,
-                },
-              }
+                  ...item,
+                  voice: {
+                    id: result.id,
+                    url: result.voice_url,
+                    text: narrationText,
+                    voice: selectedVoice,
+                    model: selectedModel,
+                    speed: readingSpeed,
+                    delay: duration,
+                  },
+                }
               : item
           )
         );
@@ -761,6 +777,24 @@ const VoiceItem = ({
     }
   };
 
+  const videoRef = useRef(null);
+  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
+
+  const currentScene = values?.find((item) => item.scene === scene);
+  const videoUrl = currentScene?.voice ? currentScene?.video?.url : "";
+
+  const handleTogglePlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      video.play();
+      setIsPlayingVideo(true);
+    } else {
+      video.pause();
+      setIsPlayingVideo(false);
+    }
+  };
   return (
     <>
       <Typography fontSize={isMobile ? 20 : 24} fontWeight='bold' mb={2}>
@@ -778,6 +812,7 @@ const VoiceItem = ({
           alignItems={isMobile ? "start" : "center"}
           justifyContent='space-between'
           flexDirection={isMobile ? "column" : "row"}
+          gap={2}
           p={2}
           sx={{ cursor: "pointer" }}>
           <Box display='flex' alignItems={isMobile ? "left" : "center"} gap={2}>
@@ -791,16 +826,50 @@ const VoiceItem = ({
             </Box>
           </Box>
           <Box display='flex' alignItems='center' gap={3}>
-            <img
-              src={image1}
-              alt='scene'
-              style={{
-                width: isMobile ? 100 : 201,
-                height: isMobile ? 50 : 108,
-                borderRadius: 8,
-                objectFit: "cover",
-              }}
-            />
+            <Box sx={{ position: "relative", width: 250, height: 150 }}>
+              <video
+                ref={videoRef}
+                width='250'
+                height='150'
+                style={{ borderRadius: "15px" }}
+                onClick={handleTogglePlay}
+                controls={isPlayingVideo} // 👈 Chỉ hiện controls khi đang phát
+                onEnded={() => setIsPlayingVideo(false)} // Khi phát xong thì tắt controls
+              >
+                <source src={videoUrl} type='video/mp4' />
+                Trình duyệt của bạn không hỗ trợ video HTML5.
+              </video>
+
+              {!isPlayingVideo && (
+                <Box
+                  onClick={handleTogglePlay}
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                  }}>
+                  <Box
+                    display='flex'
+                    justifyContent='center'
+                    alignItems='center'
+                    width='50px'
+                    height='50px'
+                    sx={{
+                      borderRadius: "50%",
+                      border: "1px solid white",
+                      background: "rgba(0,0,0,.5)",
+                    }}>
+                    <RiPlayFill size={40} color='white' />
+                  </Box>
+                </Box>
+              )}
+            </Box>
             {values &&
               values.find((item) => item.scene === scene)?.voice &&
               values.find((item) => item.scene === scene)?.voice.url && (
@@ -813,20 +882,20 @@ const VoiceItem = ({
                     alignItems: "center",
                     padding: "5px 8px",
                     gap: 1,
-                  }}
-                >
+                  }}>
                   <img src={voice_high} alt='' />
                   <Typography color='rgba(139, 139, 168, 1)'>
-                    {
-                     values&& values.find((item) => item.scene === scene)?.voice
-                        ?.delay || 0
-                    }s
+                    {(values &&
+                      values.find((item) => item.scene === scene)?.voice
+                        ?.delay) ||
+                      0}
+                    s
                   </Typography>
                 </Box>
               )}
             {selectedCharacter &&
-              voices.find((item) => item.id == selectedCharacter) &&
-              voices.find((item) => item.id == selectedCharacter).name && (
+              character.find((item) => item.id == selectedCharacter) &&
+              character.find((item) => item.id == selectedCharacter).value && (
                 <Box
                   sx={{
                     border: "1px solid rgba(139, 139, 168, 1)",
@@ -835,11 +904,13 @@ const VoiceItem = ({
                     justifyContent: "center",
                     alignItems: "center",
                     padding: "5px 8px",
+                    width: "max-content",
                   }}>
                   <Typography>
                     {selectedCharacter &&
-                      voices.find((item) => item.id == selectedCharacter) &&
-                      voices.find((item) => item.id == selectedCharacter).name}
+                      character.find((item) => item.id == selectedCharacter) &&
+                      character.find((item) => item.id == selectedCharacter)
+                        .value}
                   </Typography>
                 </Box>
               )}
@@ -911,7 +982,7 @@ const VoiceItem = ({
                     value={selectedModel}
                     onChange={(e) => {
                       setSelectedModel(e.target.value);
-                      setSelectedCharacter(""); // Reset character when model changes
+                      // Reset character when model changes
                     }}
                     MenuProps={{
                       PaperProps: {
@@ -1031,7 +1102,7 @@ const VoiceItem = ({
                   <Select
                     value={selectedCharacter}
                     onChange={(e) => setSelectedCharacter(e.target.value)}
-                    disabled={voices.length === 0} // Disable if no voices available
+                    // Disable if no voices available
                     MenuProps={{
                       PaperProps: {
                         sx: {
@@ -1076,10 +1147,10 @@ const VoiceItem = ({
                       ".MuiSelect-icon": { color: "#fff" },
                     }}
                     label='Nhân vật'>
-                    {voices.length > 0 ? (
-                      voices.map((voice) => (
+                    {character.length > 0 ? (
+                      character.map((voice) => (
                         <MenuItem key={voice.id} value={voice.id}>
-                          {voice.name}
+                          {voice.value}
                         </MenuItem>
                       ))
                     ) : (

@@ -18,11 +18,13 @@ import {
   useTheme,
   Switch,
   CircularProgress,
+  Modal,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
 import StepComponent from "../../components/StepComponent";
 import EditIcon from "@mui/icons-material/Edit";
 import group from "../../images/Group 13.png";
+import CheckIcon from "@mui/icons-material/Check";
 const modelOptions1 = [
   { value: "SDXL", key: "sdxl" },
   { value: "Flux", key: "flux" },
@@ -43,19 +45,75 @@ const dynamicSteps = [
   { label: "Nhạc nền và sub", status: "pending" },
   { label: "Hoàn thành ", status: "pending" },
 ];
-const CreateImageView = ({ genScript, setLoading, id, modelList }) => {
+const CreateImageView = ({
+  genScript,
+  setLoading,
+  id,
+  modelList,
+  modelAdd,
+  getModels,
+  setModelAdd,
+  setModelList,
+}) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [selectedTab, setSelectedTab]: any = useState(
     genScript && genScript.video_type == "video2video" ? 1 : 0
   );
-  const [model, setModel] = useState("flux");
+  const [model, setModel] = useState(modelList[0]?.key || "");
   const [px, setPx] = useState("1920x1080 (16:9)");
+  const [openModal, setOpenModal] = useState(false);
+  const [newModel, setNewModel] = useState({
+    name: "",
+    type: "",
+    link: "",
+  });
+  console.log("modelList[0]?.key ", modelList[0]?.key);
+  console.log("modelList ", modelList);
+  const handleChange = (e) => {
+    const selected = e.target.value;
+    if (selected === "add_new") {
+      setOpenModal(true);
+    } else {
+      setModel(selected);
+    }
+  };
+  useEffect(() => {
+    setModel(modelList[0]?.key);
+  }, [modelList]);
+  useEffect(() => {
+    setNewModel((prev) => ({ ...prev, type: modelAdd[0]?.key }));
+  }, [modelAdd]);
   useEffect(() => {
     if (genScript) {
       setSelectedTab(genScript?.video_type == "video2video" ? 1 : 0);
     }
   }, [genScript]);
+  const handleAddModel = async () => {
+    setLoading(true);
+    const { name, type, link } = newModel;
+
+    if (!name.trim() || !type.trim() || !link.trim()) {
+      toast.warning("Vui lòng điền đầy đủ thông tin");
+      return;
+    }
+    try {
+      let result = await addModelImage({
+        sub_type: type,
+        name: name,
+        model: link,
+      });
+      if (result) {
+        setNewModel({ name: "", type: "", link: "" });
+        setOpenModal(false);
+        getModels();
+      } else {
+        toast.warning(result.detail);
+      }
+    } catch (error) {}
+
+    setLoading(false);
+  };
   return (
     <Box
       className='hidden-add-voice'
@@ -76,30 +134,35 @@ const CreateImageView = ({ genScript, setLoading, id, modelList }) => {
       <Box display={"flex"} flexWrap={"wrap"} gap={isMobile ? 1 : 3}>
         <FormControl variant='outlined' size='small'>
           <Select
-            defaultValue='Stabledifution'
             value={model}
-            onChange={(e) => setModel(e.target.value)}
+            onChange={handleChange}
+            IconComponent={ArrowDropDownIcon}
+            renderValue={(selected) => {
+              const selectedOption = modelList.find(
+                (item) => item.key === selected
+              );
+              return selectedOption?.value || "Chọn model";
+            }}
             sx={{
               background: "transparent",
               color: "#fff",
               borderRadius: 2,
-              height: isMobile ? "38px" : "48px",
-              width: "max-content", // 👈 Chiều cao mong muốn
+              height: "48px",
+              width: "max-content",
               "& .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#3A375F", // 👈 Viền mặc định
+                borderColor: "#3A375F",
               },
               "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                borderColor: "#414188", // 👈 Viền khi focus
+                borderColor: "#414188",
               },
               "& .MuiSelect-select": {
                 display: "flex",
                 alignItems: "center",
-                height: "100%", // Chiếm hết chiều cao wrapper
+                height: "100%",
                 padding: "0 14px",
               },
               ".MuiSelect-icon": { color: "#fff" },
             }}
-            IconComponent={ArrowDropDownIcon}
             MenuProps={{
               PaperProps: {
                 sx: {
@@ -124,10 +187,160 @@ const CreateImageView = ({ genScript, setLoading, id, modelList }) => {
             }}>
             {modelList.map((option) => (
               <MenuItem key={option.key} value={option.key}>
-                {option.value}
+                <Box
+                  display='flex'
+                  justifyContent='space-between'
+                  gap={3}
+                  width='100%'>
+                  {option.value}
+                  {model === option.key && <CheckIcon fontSize='small' />}
+                </Box>
               </MenuItem>
             ))}
+            <MenuItem value='add_new'>Thêm mới</MenuItem>
           </Select>
+
+          {/* Modal thêm model */}
+          <Modal open={openModal} onClose={() => setOpenModal(false)}>
+            <Box
+              sx={{
+                backgroundColor: "#1E1C34",
+                color: "#fff",
+                p: 4,
+                width: 600,
+                mx: "auto",
+                mt: "15%",
+                borderRadius: 2,
+              }}>
+              <Typography variant='h6' mb={2}>
+                Thêm mới model
+              </Typography>
+              <Box display={"flex"} justifyContent={"space-between"}>
+                <Box width={"48%"}>
+                  <Typography>Tên</Typography>
+                  <TextField
+                    value={newModel.name}
+                    onChange={(e) =>
+                      setNewModel((prev) => ({ ...prev, name: e.target.value }))
+                    }
+                    fullWidth
+                    variant='outlined'
+                    size='small'
+                    sx={{
+                      backgroundColor: "#1A1836",
+                      borderRadius: 2,
+                      input: { color: "white" },
+                      "& .MuiOutlinedInput-root": {
+                        height: isMobile ? "40px" : "50px", // 👈 Đặt ở đây mới ăn
+                        alignItems: "center", // Canh giữa input text
+                      },
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        border: "2px solid",
+                        borderColor: "#414188",
+                      },
+                    }}
+                  />
+                </Box>
+                <Box width={"48%"}>
+                  {" "}
+                  <Typography>Kiểu</Typography>{" "}
+                  <Select
+                    value={newModel.type}
+                    onChange={(e) =>
+                      setNewModel((prev) => ({ ...prev, type: e.target.value }))
+                    }
+                    sx={{
+                      background: "transparent",
+                      color: "#fff",
+                      borderRadius: 1,
+                      height: isMobile ? "38px" : "48px",
+                      width: "100%", // 👈 Chiều cao mong muốn
+                      "& .MuiOutlinedInput-notchedOutline": {
+                        border: "2px solid",
+                        borderColor: "#414188", // 👈 Viền mặc định
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        border: "2px solid",
+                        borderColor: "#414188", // 👈 Viền khi focus
+                      },
+                      "& .MuiSelect-select": {
+                        display: "flex",
+                        alignItems: "center",
+                        height: "100%", // Chiếm hết chiều cao wrapper
+                        padding: "0 14px",
+                      },
+                      ".MuiSelect-icon": { color: "#fff" },
+                    }}
+                    IconComponent={ArrowDropDownIcon}
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          backgroundColor: "#2A274B",
+                          color: "#fff",
+                          borderRadius: 1,
+                          mt: 1,
+                          "& .MuiMenuItem-root": {
+                            "&:hover": {
+                              backgroundColor: "#3A375F",
+                              borderRadius: 1,
+                            },
+                            "&.Mui-selected": {
+                              backgroundColor: "#4B3A79",
+                              borderRadius: 1,
+                              border: "2px solid",
+                              borderColor: "#414188",
+                            },
+                          },
+                        },
+                      },
+                    }}>
+                    {modelAdd.map((option) => (
+                      <MenuItem key={option} value={option.key}>
+                        {option.value}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Box>
+              </Box>
+              <Typography sx={{ mt: 1 }}>Link</Typography>{" "}
+              <TextField
+                value={newModel.link}
+                onChange={(e) =>
+                  setNewModel((prev) => ({ ...prev, link: e.target.value }))
+                }
+                fullWidth
+                variant='outlined'
+                size='small'
+                sx={{
+                  backgroundColor: "#1A1836",
+                  borderRadius: 2,
+                  input: { color: "white" },
+                  "& .MuiOutlinedInput-root": {
+                    height: isMobile ? "40px" : "50px", // 👈 Đặt ở đây mới ăn
+                    alignItems: "center", // Canh giữa input text
+                  },
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    border: "2px solid",
+                    borderColor: "#414188",
+                  },
+                }}
+              />
+              <Box sx={{ textAlign: "center" }}>
+                <Button
+                  variant='contained'
+                  sx={{
+                    backgroundColor: "rgba(89, 50, 234, 1)",
+                    borderRadius: 1,
+                    mt: 3,
+                    width: "max-content",
+                    height: isMobile ? "40px" : "50px",
+                  }}
+                  onClick={handleAddModel}>
+                  Thêm mới model
+                </Button>
+              </Box>
+            </Box>
+          </Modal>
         </FormControl>
         <FormControl variant='outlined' size='small'>
           <Select
@@ -312,6 +525,7 @@ import { RiRefreshLine } from "react-icons/ri";
 import ResponsiveBox from "../../components/ResponsiveBox";
 import { useNavigate } from "react-router-dom";
 import {
+  addModelImage,
   genScriptImage,
   genScriptImageStatus,
   updateProject,
@@ -453,10 +667,16 @@ const SceneCard = forwardRef((props, ref) => {
       setLoading(true);
     }
     let image = values.find((item) => item.scene == scene)?.image;
-    if (image && Object.keys(image).length > 0 && (typeof image.selected =="number") && image?.imageUrls && image?.imageUrls.length > 0 ) {
+    if (
+      image &&
+      Object.keys(image).length > 0 &&
+      typeof image.selected == "number" &&
+      image?.imageUrls &&
+      image?.imageUrls.length > 0
+    ) {
       image = image?.imageUrls[image?.selected];
     }
-    console.log("image",image)
+    console.log("image", image);
     const [width, height] = px.split(" ")[0].split("x").map(Number);
     let formData = new FormData();
     formData.append("width", width);
@@ -467,8 +687,8 @@ const SceneCard = forwardRef((props, ref) => {
     const isUploadedImage = (url) => {
       return typeof url === "string" && url.startsWith("blob:");
     };
-    if(image){
-      if ( isUploadedImage(image)) {
+    if (image) {
+      if (isUploadedImage(image)) {
         formData.append("input_image_file", sceneData.image.file);
       } else {
         formData.append("input_image_url", image);

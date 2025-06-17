@@ -14,6 +14,7 @@ const CreateImageController = (props: Props) => {
   const [loading, setLoading] = useState(false);
   const [genScript, setGenScript] = useState(null);
   const [model, setModel] = useState([]);
+  const [modelAdd, setModelAdd] = useState([]);
   useEffect(() => {
     getModels();
   }, []);
@@ -21,11 +22,25 @@ const CreateImageController = (props: Props) => {
     try {
       let result = await getImageModels();
       if (result && result.length) {
+        const uniqueBySubType: any = Array.from(
+          new Map(
+            result.map((item) => [
+              item.sub_type,
+              {
+                value:
+                  item.sub_type.charAt(0).toUpperCase() +
+                  item.sub_type.slice(1),
+                key: item.sub_type,
+              },
+            ])
+          ).values()
+        );
+        setModelAdd(uniqueBySubType);
         setModel(
           result.map((item) => {
             return {
               value: item.name,
-              key: item.id,
+              key: item.name,
             };
           })
         );
@@ -77,7 +92,7 @@ const CreateImageController = (props: Props) => {
   //   }
   //   setLoading(false);
   // };
-  console.log(genScript);
+  console.log("mo", modelAdd);
   return (
     <>
       {loading && <Loading />}
@@ -86,6 +101,10 @@ const CreateImageController = (props: Props) => {
         setLoading={setLoading}
         id={id}
         modelList={model}
+        modelAdd={modelAdd}
+        getModels={getModels}
+        setModelList={setModel}
+        setModelAdd={setModelAdd}
       />
       ;
     </>

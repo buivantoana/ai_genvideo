@@ -7,37 +7,37 @@ type Props = {};
 
 const SubController = (props: Props) => {
   const [model, setModel] = useState([]);
-    const [genScript, setGenScript] = useState(null);
-    const location = useLocation();
-    const query = new URLSearchParams(location.search);
-    const id = query.get("id");
-    const [loading, setLoading] = useState(false);
-    useEffect(() => {
-      getModels();
-    }, []);
-    const getModels = async () => {
-      try {
-        let result = await getVoiceModels();
-        console.log("result", result);
-        if (result && result.length) {
-          setModel(result);
-        }
-      } catch (error) {
-        console.log(error);
+  const [genScript, setGenScript] = useState(null);
+  const location = useLocation();
+  const query = new URLSearchParams(location.search);
+  const id = query.get("id");
+  const [loading, setLoading] = useState(false);
+  useEffect(() => {
+    getModels();
+  }, []);
+  const getModels = async () => {
+    try {
+      let result = await getVoiceModels();
+      console.log("result", result);
+      if (result && result.length) {
+        setModel(result);
       }
-    };
-    // useEffect(() => {
-    //   let script: any = localStorage.getItem("gen_script");
-    //   if (script) {
-    //     script = JSON.parse(script);
-    //     if (script.script && id) {
-    //       setGenScript(script);
-    //       // genScriptFun();
-    //     } else {
-    //     }
-    //   }
-    // }, [id]);
-  return <SubView model={model} />;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    let script: any = localStorage.getItem("gen_script");
+    if (script) {
+      script = JSON.parse(script);
+      if (script.script && id) {
+        setGenScript(script);
+        // genScriptFun();
+      } else {
+      }
+    }
+  }, [id]);
+  return <SubView model={model} genScript={genScript} />;
 };
 
 export default SubController;

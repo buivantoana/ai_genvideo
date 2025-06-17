@@ -564,7 +564,7 @@ const SceneCard = forwardRef((props, ref) => {
           </Typography>
           {sceneData.video.ids && (
             <Button
-              startIcon={<RiRefreshLine />}
+              startIcon={loading ? <></> : <RiRefreshLine />}
               onClick={() => genImage()}
               size='small'
               sx={{

@@ -38,7 +38,7 @@ const dynamicSteps = [
   { label: "Nhạc nền và sub", status: "active" },
   { label: "Hoàn thành", status: "pending" },
 ];
-const SubView = ({ model }) => {
+const SubView = ({ model, genScript }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -58,7 +58,7 @@ const SubView = ({ model }) => {
       {/* Toggle Tabs */}
       {/* <ResponsiveBox /> */}
 
-      <SubtitleSettings model={model} />
+      <SubtitleSettings genScript={genScript} model={model} />
     </Box>
   );
 };
@@ -80,10 +80,43 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import { RiPlayFill } from "react-icons/ri";
 
-const SubtitleSettings = ({ model }) => {
+const SubtitleSettings = ({ model, genScript }) => {
   const isMobile = useMediaQuery("(max-width:768px)");
   const [on, setOn] = useState(false);
   const navigate = useNavigate();
+  const videoRef = useRef(null);
+  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [videoUrl, setVideoUrl] = useState(
+    genScript?.output_video_url ? genScript?.output_video_url : ""
+  );
+  useEffect(() => {
+    setVideoUrl(genScript?.output_video_url ? genScript?.output_video_url : "");
+  }, [genScript]);
+
+  const handleTogglePlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    if (video.paused) {
+      video.play();
+      setIsPlayingVideo(true);
+    } else {
+      video.pause();
+      setIsPlayingVideo(false);
+    }
+  };
+  console.log(videoUrl);
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60)
+      .toString()
+      .padStart(2, "0");
+    const s = Math.floor(seconds % 60)
+      .toString()
+      .padStart(2, "0");
+    return `${m}:${s}`;
+  };
   return (
     <Box
       sx={{
@@ -98,7 +131,7 @@ const SubtitleSettings = ({ model }) => {
             fontSize={isMobile ? "1.2rem" : "1.5rem"}
             fontWeight={"bold"}
             mb={2}>
-            Dự án: Cuộc phiêu lưu cùng những người bạn
+            Dự án: {genScript?.name}
           </Typography>
           <Box
             sx={{
@@ -111,38 +144,51 @@ const SubtitleSettings = ({ model }) => {
             <Box sx={{ position: "absolute", bottom: 15, right: 15 }}>
               <img src={download} alt='' />
             </Box>
-            <Box
-              sx={{
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}>
-              <Box
-                display={"flex"}
-                justifyContent={"center"}
-                alignItems={"center"}
-                width={"50px"}
-                height={"50px"}
-                sx={{
-                  borderRadius: "50%",
-                  border: "1px solid white",
-                  background: "rgba(0,0,0,.5)",
-                }}>
-                <RiPlayFill size={40} />
-              </Box>
+            <Box sx={{ position: "relative", width: "100%" }}>
+              {videoUrl && (
+                <video
+                  ref={videoRef}
+                  width='100%'
+                  style={{ borderRadius: "15px" }}
+                  onClick={handleTogglePlay}
+                  controls={isPlayingVideo}
+                  onEnded={() => setIsPlayingVideo(false)}
+                  onLoadedMetadata={(e) => setDuration(e.target.duration)}
+                  onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}>
+                  <source src={videoUrl} type='video/mp4' />
+                  Trình duyệt của bạn không hỗ trợ video HTML5.
+                </video>
+              )}
+              {!isPlayingVideo && (
+                <Box
+                  onClick={handleTogglePlay}
+                  sx={{
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                  }}>
+                  <Box
+                    display='flex'
+                    justifyContent='center'
+                    alignItems='center'
+                    width='50px'
+                    height='50px'
+                    sx={{
+                      borderRadius: "50%",
+                      border: "1px solid white",
+                      background: "rgba(0,0,0,.5)",
+                    }}>
+                    <RiPlayFill size={40} color='white' />
+                  </Box>
+                </Box>
+              )}
             </Box>
-            <img
-              src={image}
-              width={"100%"}
-              style={{ borderRadius: "8px" }}
-              height={"100%"}
-              alt=''
-            />
           </Box>
 
           <Typography
@@ -156,30 +202,37 @@ const SubtitleSettings = ({ model }) => {
             <Box
               display={"flex"}
               alignItems={"center"}
-              sx={{ mb: 1, p: 1, borderRadius: 1 }}
-              bgcolor={"rgba(29, 29, 65, 1)"}
-              justifyContent={"space-between"}>
-              <Typography variant='body2'>00:06</Typography>
+              justifyContent={"space-between"}
+              sx={{
+                mb: 1,
+                p: 1,
+                borderRadius: 1,
+                bgcolor: "rgba(29, 29, 65, 1)", // 👈 Cho vào sx
+              }}>
+              <Typography variant='body2'>{formatTime(currentTime)}</Typography>
+
               <Box
                 sx={{
                   height: 6,
                   borderRadius: 3,
                   bgcolor: "rgba(217, 217, 217, 1)",
-
                   position: "relative",
                   width: "80%",
                 }}>
                 <Box
                   sx={{
-                    width: "5%",
+                    width: `${(currentTime / duration) * 100 || 0}%`,
                     height: "100%",
                     borderRadius: 3,
                     bgcolor: "rgba(89, 50, 234, 1)",
+                    transition: "width 0.1s linear",
                   }}
                 />
               </Box>
-              <Typography variant='body2'>01:06</Typography>
+
+              <Typography variant='body2'>{formatTime(duration)}</Typography>
             </Box>
+
             {!on ? (
               <AudioPanel setOn={setOn} />
             ) : (
@@ -233,6 +286,7 @@ const SubtitleSettings = ({ model }) => {
 };
 
 import { Radio, RadioGroup, FormControlLabel, FormLabel } from "@mui/material";
+import iconNoSub from "../../images/message-remove.png";
 import {
   ArrowDropUp,
   Delete,
@@ -243,7 +297,7 @@ import {
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 const Settings = () => {
   const isMobile = useMediaQuery("(max-width:768px)");
-
+  const [active, setActive] = useState(1);
   const colorOptions1 = [
     ["#1b1c34", "#ffffff"],
     ["#000000", "#ffffff"],
@@ -271,308 +325,335 @@ const Settings = () => {
               Chọn hiển thị phụ đề
             </Typography>
             <Stack direction='row' spacing={2}>
-              {[0, 1, 2, 3].map((i, index) => (
-                <Box
-                  key={i}
-                  sx={{
-                    width: "24%",
-                    height: isMobile ? 100 : 150,
-                    borderRadius: 2,
-                    border: i === 1 ? "2px solid #00ffae" : "unset",
-                    bgcolor: "rgba(55, 55, 104, 1)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    position: "relative",
-                  }}>
+              {[0, 1, 2, 3, 4].map((i, index) => {
+                if (index == 0) {
+                  return (
+                    <Box
+                      key={i}
+                      onClick={() => setActive(index)}
+                      sx={{
+                        width: "24%",
+                        height: isMobile ? 100 : 150,
+                        borderRadius: 2,
+                        border: i === active ? "2px solid #00ffae" : "unset",
+                        bgcolor: "rgba(55, 55, 104, 1)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        position: "relative",
+                      }}>
+                      <img src={iconNoSub} alt='' />
+                    </Box>
+                  );
+                }
+                return (
                   <Box
+                    key={i}
+                    onClick={() => setActive(index)}
                     sx={{
-                      width: "80%",
-                      height: "2vh",
-                      bgcolor: "rgba(152, 152, 219, 1)",
-                      borderRadius: 1,
-                      position: "absolute",
-                      bottom: isMobile
-                        ? 10 * (index + 1) * 1.8
-                        : (10 * index + 1) * 3.5,
-                    }}
-                  />
-                </Box>
-              ))}
+                      width: "24%",
+                      height: isMobile ? 100 : 150,
+                      borderRadius: 2,
+                      border: i === active ? "2px solid #00ffae" : "unset",
+                      bgcolor: "rgba(55, 55, 104, 1)",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      position: "relative",
+                    }}>
+                    <Box
+                      sx={{
+                        width: "80%",
+                        height: "2vh",
+                        bgcolor: "rgba(152, 152, 219, 1)",
+                        borderRadius: 1,
+                        position: "absolute",
+                        bottom: isMobile ? 10 * index * 1.6 : 10 * index * 3.2,
+                      }}
+                    />
+                  </Box>
+                );
+              })}
             </Stack>
           </Box>
 
-          <Box display={"flex"} justifyContent={"space-between"}>
+          {/* <Box display={"flex"} justifyContent={"space-between"}>
             <RadioControl label='Hiện thị phụ đề' defaultValue='yes' />
             <RadioControl label='Nhạc nền' defaultValue='yes' />
-          </Box>
-          <Box display={"flex"} justifyContent={"space-between"}>
-            <RadioControl
-              label='Kiểu chữ'
-              defaultValue='normal'
-              options={[
-                ["normal", "Chữ thường"],
-                ["upper", "Chữ hoa"],
-              ]}
-            />
-            <RadioControl label='Hiệu ứng động' defaultValue='yes' />
-          </Box>
+          </Box> */}
+          {active != 0 && (
+            <Box>
+              <Box
+                display={"flex"}
+                justifyContent={"space-between"}
+                alignItems={"end"}>
+                <RadioControl
+                  label='Kiểu chữ'
+                  defaultValue='normal'
+                  options={[
+                    ["normal", "Chữ thường"],
+                    ["upper", "Chữ hoa"],
+                  ]}
+                />
+                <FormControl sx={{ mb: "14px" }} fullWidth>
+                  <InputLabel sx={{ color: "#aaa" }}>Font chữ</InputLabel>
+                  <Select
+                    defaultValue='SF Pro Display'
+                    label='Font chữ'
+                    MenuProps={{
+                      PaperProps: {
+                        sx: {
+                          backgroundColor: "#2A274B", // nền của dropdown list
+                          color: "#fff",
+                          borderRadius: 2,
+                          mt: 1,
+                          "& .MuiMenuItem-root": {
+                            "&:hover": {
+                              backgroundColor: "#3A375F", // màu hover
+                              borderRadius: 1,
+                            },
+                            "&.Mui-selected": {
+                              backgroundColor: "#4B3A79", // màu selected
+                              borderRadius: 1,
+                            },
+                          },
+                        },
+                      },
+                    }}
+                    sx={{
+                      color: "white",
+                      ".MuiSelect-icon": { color: "white" },
+                      ".MuiOutlinedInput-notchedOutline": {
+                        borderColor: "white",
+                      },
+                      "&:hover .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "white",
+                      },
+                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                        borderColor: "white",
+                      },
+                      height: isMobile ? "38px" : "unset",
+                    }}>
+                    <MenuItem value='SF Pro Display'>SF Pro Display</MenuItem>
+                  </Select>
+                </FormControl>
+              </Box>
 
-          {/* Subtitle style selections */}
-          <Box>
-            <Typography variant='body1' gutterBottom>
-              Chọn kiểu phụ đề
-            </Typography>
-            <Box
-              sx={{
-                bgcolor: "#2c2e4f",
-                p: 2,
-                borderRadius: 2,
-                fontSize: 14,
-                color: "#f0c36d",
-                mb: 2,
-                my: 2,
-              }}>
-              <Typography variant='body2'>
-                {" "}
-                Khi chọn các hiệu ứng không phải mặc định, hệ thống sẽ cần thêm
-                thời gian để xử lý
-              </Typography>
-            </Box>
-            <Box display={"flex"} mt={3} justifyContent={"space-between"}>
-              <Box
-                width={"45%"}
-                display={"flex"}
-                flexDirection={"column"}
-                justifyContent={"center"}
-                alignItems={"center"}
-                gap={"10px"}>
+              {/* Subtitle style selections */}
+              <Box>
+                <Typography variant='body1' gutterBottom>
+                  Chọn kiểu phụ đề
+                </Typography>
                 <Box
-                  width={"100%"}
-                  height={108}
-                  display={"flex"}
-                  justifyContent={"center"}
-                  bgcolor={"rgba(55, 55, 104, 1)"}
                   sx={{
-                    border: "1px solid rgba(5, 193, 104, 1)",
-                    borderRadius: 1,
-                  }}
-                  alignItems={"center"}>
-                  <img src={image1} alt='' />
+                    bgcolor: "#2c2e4f",
+                    p: 2,
+                    borderRadius: 2,
+                    fontSize: 14,
+                    color: "#f0c36d",
+                    mb: 2,
+                    my: 2,
+                  }}>
+                  <Typography variant='body2'>
+                    {" "}
+                    Khi chọn các hiệu ứng không phải mặc định, hệ thống sẽ cần
+                    thêm thời gian để xử lý
+                  </Typography>
                 </Box>
-                <Typography>Mặc định</Typography>
-              </Box>
-              <Box
-                width={"45%"}
-                display={"flex"}
-                flexDirection={"column"}
-                justifyContent={"center"}
-                alignItems={"center"}
-                gap={"10px"}>
-                <Box
-                  width={"100%"}
-                  height={108}
-                  display={"flex"}
-                  justifyContent={"center"}
-                  sx={{
-                    border: "1px solid ",
-                    borderRadius: 1,
-                  }}
-                  alignItems={"center"}>
-                  <img src={image2} alt='' />
+                <Box display={"flex"} mt={3} justifyContent={"space-between"}>
+                  <Box
+                    width={"45%"}
+                    display={"flex"}
+                    flexDirection={"column"}
+                    justifyContent={"center"}
+                    alignItems={"center"}
+                    gap={"10px"}>
+                    <Box
+                      width={"100%"}
+                      height={108}
+                      display={"flex"}
+                      justifyContent={"center"}
+                      bgcolor={"rgba(55, 55, 104, 1)"}
+                      sx={{
+                        border: "1px solid rgba(5, 193, 104, 1)",
+                        borderRadius: 1,
+                      }}
+                      alignItems={"center"}>
+                      <img src={image1} alt='' />
+                    </Box>
+                    <Typography>Mặc định</Typography>
+                  </Box>
+                  <Box
+                    width={"45%"}
+                    display={"flex"}
+                    flexDirection={"column"}
+                    justifyContent={"center"}
+                    alignItems={"center"}
+                    gap={"10px"}>
+                    <Box
+                      width={"100%"}
+                      height={108}
+                      display={"flex"}
+                      justifyContent={"center"}
+                      sx={{
+                        border: "1px solid ",
+                        borderRadius: 1,
+                      }}
+                      alignItems={"center"}>
+                      <img src={image2} alt='' />
+                    </Box>
+                    <Typography>Karaoke</Typography>
+                  </Box>
                 </Box>
-                <Typography>Karaoke</Typography>
-              </Box>
-            </Box>
-            <Box display={"flex"} mt={2} justifyContent={"space-between"}>
-              <Box
-                width={"45%"}
-                display={"flex"}
-                flexDirection={"column"}
-                justifyContent={"center"}
-                alignItems={"center"}
-                gap={"10px"}>
-                <Box
-                  width={"100%"}
-                  height={108}
-                  display={"flex"}
-                  justifyContent={"center"}
-                  sx={{
-                    border: "1px solid ",
-                    borderRadius: 1,
-                  }}
-                  alignItems={"center"}>
-                  <img src={image3} alt='' />
+                <Box display={"flex"} mt={2} justifyContent={"space-between"}>
+                  <Box
+                    width={"45%"}
+                    display={"flex"}
+                    flexDirection={"column"}
+                    justifyContent={"center"}
+                    alignItems={"center"}
+                    gap={"10px"}>
+                    <Box
+                      width={"100%"}
+                      height={108}
+                      display={"flex"}
+                      justifyContent={"center"}
+                      sx={{
+                        border: "1px solid ",
+                        borderRadius: 1,
+                      }}
+                      alignItems={"center"}>
+                      <img src={image3} alt='' />
+                    </Box>
+                    <Typography>Gõ chữ</Typography>
+                  </Box>
+                  <Box
+                    width={"45%"}
+                    display={"flex"}
+                    flexDirection={"column"}
+                    justifyContent={"center"}
+                    alignItems={"center"}
+                    gap={"10px"}>
+                    <Box
+                      width={"100%"}
+                      height={108}
+                      display={"flex"}
+                      justifyContent={"center"}
+                      sx={{
+                        border: "1px solid ",
+                        borderRadius: 1,
+                      }}
+                      alignItems={"center"}>
+                      <img src={image4} alt='' />
+                    </Box>
+                    <Typography>Chữ nhún</Typography>
+                  </Box>
                 </Box>
-                <Typography>Gõ chữ</Typography>
               </Box>
-              <Box
-                width={"45%"}
-                display={"flex"}
-                flexDirection={"column"}
-                justifyContent={"center"}
-                alignItems={"center"}
-                gap={"10px"}>
-                <Box
-                  width={"100%"}
-                  height={108}
-                  display={"flex"}
-                  justifyContent={"center"}
-                  sx={{
-                    border: "1px solid ",
-                    borderRadius: 1,
-                  }}
-                  alignItems={"center"}>
-                  <img src={image4} alt='' />
-                </Box>
-                <Typography>Chữ nhún</Typography>
-              </Box>
-            </Box>
-          </Box>
 
-          {/* Color selection */}
-          <Box>
-            <Typography variant='body1' my={2} gutterBottom>
-              Chọn màu
-            </Typography>
-            <Box display={"flex"} gap={1} justifyContent={"space-between"}>
-              {colorOptions1.map(([bg, fg], i) => (
-                <Box
-                  key={i}
-                  sx={{
-                    width: isMobile ? 64 : 74,
-                    height: 36,
-                    borderRadius: 1,
-                    border:
-                      bg === "#1b1c34"
-                        ? "2px solid #00ffae"
-                        : "1px solid white",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    px: 1,
-                    backgroundColor: "#1b1c34",
-                  }}>
-                  <Box
-                    sx={{
-                      width: 26,
-                      height: 26,
-                      borderRadius: "50%",
-                      bgcolor: bg,
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      width: 26,
-                      height: 26,
-                      borderRadius: "50%",
-                      bgcolor: fg,
-                    }}
-                  />
+              {/* Color selection */}
+              <Box>
+                <Typography variant='body1' my={2} gutterBottom>
+                  Chọn màu
+                </Typography>
+                <Box display={"flex"} gap={1} justifyContent={"space-between"}>
+                  {colorOptions1.map(([bg, fg], i) => (
+                    <Box
+                      key={i}
+                      sx={{
+                        width: isMobile ? 64 : 74,
+                        height: 36,
+                        borderRadius: 1,
+                        border:
+                          bg === "#1b1c34"
+                            ? "2px solid #00ffae"
+                            : "1px solid white",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        px: 1,
+                        backgroundColor: "#1b1c34",
+                      }}>
+                      <Box
+                        sx={{
+                          width: 26,
+                          height: 26,
+                          borderRadius: "50%",
+                          bgcolor: bg,
+                        }}
+                      />
+                      <Box
+                        sx={{
+                          width: 26,
+                          height: 26,
+                          borderRadius: "50%",
+                          bgcolor: fg,
+                        }}
+                      />
+                    </Box>
+                  ))}
                 </Box>
-              ))}
-            </Box>
-            <Box
-              display={"flex"}
-              gap={1}
-              my={2}
-              justifyContent={"space-between"}>
-              {colorOptions2.map(([bg, fg], i) => (
                 <Box
-                  key={i}
-                  sx={{
-                    width: isMobile ? 64 : 74,
-                    height: 36,
-                    borderRadius: 1,
-                    border:
-                      bg === "#1b1c34"
-                        ? "2px solid #00ffae"
-                        : "1px solid white",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    px: 1,
-                    backgroundColor: "#1b1c34",
-                  }}>
+                  display={"flex"}
+                  gap={1}
+                  my={2}
+                  justifyContent={"space-between"}>
+                  {colorOptions2.map(([bg, fg], i) => (
+                    <Box
+                      key={i}
+                      sx={{
+                        width: isMobile ? 64 : 74,
+                        height: 36,
+                        borderRadius: 1,
+                        border:
+                          bg === "#1b1c34"
+                            ? "2px solid #00ffae"
+                            : "1px solid white",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        px: 1,
+                        backgroundColor: "#1b1c34",
+                      }}>
+                      <Box
+                        sx={{
+                          width: 26,
+                          height: 26,
+                          borderRadius: "50%",
+                          bgcolor: bg,
+                        }}
+                      />
+                      <Box
+                        sx={{
+                          width: 26,
+                          height: 26,
+                          borderRadius: "50%",
+                          bgcolor: fg,
+                        }}
+                      />
+                    </Box>
+                  ))}
                   <Box
                     sx={{
-                      width: 26,
-                      height: 26,
-                      borderRadius: "50%",
-                      bgcolor: bg,
-                    }}
-                  />
-                  <Box
-                    sx={{
-                      width: 26,
-                      height: 26,
-                      borderRadius: "50%",
-                      bgcolor: fg,
-                    }}
-                  />
+                      width: 92,
+                      height: 36,
+                      borderRadius: 1,
+                      bgcolor: "#2c2e4f",
+                      fontSize: 12,
+                      border: "1px solid white",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      color: "white",
+                    }}>
+                    Tuỳ chỉnh
+                  </Box>
                 </Box>
-              ))}
-              <Box
-                sx={{
-                  width: 92,
-                  height: 36,
-                  borderRadius: 1,
-                  bgcolor: "#2c2e4f",
-                  fontSize: 12,
-                  border: "1px solid white",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  color: "white",
-                }}>
-                Tuỳ chỉnh
               </Box>
             </Box>
-          </Box>
+          )}
 
           {/* Font dropdown */}
-          <FormControl fullWidth>
-            <InputLabel sx={{ color: "#aaa" }}>Kiểu chữ</InputLabel>
-            <Select
-              defaultValue='SF Pro Display'
-              label='Kiểu chữ'
-              MenuProps={{
-                PaperProps: {
-                  sx: {
-                    backgroundColor: "#2A274B", // nền của dropdown list
-                    color: "#fff",
-                    borderRadius: 2,
-                    mt: 1,
-                    "& .MuiMenuItem-root": {
-                      "&:hover": {
-                        backgroundColor: "#3A375F", // màu hover
-                        borderRadius: 1,
-                      },
-                      "&.Mui-selected": {
-                        backgroundColor: "#4B3A79", // màu selected
-                        borderRadius: 1,
-                      },
-                    },
-                  },
-                },
-              }}
-              sx={{
-                color: "white",
-                ".MuiSelect-icon": { color: "white" },
-                ".MuiOutlinedInput-notchedOutline": {
-                  borderColor: "white",
-                },
-                "&:hover .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "white",
-                },
-                "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                  borderColor: "white",
-                },
-                height: isMobile ? "38px" : "unset",
-              }}>
-              <MenuItem value='SF Pro Display'>SF Pro Display</MenuItem>
-            </Select>
-          </FormControl>
         </Stack>
       </Box>
     </Box>
