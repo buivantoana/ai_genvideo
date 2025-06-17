@@ -34,7 +34,9 @@ const dynamicSteps = [
   { label: "Tạo kịch bản", status: "completed" },
   { label: "Tạo ảnh", status: "completed" },
   { label: "Tạo Video", status: "completed" },
-  { label: "Voice", status: "active" },
+  { label: "Tạo Voice", status: "completed" },
+  { label: "Nhạc nền và sub", status: "active" },
+  { label: "Hoàn thành", status: "pending" },
 ];
 const SubView = ({ model }) => {
   const theme = useTheme();
@@ -54,7 +56,7 @@ const SubView = ({ model }) => {
       }}>
       <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
-      <ResponsiveBox />
+      {/* <ResponsiveBox /> */}
 
       <SubtitleSettings model={model} />
     </Box>

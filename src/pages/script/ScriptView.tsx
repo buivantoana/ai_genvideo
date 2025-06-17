@@ -21,7 +21,9 @@ const dynamicSteps = [
   { label: "Tạo kịch bản", status: "active" },
   { label: "Tạo ảnh", status: "pending" },
   { label: "Tạo Video", status: "pending" },
-  { label: "Voice", status: "pending" },
+  { label: "Tạo Voice", status: "pending" },
+  { label: "Nhạc nền và sub", status: "pending" },
+  { label: "Hoàn thành ", status: "pending" },
 ];
 const ScriptView = ({
   script,
@@ -49,10 +51,10 @@ const ScriptView = ({
       }}>
       <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
-      <ResponsiveBox
+      {/* <ResponsiveBox
         selectedTab={selectedTab}
         onTabChange={(index) => setSelectedTab(index)}
-      />
+      /> */}
       <PromptEditorUI
         id={id}
         setSelectedTab={setSelectedTab}

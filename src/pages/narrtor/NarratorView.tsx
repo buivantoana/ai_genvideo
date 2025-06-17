@@ -425,7 +425,9 @@ const dynamicSteps = [
   { label: "Tạo kịch bản", status: "completed" },
   { label: "Tạo ảnh", status: "completed" },
   { label: "Tạo Video", status: "completed" },
-  { label: "Voice", status: "active" },
+  { label: "Tạo Voice", status: "active" },
+  { label: "Nhạc nền và sub", status: "pending" },
+  { label: "Hoàn thành ", status: "pending" },
 ];
 const NarratorView = ({ model, genScript, setLoading, id }) => {
   const theme = useTheme();
@@ -445,7 +447,7 @@ const NarratorView = ({ model, genScript, setLoading, id }) => {
       }}>
       <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
-      <ResponsiveBox />
+      {/* <ResponsiveBox /> */}
 
       <VoiceScene
         model={model}
@@ -513,8 +515,8 @@ const VoiceItem = ({
   // State for form inputs
   const [selectedModel, setSelectedModel] = useState(
     values.find((item) => item.scene === scene)?.voice?.model ||
-      model[0]?.id ||
-      "dia"
+    model[0]?.id ||
+    "dia"
   );
 
   const [selectedCharacter, setSelectedCharacter] = useState(
@@ -638,7 +640,7 @@ const VoiceItem = ({
     formData.append("text", narrationText);
     formData.append("model", selectedModel);
     formData.append("speed", String(readingSpeed));
-    formData.append("voice", selectedCharacter);
+    formData.append("voice", selectedVoice);
     formData.append("delay", duration);
     if (voice) {
       formData.append("sample_url", voice);
@@ -672,7 +674,7 @@ const VoiceItem = ({
                       id: status.id,
                       url: status.voice_url,
                       text: narrationText,
-                      voice: selectedCharacter,
+                      voice: selectedVoice,
                       model: selectedModel,
                       speed: readingSpeed,
                       delay: duration,
@@ -687,17 +689,17 @@ const VoiceItem = ({
               prev.map((item) =>
                 item.scene === scene
                   ? {
-                      ...item,
-                      voice: {
-                        id: status.id,
-                        url: status.voice_url,
-                        text: narrationText,
-                        voice: selectedCharacter,
-                        model: selectedModel,
-                        speed: readingSpeed,
-                        delay: duration,
-                      },
-                    }
+                    ...item,
+                    voice: {
+                      id: status.id,
+                      url: status.voice_url,
+                      text: narrationText,
+                      voice: selectedVoice,
+                      model: selectedModel,
+                      speed: readingSpeed,
+                      delay: duration,
+                    },
+                  }
                   : item
               )
             );
@@ -720,7 +722,7 @@ const VoiceItem = ({
                   id: result.id,
                   url: result.voice_url,
                   text: narrationText,
-                  voice: selectedCharacter,
+                  voice: selectedVoice,
                   model: selectedModel,
                   speed: readingSpeed,
                   delay: duration,
@@ -737,17 +739,17 @@ const VoiceItem = ({
           prev.map((item) =>
             item.scene === scene
               ? {
-                  ...item,
-                  voice: {
-                    id: result.id,
-                    url: result.voice_url,
-                    text: narrationText,
-                    voice: selectedCharacter,
-                    model: selectedModel,
-                    speed: readingSpeed,
-                    delay: duration,
-                  },
-                }
+                ...item,
+                voice: {
+                  id: result.id,
+                  url: result.voice_url,
+                  text: narrationText,
+                  voice: selectedVoice,
+                  model: selectedModel,
+                  speed: readingSpeed,
+                  delay: duration,
+                },
+              }
               : item
           )
         );
@@ -812,15 +814,13 @@ const VoiceItem = ({
                     padding: "5px 8px",
                     gap: 1,
                   }}
-                  onClick={handlePlayAudio}>
+                >
                   <img src={voice_high} alt='' />
                   <Typography color='rgba(139, 139, 168, 1)'>
-                    {isPlaying
-                      ? formatTime(currentTime)
-                      : formatTime(
-                          values.find((item) => item.scene === scene)?.voice
-                            ?.duration || 0
-                        )}
+                    {
+                     values&& values.find((item) => item.scene === scene)?.voice
+                        ?.delay || 0
+                    }s
                   </Typography>
                 </Box>
               )}
@@ -965,7 +965,7 @@ const VoiceItem = ({
                   </Select>
                 </FormControl>
                 <FormControl fullWidth>
-                  <InputLabel sx={{ color: "white" }}>Lời thoại</InputLabel>
+                  <InputLabel sx={{ color: "white" }}>Giọng đọc</InputLabel>
                   <Select
                     value={selectedVoice}
                     onChange={(e) => setSelectedVoice(e.target.value)}
@@ -1013,8 +1013,17 @@ const VoiceItem = ({
                       ".MuiSelect-icon": { color: "#fff" },
                     }}
                     label='Lời thoại'>
-                    <MenuItem value='MC Tung'>MC Tung</MenuItem>
-                    {/* Add more static voice options if needed */}
+                    {voices.length > 0 ? (
+                      voices.map((voice) => (
+                        <MenuItem key={voice.id} value={voice.id}>
+                          {voice.name}
+                        </MenuItem>
+                      ))
+                    ) : (
+                      <MenuItem value='' disabled>
+                        No voices available
+                      </MenuItem>
+                    )}
                   </Select>
                 </FormControl>
                 <FormControl fullWidth>

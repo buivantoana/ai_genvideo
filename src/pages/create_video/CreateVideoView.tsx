@@ -26,7 +26,9 @@ const dynamicSteps = [
   { label: "Tạo kịch bản", status: "completed" },
   { label: "Tạo ảnh", status: "completed" },
   { label: "Tạo Video", status: "active" },
-  { label: "Voice", status: "pending" },
+  { label: "Tạo Voice", status: "pending" },
+  { label: "Nhạc nền và sub", status: "pending" },
+  { label: "Hoàn thành ", status: "pending" },
 ];
 const modelOptions1 = ["Klling", "FramePack", "Wan"];
 const modelOptions2 = [
@@ -62,10 +64,10 @@ const CreateVideoView = ({ genScript, setLoading, modelList, id }: any) => {
       }}>
       <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
-      <ResponsiveBox
+      {/* <ResponsiveBox
         selectedTab={selectedTab}
         onTabChange={(index) => setSelectedTab(index)}
-      />
+      /> */}
       <Box display={"flex"} gap={3}>
         <FormControl variant='outlined' size='small'>
           <Select

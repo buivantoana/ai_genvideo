@@ -39,7 +39,9 @@ const dynamicSteps = [
   { label: "Tạo kịch bản", status: "completed" },
   { label: "Tạo ảnh", status: "active" },
   { label: "Tạo Video", status: "pending" },
-  { label: "Voice", status: "pending" },
+  { label: "Tạo Voice", status: "pending" },
+  { label: "Nhạc nền và sub", status: "pending" },
+  { label: "Hoàn thành ", status: "pending" },
 ];
 const CreateImageView = ({ genScript, setLoading, id, modelList }) => {
   const theme = useTheme();
@@ -67,10 +69,10 @@ const CreateImageView = ({ genScript, setLoading, id, modelList }) => {
       }}>
       <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
-      <ResponsiveBox
+      {/* <ResponsiveBox
         selectedTab={selectedTab}
         onTabChange={(index) => setSelectedTab(index)}
-      />
+      /> */}
       <Box display={"flex"} flexWrap={"wrap"} gap={isMobile ? 1 : 3}>
         <FormControl variant='outlined' size='small'>
           <Select
