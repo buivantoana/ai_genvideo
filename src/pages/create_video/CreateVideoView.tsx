@@ -763,7 +763,7 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
               setLoading(true);
               try {
                 let isCheckCreateVideo = values.filter(
-                  (item) => !(typeof item.selected == "number")
+                  (item) => !(typeof item.video.selected == "number")
                 )[0];
                 if (isCheckCreateVideo) {
                   toast.warning("Cần tạo đủ video");
