@@ -99,7 +99,7 @@ const SubtitleSettings = ({ model, genScript }) => {
   const handleAddMusic = () => {
 
     const newMusic = {
-      id: "",
+      id:backgroundMusics.length,
       url: "",
       prompt: "",
       duration: 10,
@@ -109,7 +109,7 @@ const SubtitleSettings = ({ model, genScript }) => {
     };
 
     setBackgroundMusics([...backgroundMusics, newMusic]);
-    setActiveMusicId(newId);
+    setActiveMusicId(backgroundMusics.length);
     setShowAddDialog(false);
   };
 
@@ -558,50 +558,8 @@ const Settings = () => {
                     <Typography>Karaoke</Typography>
                   </Box>
                 </Box>
-                <Box display={"flex"} mt={2} justifyContent={"space-between"}>
-                  <Box
-                    width={"45%"}
-                    display={"flex"}
-                    flexDirection={"column"}
-                    justifyContent={"center"}
-                    alignItems={"center"}
-                    gap={"10px"}>
-                    <Box
-                      width={"100%"}
-                      height={108}
-                      display={"flex"}
-                      justifyContent={"center"}
-                      sx={{
-                        border: "1px solid ",
-                        borderRadius: 1,
-                      }}
-                      alignItems={"center"}>
-                      <img src={image3} alt='' />
-                    </Box>
-                    <Typography>Gõ chữ</Typography>
-                  </Box>
-                  <Box
-                    width={"45%"}
-                    display={"flex"}
-                    flexDirection={"column"}
-                    justifyContent={"center"}
-                    alignItems={"center"}
-                    gap={"10px"}>
-                    <Box
-                      width={"100%"}
-                      height={108}
-                      display={"flex"}
-                      justifyContent={"center"}
-                      sx={{
-                        border: "1px solid ",
-                        borderRadius: 1,
-                      }}
-                      alignItems={"center"}>
-                      <img src={image4} alt='' />
-                    </Box>
-                    <Typography>Chữ nhún</Typography>
-                  </Box>
-                </Box>
+               
+              
               </Box>
 
               {/* Color selection */}
@@ -1175,71 +1133,64 @@ function MusicPromptUI({
               </Typography>
             </Box> */}
             <Box sx={{ width: '100%', p: 1, mt: 2.7 }}>
-            <Slider
-  min={0}
-  max={videoDuration} // Slider hiển thị từ 0 đến 100
-  value={[
-    Math.min(timeline.start_time, videoDuration - 1),
-    Math.min(timeline.end_time, videoDuration),
-  ]}
-  onChange={(event, newValue) => {
-    let [start, end]: any = newValue;
+              <Slider
+                min={0}
+                max={videoDuration}
+                value={[
+                  Math.min(timeline.start_time, videoDuration - 1),
+                  Math.min(timeline.end_time, videoDuration),
+                ]}
+                onChange={(event, newValue) => {
+                  let [start, end]: any = newValue;
 
-    // Giới hạn start từ 0 đến videoDuration - 1
-    start = Math.max(0, Math.min(start, videoDuration - 1));
+                  // Chỉ cần đảm bảo khoảng cách tối thiểu 1 giây
+                  if (end - start < 1) {
+                    if (event.target?.dataset?.index === "0") {
+                      start = end - 1; // Nếu kéo đầu trái
+                    } else {
+                      end = start + 1; // Nếu kéo đầu phải
+                    }
+                  }
 
-    // Giới hạn end luôn <= audioDuration
-    end = Math.min(end, audioDuration);
+                  setTimeline({
+                    start_time: start,
+                    end_time: end,
+                    duration: end - start,
+                  });
+                }}
+                onChangeCommitted={(event, newValue) => {
+                  const [start, end] = newValue;
+                  const updatedMusic = {
+                    ...musicData,
+                    start_time: start,
+                    end_time: end,
+                  };
+                  onUpdateMusic(updatedMusic);
 
-    // Đảm bảo khoảng cách ít nhất 1 giây
-    if (end - start < 1) {
-      if (start + 1 <= audioDuration) {
-        end = start + 1;
-      } else {
-        start = end - 1;
-      }
-    }
-
-    setTimeline({
-      start_time: start,
-      end_time: end,
-      duration: audioDuration,
-    });
-  }}
-  onChangeCommitted={(event, newValue) => {
-    const [start, end] = newValue;
-
-    const updatedMusic = {
-      ...musicData,
-      start_time: Math.max(0, Math.min(start, videoDuration - 1)),
-      end_time: Math.min(end, audioDuration),
-    };
-    onUpdateMusic(updatedMusic);
-
-    if (isPlaying && audioRef.current) {
-      audioRef.current.currentTime = updatedMusic.start_time;
-    }
-  }}
-  valueLabelDisplay="auto"
-  valueLabelFormat={formatTime}
-  disableSwap
-  sx={{
-    '& .MuiSlider-track': {
-      backgroundColor: 'rgba(89, 50, 234, 1)',
-      height: 6,
-    },
-    '& .MuiSlider-rail': {
-      backgroundColor: 'rgba(217, 217, 217, 1)',
-      height: 6,
-    },
-    '& .MuiSlider-thumb': {
-      width: 16,
-      height: 16,
-      backgroundColor: '#fff',
-      border: '2px solid rgba(89, 50, 234, 1)',
-    },
-  }}
-/>
+                  if (isPlaying && audioRef.current) {
+                    audioRef.current.currentTime = updatedMusic.start_time;
+                  }
+                }}
+                valueLabelDisplay="auto"
+                valueLabelFormat={formatTime}
+                disableSwap // Giữ nguyên để tránh start > end
+                sx={{
+                  '& .MuiSlider-track': {
+                    backgroundColor: 'rgba(89, 50, 234, 1)',
+                    height: 6,
+                  },
+                  '& .MuiSlider-rail': {
+                    backgroundColor: 'rgba(217, 217, 217, 1)',
+                    height: 6,
+                  },
+                  '& .MuiSlider-thumb': {
+                    width: 16,
+                    height: 16,
+                    backgroundColor: '#fff',
+                    border: '2px solid rgba(89, 50, 234, 1)',
+                  },
+                }}
+              />
               <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
                 <Typography variant="caption">
                   Start: {formatTime(Math.min(timeline.start_time, videoDuration))}
