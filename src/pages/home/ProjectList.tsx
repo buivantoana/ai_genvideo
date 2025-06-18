@@ -82,10 +82,10 @@ const ProjectList = ({ project }: any) => {
                     navigate(`/narrator?id=${item.id}`);
                   }
                   if (item?.current_step == "gen_voice") {
-                    navigate(`/narrator?id=${item.id}`);
+                    navigate(`/sub?id=${item.id}`);
                   }
                   if (item?.current_step == "gen_audio_sub") {
-                    navigate(`/sub?id=${item.id}`);
+                    navigate(`/success?id=${item.id}`);
                   }
                   if (!item?.current_step) {
                     navigate(`/script?id=${item.id}`);

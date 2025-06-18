@@ -215,8 +215,11 @@ const ProjectCard = ({
               if (project?.current_step == "gen_video") {
                 navigate(`/narrator?id=${project.id}`);
               }
-              if (project?.current_step == "gen_audio_sub") {
+              if (project?.current_step == "gen_voice") {
                 navigate(`/sub?id=${project.id}`);
+              }
+              if (project?.current_step == "gen_audio_sub") {
+                navigate(`/success?id=${project.id}`);
               }
               if (!project?.current_step) {
                 navigate(`/script?id=${project.id}`);

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import SubView from "./SubView";
 import { getVoiceModels } from "../../service/project";
 import { useLocation } from "react-router-dom";
+import Loading from "../../components/Loading";
 
 type Props = {};
 
@@ -37,7 +38,10 @@ const SubController = (props: Props) => {
       }
     }
   }, [id]);
-  return <SubView model={model} genScript={genScript} />;
+  return <>
+    {loading && <Loading/>}
+  <SubView model={model} genScript={genScript} id={id} setLoading={setLoading} />
+  </> 
 };
 
 export default SubController;

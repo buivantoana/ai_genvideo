@@ -38,7 +38,7 @@ const dynamicSteps = [
   { label: "Nhạc nền và sub", status: "active" },
   { label: "Hoàn thành", status: "pending" },
 ];
-const SubView = ({ model, genScript }) => {
+const SubView = ({ model, genScript, setLoading, id }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -58,7 +58,7 @@ const SubView = ({ model, genScript }) => {
       {/* Toggle Tabs */}
       {/* <ResponsiveBox /> */}
 
-      <SubtitleSettings genScript={genScript} model={model} />
+      <SubtitleSettings id={id} setLoading={setLoading} genScript={genScript} model={model} />
     </Box>
   );
 };
@@ -80,7 +80,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 import { RiPlayFill } from "react-icons/ri";
 
-const SubtitleSettings = ({ model, genScript }) => {
+const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
   const isMobile = useMediaQuery("(max-width:768px)");
   const [on, setOn] = useState(false);
   const navigate = useNavigate();
@@ -99,7 +99,7 @@ const SubtitleSettings = ({ model, genScript }) => {
   const handleAddMusic = () => {
 
     const newMusic = {
-      id:backgroundMusics.length,
+      id: backgroundMusics.length,
       url: "",
       prompt: "",
       duration: 10,
@@ -143,7 +143,6 @@ const SubtitleSettings = ({ model, genScript }) => {
       setIsPlayingVideo(false);
     }
   };
-  console.log(videoUrl);
   const formatTime = (seconds) => {
     const m = Math.floor(seconds / 60)
       .toString()
@@ -153,6 +152,11 @@ const SubtitleSettings = ({ model, genScript }) => {
       .padStart(2, "0");
     return `${m}:${s}`;
   };
+  const [active, setActive] = useState(1);
+  const [textTransform, setTextTransform] = useState("normal");
+  const [fontFamily, setFontFamily] = useState("SF Pro Display");
+  const [subtitleStyle, setSubtitleStyle] = useState("default"); // hoặc 'karaoke'
+  const [selectedColor, setSelectedColor] = useState(["#1b1c34", "#ffffff"]);
   return (
     <Box
       sx={{
@@ -312,13 +316,61 @@ const SubtitleSettings = ({ model, genScript }) => {
 
         {/* Right Side */}
         <Box flex={1}>
-          <Settings />
+          <Settings active={active} fontFamily={fontFamily} setSelectedColor={setSelectedColor} selectedColor={selectedColor} setSubtitleStyle={setSubtitleStyle} setFontFamily={setFontFamily} subtitleStyle={subtitleStyle} setActive={setActive} textTransform={textTransform} setTextTransform={setTextTransform} />
         </Box>
       </Stack>
 
       <Box mt={6} textAlign='center'>
         <Button
-          onClick={() => navigate("/success")}
+          onClick={async () => {
+            setLoading(true)
+            let body: any = {
+              audios: backgroundMusics,
+            }
+            if (active != 0) {
+              let position = null
+              if (active == 1) {
+                position = "bottom"
+              }
+              if (active == 2) {
+                position = "middle"
+              }
+              if (active == 3) {
+                position = "middle"
+              }
+              if (active == 4) {
+                position = "top"
+              }
+              body.subtitles = {
+                "font": fontFamily,
+                "size": 12,
+                "color_base": selectedColor[0],
+                "color_highlight": selectedColor[1],
+                "type": textTransform,
+                "position": position
+              }
+            }
+            try {
+              let result = await updateProject(id, {
+                "current_step": "gen_audio_sub",
+                script: {
+                  ...genScript.script,
+                  ...body
+                }
+              })
+              if (result && result.name) {
+                localStorage.setItem("gen_script", JSON.stringify(result));
+                setTimeout(() => {
+                  navigate(`/success?id=${id}`);
+                }, 500);
+              } else {
+                throw new Error("Cập nhật dự án thất bại");
+              }
+            } catch (error) {
+              console.log(error)
+            }
+            setLoading(false)
+          }}
           variant='contained'
           sx={{
             bgcolor: "#6b5bfc",
@@ -348,9 +400,9 @@ import {
   VolumeUp,
 } from "@mui/icons-material";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-const Settings = () => {
+const Settings = ({ active, setActive, textTransform, setTextTransform, fontFamily, setFontFamily, subtitleStyle, setSubtitleStyle, selectedColor, setSelectedColor }) => {
   const isMobile = useMediaQuery("(max-width:768px)");
-  const [active, setActive] = useState(1);
+
   const colorOptions1 = [
     ["#1b1c34", "#ffffff"],
     ["#000000", "#ffffff"],
@@ -443,6 +495,7 @@ const Settings = () => {
                 <RadioControl
                   label='Kiểu chữ'
                   defaultValue='normal'
+                  onChange={(val) => setTextTransform(val)}
                   options={[
                     ["normal", "Chữ thường"],
                     ["upper", "Chữ hoa"],
@@ -453,6 +506,8 @@ const Settings = () => {
                   <Select
                     defaultValue='SF Pro Display'
                     label='Font chữ'
+                    value={fontFamily}
+                    onChange={(e) => setFontFamily(e.target.value)}
                     MenuProps={{
                       PaperProps: {
                         sx: {
@@ -516,6 +571,7 @@ const Settings = () => {
                 <Box display={"flex"} mt={3} justifyContent={"space-between"}>
                   <Box
                     width={"45%"}
+                    onClick={() => setSubtitleStyle("default")}
                     display={"flex"}
                     flexDirection={"column"}
                     justifyContent={"center"}
@@ -528,7 +584,10 @@ const Settings = () => {
                       justifyContent={"center"}
                       bgcolor={"rgba(55, 55, 104, 1)"}
                       sx={{
-                        border: "1px solid rgba(5, 193, 104, 1)",
+                        border:
+                          subtitleStyle === "default"
+                            ? "2px solid #00ffae"
+                            : "1px solid rgba(5, 193, 104, 1)",
                         borderRadius: 1,
                       }}
                       alignItems={"center"}>
@@ -537,6 +596,7 @@ const Settings = () => {
                     <Typography>Mặc định</Typography>
                   </Box>
                   <Box
+                    onClick={() => setSubtitleStyle("karaoke")}
                     width={"45%"}
                     display={"flex"}
                     flexDirection={"column"}
@@ -549,7 +609,10 @@ const Settings = () => {
                       display={"flex"}
                       justifyContent={"center"}
                       sx={{
-                        border: "1px solid ",
+                        border:
+                          subtitleStyle === "karaoke"
+                            ? "2px solid #00ffae"
+                            : "1px solid rgba(5, 193, 104, 1)",
                         borderRadius: 1,
                       }}
                       alignItems={"center"}>
@@ -558,8 +621,8 @@ const Settings = () => {
                     <Typography>Karaoke</Typography>
                   </Box>
                 </Box>
-               
-              
+
+
               </Box>
 
               {/* Color selection */}
@@ -568,82 +631,85 @@ const Settings = () => {
                   Chọn màu
                 </Typography>
                 <Box display={"flex"} gap={1} justifyContent={"space-between"}>
-                  {colorOptions1.map(([bg, fg], i) => (
-                    <Box
-                      key={i}
-                      sx={{
-                        width: isMobile ? 64 : 74,
-                        height: 36,
-                        borderRadius: 1,
-                        border:
-                          bg === "#1b1c34"
-                            ? "2px solid #00ffae"
-                            : "1px solid white",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        px: 1,
-                        backgroundColor: "#1b1c34",
-                      }}>
+                  {colorOptions1.map(([bg, fg], i) => {
+                    const isActive = selectedColor[0] === bg && selectedColor[1] === fg;
+                    return (
                       <Box
+                        key={i}
+                        onClick={() => setSelectedColor([bg, fg])}
                         sx={{
-                          width: 26,
-                          height: 26,
-                          borderRadius: "50%",
-                          bgcolor: bg,
-                        }}
-                      />
-                      <Box
-                        sx={{
-                          width: 26,
-                          height: 26,
-                          borderRadius: "50%",
-                          bgcolor: fg,
-                        }}
-                      />
-                    </Box>
-                  ))}
+                          width: isMobile ? 64 : 74,
+                          height: 36,
+                          borderRadius: 1,
+
+                          border: isActive ? "2px solid #00ffae" : "1px solid white",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          px: 1,
+                          backgroundColor: "#1b1c34",
+                        }}>
+                        <Box
+                          sx={{
+                            width: 26,
+                            height: 26,
+                            borderRadius: "50%",
+                            bgcolor: bg,
+                          }}
+                        />
+                        <Box
+                          sx={{
+                            width: 26,
+                            height: 26,
+                            borderRadius: "50%",
+                            bgcolor: fg,
+                          }}
+                        />
+                      </Box>
+                    )
+                  })}
                 </Box>
                 <Box
                   display={"flex"}
                   gap={1}
                   my={2}
                   justifyContent={"space-between"}>
-                  {colorOptions2.map(([bg, fg], i) => (
-                    <Box
-                      key={i}
-                      sx={{
-                        width: isMobile ? 64 : 74,
-                        height: 36,
-                        borderRadius: 1,
-                        border:
-                          bg === "#1b1c34"
-                            ? "2px solid #00ffae"
-                            : "1px solid white",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                        px: 1,
-                        backgroundColor: "#1b1c34",
-                      }}>
+                  {colorOptions2.map(([bg, fg], i) => {
+                    const isActive = selectedColor[0] === bg && selectedColor[1] === fg;
+                    return (
                       <Box
+                        key={i}
+                        onClick={() => setSelectedColor([bg, fg])}
                         sx={{
-                          width: 26,
-                          height: 26,
-                          borderRadius: "50%",
-                          bgcolor: bg,
-                        }}
-                      />
-                      <Box
-                        sx={{
-                          width: 26,
-                          height: 26,
-                          borderRadius: "50%",
-                          bgcolor: fg,
-                        }}
-                      />
-                    </Box>
-                  ))}
+                          width: isMobile ? 64 : 74,
+                          height: 36,
+                          borderRadius: 1,
+
+                          border: isActive ? "2px solid #00ffae" : "1px solid white",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          px: 1,
+                          backgroundColor: "#1b1c34",
+                        }}>
+                        <Box
+                          sx={{
+                            width: 26,
+                            height: 26,
+                            borderRadius: "50%",
+                            bgcolor: bg,
+                          }}
+                        />
+                        <Box
+                          sx={{
+                            width: 26,
+                            height: 26,
+                            borderRadius: "50%",
+                            bgcolor: fg,
+                          }}
+                        />
+                      </Box>)
+                  })}
                   <Box
                     sx={{
                       width: 92,
@@ -804,7 +870,7 @@ import { styled } from "@mui/system";
 import ResponsiveBox from "../../components/ResponsiveBox";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { genBackgroundMusic, genMusicStatus } from "../../service/project";
+import { genBackgroundMusic, genMusicStatus, updateProject } from "../../service/project";
 
 const Container = styled("div")(({ theme }) => ({
   backgroundColor: "#1a1a2e",
