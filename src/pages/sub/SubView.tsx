@@ -58,7 +58,12 @@ const SubView = ({ model, genScript, setLoading, id }) => {
       {/* Toggle Tabs */}
       {/* <ResponsiveBox /> */}
 
-      <SubtitleSettings id={id} setLoading={setLoading} genScript={genScript} model={model} />
+      <SubtitleSettings
+        id={id}
+        setLoading={setLoading}
+        genScript={genScript}
+        model={model}
+      />
     </Box>
   );
 };
@@ -94,18 +99,63 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
   const [backgroundMusics, setBackgroundMusics] = useState([]);
   const [activeMusicId, setActiveMusicId] = useState(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
-  console.log("backgroundMusics", backgroundMusics)
+  const [active, setActive]: any = useState(1);
+  const [textTransform, setTextTransform] = useState("normal");
+  const [fontFamily, setFontFamily] = useState("SF Pro Display");
+  const [subtitleStyle, setSubtitleStyle] = useState("default"); // hoặc 'karaoke'
+  const [selectedColor, setSelectedColor]: any = useState([
+    "#1b1c34",
+    "#ffffff",
+  ]);
+  console.log("backgroundMusics", backgroundMusics);
   // Thêm nhạc mới
-  const handleAddMusic = () => {
+  useEffect(() => {
+    if (genScript?.script?.audios) {
+      setBackgroundMusics(
+        genScript.script.audios.map((item, index) => {
+          return {
+            ...item,
+            index,
+          };
+        })
+      );
+    }
+    if (genScript?.script?.subtitles) {
+      let position = null;
+      if (genScript?.script?.subtitles.position == "bottom") {
+        position = 1;
+      }
+      if (genScript?.script?.subtitles.position == "middle") {
+        position = 2;
+      }
+      if (genScript?.script?.subtitles.position == "middle") {
+        position = 3;
+      }
+      if (genScript?.script?.subtitles.position == "top") {
+        position = 4;
+      }
 
+      setFontFamily(genScript?.script?.subtitles.font);
+      setTextTransform(genScript?.script?.subtitles.type);
+      setActive(position);
+      setSelectedColor([
+        genScript?.script?.subtitles.color_base,
+        genScript?.script?.subtitles.color_highlight,
+      ]);
+    } else {
+      setActive(0);
+    }
+  }, [genScript]);
+  const handleAddMusic = () => {
     const newMusic = {
-      id: backgroundMusics.length,
+      index: backgroundMusics.length,
+      id: "",
       url: "",
       prompt: "",
       duration: 10,
       model: model[0]?.id,
       start_time: 0,
-      end_time: 10
+      end_time: 10,
     };
 
     setBackgroundMusics([...backgroundMusics, newMusic]);
@@ -115,15 +165,19 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
 
   // Cập nhật nhạc
   const handleUpdateMusic = (updatedMusic) => {
-    setBackgroundMusics(backgroundMusics.map(music =>
-      music.id === updatedMusic.id ? updatedMusic : music
-    ));
+    setBackgroundMusics(
+      backgroundMusics.map((music) =>
+        music.index === updatedMusic.index ? updatedMusic : music
+      )
+    );
   };
 
   // Xóa nhạc
-  const handleDeleteMusic = (id) => {
-    setBackgroundMusics(backgroundMusics.filter(music => music.id !== id));
-    if (activeMusicId === id) {
+  const handleDeleteMusic = (index) => {
+    setBackgroundMusics(
+      backgroundMusics.filter((music) => music.index !== index)
+    );
+    if (activeMusicId === index) {
       setActiveMusicId(null);
     }
   };
@@ -152,11 +206,7 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
       .padStart(2, "0");
     return `${m}:${s}`;
   };
-  const [active, setActive] = useState(1);
-  const [textTransform, setTextTransform] = useState("normal");
-  const [fontFamily, setFontFamily] = useState("SF Pro Display");
-  const [subtitleStyle, setSubtitleStyle] = useState("default"); // hoặc 'karaoke'
-  const [selectedColor, setSelectedColor] = useState(["#1b1c34", "#ffffff"]);
+
   return (
     <Box
       sx={{
@@ -278,21 +328,18 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
               <MusicPromptUI setOn={setOn} model={model} />
             )}</>} */}
             <Box>
-              {backgroundMusics.map(music => (
+              {backgroundMusics.map((music) => (
                 <MusicPromptUI
-                  key={music.id}
-                  setOn={() => handleDeleteMusic(music.id)}
+                  key={music.index}
+                  setOn={() => handleDeleteMusic(music.index)}
                   model={model}
                   musicData={music}
                   onUpdateMusic={handleUpdateMusic}
                   onDeleteMusic={handleDeleteMusic}
-                  isActive={activeMusicId === music.id}
+                  isActive={activeMusicId === music.index}
                   onSetActive={setActiveMusicId}
                 />
               ))}
-
-
-
             </Box>
           </Box>
           <Box
@@ -316,48 +363,59 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
 
         {/* Right Side */}
         <Box flex={1}>
-          <Settings active={active} fontFamily={fontFamily} setSelectedColor={setSelectedColor} selectedColor={selectedColor} setSubtitleStyle={setSubtitleStyle} setFontFamily={setFontFamily} subtitleStyle={subtitleStyle} setActive={setActive} textTransform={textTransform} setTextTransform={setTextTransform} />
+          <Settings
+            active={active}
+            fontFamily={fontFamily}
+            setSelectedColor={setSelectedColor}
+            selectedColor={selectedColor}
+            setSubtitleStyle={setSubtitleStyle}
+            setFontFamily={setFontFamily}
+            subtitleStyle={subtitleStyle}
+            setActive={setActive}
+            textTransform={textTransform}
+            setTextTransform={setTextTransform}
+          />
         </Box>
       </Stack>
 
       <Box mt={6} textAlign='center'>
         <Button
           onClick={async () => {
-            setLoading(true)
+            setLoading(true);
             let body: any = {
               audios: backgroundMusics,
-            }
+            };
             if (active != 0) {
-              let position = null
+              let position = null;
               if (active == 1) {
-                position = "bottom"
+                position = "bottom";
               }
               if (active == 2) {
-                position = "middle"
+                position = "middle";
               }
               if (active == 3) {
-                position = "middle"
+                position = "middle";
               }
               if (active == 4) {
-                position = "top"
+                position = "top";
               }
               body.subtitles = {
-                "font": fontFamily,
-                "size": 12,
-                "color_base": selectedColor[0],
-                "color_highlight": selectedColor[1],
-                "type": textTransform,
-                "position": position
-              }
+                font: fontFamily,
+                size: 12,
+                color_base: selectedColor[0],
+                color_highlight: selectedColor[1],
+                type: textTransform,
+                position: position,
+              };
             }
             try {
               let result = await updateProject(id, {
-                "current_step": "gen_audio_sub",
+                current_step: "gen_audio_sub",
                 script: {
                   ...genScript.script,
-                  ...body
-                }
-              })
+                  ...body,
+                },
+              });
               if (result && result.name) {
                 localStorage.setItem("gen_script", JSON.stringify(result));
                 setTimeout(() => {
@@ -367,9 +425,9 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
                 throw new Error("Cập nhật dự án thất bại");
               }
             } catch (error) {
-              console.log(error)
+              console.log(error);
             }
-            setLoading(false)
+            setLoading(false);
           }}
           variant='contained'
           sx={{
@@ -400,7 +458,18 @@ import {
   VolumeUp,
 } from "@mui/icons-material";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-const Settings = ({ active, setActive, textTransform, setTextTransform, fontFamily, setFontFamily, subtitleStyle, setSubtitleStyle, selectedColor, setSelectedColor }) => {
+const Settings = ({
+  active,
+  setActive,
+  textTransform,
+  setTextTransform,
+  fontFamily,
+  setFontFamily,
+  subtitleStyle,
+  setSubtitleStyle,
+  selectedColor,
+  setSelectedColor,
+}) => {
   const isMobile = useMediaQuery("(max-width:768px)");
 
   const colorOptions1 = [
@@ -621,8 +690,6 @@ const Settings = ({ active, setActive, textTransform, setTextTransform, fontFami
                     <Typography>Karaoke</Typography>
                   </Box>
                 </Box>
-
-
               </Box>
 
               {/* Color selection */}
@@ -632,7 +699,8 @@ const Settings = ({ active, setActive, textTransform, setTextTransform, fontFami
                 </Typography>
                 <Box display={"flex"} gap={1} justifyContent={"space-between"}>
                   {colorOptions1.map(([bg, fg], i) => {
-                    const isActive = selectedColor[0] === bg && selectedColor[1] === fg;
+                    const isActive =
+                      selectedColor[0] === bg && selectedColor[1] === fg;
                     return (
                       <Box
                         key={i}
@@ -642,7 +710,9 @@ const Settings = ({ active, setActive, textTransform, setTextTransform, fontFami
                           height: 36,
                           borderRadius: 1,
 
-                          border: isActive ? "2px solid #00ffae" : "1px solid white",
+                          border: isActive
+                            ? "2px solid #00ffae"
+                            : "1px solid white",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "space-between",
@@ -666,7 +736,7 @@ const Settings = ({ active, setActive, textTransform, setTextTransform, fontFami
                           }}
                         />
                       </Box>
-                    )
+                    );
                   })}
                 </Box>
                 <Box
@@ -675,7 +745,8 @@ const Settings = ({ active, setActive, textTransform, setTextTransform, fontFami
                   my={2}
                   justifyContent={"space-between"}>
                   {colorOptions2.map(([bg, fg], i) => {
-                    const isActive = selectedColor[0] === bg && selectedColor[1] === fg;
+                    const isActive =
+                      selectedColor[0] === bg && selectedColor[1] === fg;
                     return (
                       <Box
                         key={i}
@@ -685,7 +756,9 @@ const Settings = ({ active, setActive, textTransform, setTextTransform, fontFami
                           height: 36,
                           borderRadius: 1,
 
-                          border: isActive ? "2px solid #00ffae" : "1px solid white",
+                          border: isActive
+                            ? "2px solid #00ffae"
+                            : "1px solid white",
                           display: "flex",
                           alignItems: "center",
                           justifyContent: "space-between",
@@ -708,7 +781,8 @@ const Settings = ({ active, setActive, textTransform, setTextTransform, fontFami
                             bgcolor: fg,
                           }}
                         />
-                      </Box>)
+                      </Box>
+                    );
                   })}
                   <Box
                     sx={{
@@ -870,7 +944,11 @@ import { styled } from "@mui/system";
 import ResponsiveBox from "../../components/ResponsiveBox";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
-import { genBackgroundMusic, genMusicStatus, updateProject } from "../../service/project";
+import {
+  genBackgroundMusic,
+  genMusicStatus,
+  updateProject,
+} from "../../service/project";
 
 const Container = styled("div")(({ theme }) => ({
   backgroundColor: "#1a1a2e",
@@ -922,11 +1000,15 @@ function MusicPromptUI({
   onUpdateMusic,
   onDeleteMusic,
   isActive,
-  onSetActive
+  onSetActive,
 }) {
-  const [selectedModel, setSelectedModel] = useState(musicData?.model || model[0]?.id);
+  const [selectedModel, setSelectedModel] = useState(
+    musicData?.model || model[0]?.id
+  );
   const [musicPrompt, setMusicPrompt] = useState(musicData?.prompt || "");
-  const [duration, setDuration] = useState(musicData?.duration?.toString() || "10");
+  const [duration, setDuration] = useState(
+    musicData?.duration?.toString() || "10"
+  );
   const [loading, setLoading] = useState(false);
   const [tab, setTab] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -935,7 +1017,7 @@ function MusicPromptUI({
   const [timeline, setTimeline] = useState({
     start_time: musicData?.start_time || 0,
     end_time: musicData?.end_time || 0,
-    duration: parseInt(musicData?.duration || "50")
+    duration: parseInt(musicData?.duration || "50"),
   });
   const [videoDuration, setVideoDuration] = useState(100);
   const [isDragging, setIsDragging] = useState(false);
@@ -946,10 +1028,10 @@ function MusicPromptUI({
   // Cập nhật timeline khi duration thay đổi
   useEffect(() => {
     const newDuration = parseInt(duration) || 10;
-    setTimeline(prev => ({
+    setTimeline((prev) => ({
       start_time: prev.start_time,
       end_time: Math.min(prev.end_time, newDuration),
-      duration: newDuration
+      duration: newDuration,
     }));
   }, [duration]);
 
@@ -968,7 +1050,10 @@ function MusicPromptUI({
         if (audioRef.current) {
           const currentTime = audioRef.current.currentTime;
           // Tính progress dựa trên khoảng thời gian đã chọn
-          const progressPercent = ((currentTime - timeline.start_time) / (timeline.end_time - timeline.start_time)) * 100;
+          const progressPercent =
+            ((currentTime - timeline.start_time) /
+              (timeline.end_time - timeline.start_time)) *
+            100;
           setProgress(Math.min(100, Math.max(0, progressPercent)));
         }
       };
@@ -983,7 +1068,7 @@ function MusicPromptUI({
         if (audioRef.current) {
           audioRef.current.pause();
           audioRef.current.removeEventListener("timeupdate", updateProgress);
-          audioRef.current.removeEventListener("ended", () => { });
+          audioRef.current.removeEventListener("ended", () => {});
         }
       };
     }
@@ -998,7 +1083,7 @@ function MusicPromptUI({
       setIsPlaying(false);
     } else {
       audioRef.current.currentTime = timeline.start_time;
-      audioRef.current.play().catch(e => console.error("Lỗi phát nhạc:", e));
+      audioRef.current.play().catch((e) => console.error("Lỗi phát nhạc:", e));
       setIsPlaying(true);
     }
   };
@@ -1024,7 +1109,7 @@ function MusicPromptUI({
     setTimeline({
       ...timeline,
       start_time: newValue[0],
-      end_time: newValue[1]
+      end_time: newValue[1],
     });
   };
 
@@ -1034,20 +1119,23 @@ function MusicPromptUI({
     setTimeline({
       ...timeline,
       start_time: newStart,
-      end_time: newEnd
+      end_time: newEnd,
     });
 
     // Cập nhật lên parent component
     const updatedMusic = {
       ...musicData,
       start_time: newStart,
-      end_time: newEnd
+      end_time: newEnd,
     };
     onUpdateMusic(updatedMusic);
 
     // Nếu đang phát thì cập nhật vị trí phát
     if (isPlaying && audioRef.current) {
-      if (audioRef.current.currentTime < newStart || audioRef.current.currentTime > newEnd) {
+      if (
+        audioRef.current.currentTime < newStart ||
+        audioRef.current.currentTime > newEnd
+      ) {
         audioRef.current.currentTime = newStart;
       }
     }
@@ -1057,7 +1145,9 @@ function MusicPromptUI({
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
-    return `${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+    return `${minutes.toString().padStart(2, "0")}:${secs
+      .toString()
+      .padStart(2, "0")}`;
   };
 
   // Xử lý tạo nhạc (giữ nguyên logic API cũ)
@@ -1095,15 +1185,17 @@ function MusicPromptUI({
               start_time: 0,
               end_time: parseInt(duration),
               model: selectedModel,
-              modelName: model.find((m) => m.id === selectedModel)?.name || selectedModel,
-              id: status.id
+              modelName:
+                model.find((m) => m.id === selectedModel)?.name ||
+                selectedModel,
+              id: status.id,
             };
 
             onUpdateMusic(updatedMusic);
             setTimeline({
               start_time: 0,
               end_time: parseInt(duration),
-              duration: parseInt(duration)
+              duration: parseInt(duration),
             });
 
             clearInterval(poll);
@@ -1120,15 +1212,16 @@ function MusicPromptUI({
           start_time: 0,
           end_time: parseInt(duration),
           model: selectedModel,
-          modelName: model.find((m) => m.id === selectedModel)?.name || selectedModel,
-          id: result.id
+          modelName:
+            model.find((m) => m.id === selectedModel)?.name || selectedModel,
+          id: result.id,
         };
 
         onUpdateMusic(updatedMusic);
         setTimeline({
           start_time: 0,
           end_time: parseInt(duration),
-          duration: parseInt(duration)
+          duration: parseInt(duration),
         });
 
         setLoading(false);
@@ -1149,11 +1242,11 @@ function MusicPromptUI({
         borderRadius: 2,
         position: "relative",
         border: isActive ? "2px solid #6C63FF" : "1px solid #444",
-        mb: 2
-      }}
-    >
-      <Box onClick={() => onSetActive(musicData.id)} sx={{ cursor: "pointer" }}>
-
+        mb: 2,
+      }}>
+      <Box
+        onClick={() => onSetActive(musicData.index)}
+        sx={{ cursor: "pointer" }}>
         <Box display='flex' justifyContent='center'>
           <Box width='max-content'>
             <TabGroup>
@@ -1166,9 +1259,31 @@ function MusicPromptUI({
             </TabGroup>
           </Box>
         </Box>
+
+        {tab == 1 && <Box
+          mt={2}
+          display='flex'
+          flexDirection='column'
+          alignItems='center'
+          justifyContent='center'
+          p={2}
+          border='1px dashed #444'
+          borderRadius={2}>
+          <CloudUpload sx={{ fontSize: 40, color: "#888" }} />
+          <Typography mt={1} variant='body2' color='gray'>
+            Kéo và thả hoặc bấm để tải tệp lên
+          </Typography>
+          <Button
+            variant='contained'
+            sx={{ mt: 2, backgroundColor: "#6C63FF", borderRadius: "12px" }}>
+            Chọn tệp
+          </Button>
+        </Box>}
+
+        
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
           <IconButton
-            size="small"
+            size='small'
             onClick={(e) => {
               e.stopPropagation();
               handlePlayPause();
@@ -1178,12 +1293,11 @@ function MusicPromptUI({
               background: "rgba(89, 50, 234, 1)",
               width: 24,
               height: 24,
-            }}
-          >
-            {isPlaying ? <Pause fontSize="13" /> : <PlayArrow fontSize="13" />}
+            }}>
+            {isPlaying ? <Pause fontSize='13' /> : <PlayArrow fontSize='13' />}
           </IconButton>
 
-          <Box display="flex" flexDirection="column" gap="10px" flexGrow={1}>
+          <Box display='flex' flexDirection='column' gap='10px' flexGrow={1}>
             {/* <Typography fontSize={12} color="white">
               {musicData.modelName || selectedModel}
             </Typography>
@@ -1198,7 +1312,7 @@ function MusicPromptUI({
                 {formatTime(timeline.end_time)}
               </Typography>
             </Box> */}
-            <Box sx={{ width: '100%', p: 1, mt: 2.7 }}>
+            <Box sx={{ width: "100%", p: 1, mt: 2.7 }}>
               <Slider
                 min={0}
                 max={videoDuration}
@@ -1237,47 +1351,46 @@ function MusicPromptUI({
                     audioRef.current.currentTime = updatedMusic.start_time;
                   }
                 }}
-                valueLabelDisplay="auto"
+                valueLabelDisplay='auto'
                 valueLabelFormat={formatTime}
                 disableSwap // Giữ nguyên để tránh start > end
                 sx={{
-                  '& .MuiSlider-track': {
-                    backgroundColor: 'rgba(89, 50, 234, 1)',
+                  "& .MuiSlider-track": {
+                    backgroundColor: "rgba(89, 50, 234, 1)",
                     height: 6,
                   },
-                  '& .MuiSlider-rail': {
-                    backgroundColor: 'rgba(217, 217, 217, 1)',
+                  "& .MuiSlider-rail": {
+                    backgroundColor: "rgba(217, 217, 217, 1)",
                     height: 6,
                   },
-                  '& .MuiSlider-thumb': {
+                  "& .MuiSlider-thumb": {
                     width: 16,
                     height: 16,
-                    backgroundColor: '#fff',
-                    border: '2px solid rgba(89, 50, 234, 1)',
+                    backgroundColor: "#fff",
+                    border: "2px solid rgba(89, 50, 234, 1)",
                   },
                 }}
               />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-                <Typography variant="caption">
-                  Start: {formatTime(Math.min(timeline.start_time, videoDuration))}
+              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                <Typography variant='caption'>
+                  Start:{" "}
+                  {formatTime(Math.min(timeline.start_time, videoDuration))}
                 </Typography>
-                <Typography variant="caption">
+                <Typography variant='caption'>
                   End: {formatTime(Math.min(timeline.end_time, videoDuration))}
                 </Typography>
-
               </Box>
             </Box>
           </Box>
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <IconButton
-              size="small"
+              size='small'
               onClick={(e) => {
                 e.stopPropagation();
                 // handleToggleVolume();
               }}
-              sx={{ color: "white" }}
-            >
+              sx={{ color: "white" }}>
               {volume > 0 ? <VolumeUp /> : <VolumeOff />}
             </IconButton>
             {/* <IconButton
@@ -1336,10 +1449,9 @@ function MusicPromptUI({
             </Box> */}
 
             <FormControl
-              variant="outlined"
-              size="small"
-              sx={{ borderRadius: 2, width: "100%", mt: 2 }}
-            >
+              variant='outlined'
+              size='small'
+              sx={{ borderRadius: 2, width: "100%", mt: 2 }}>
               <Select
                 value={selectedModel}
                 onChange={(e) => setSelectedModel(e.target.value)}
@@ -1383,8 +1495,7 @@ function MusicPromptUI({
                     padding: "0 14px",
                   },
                   ".MuiSelect-icon": { color: "#fff" },
-                }}
-              >
+                }}>
                 {model.map((m) => (
                   <MenuItem key={m.id} value={m.id}>
                     {m.name}
@@ -1394,14 +1505,14 @@ function MusicPromptUI({
             </FormControl>
 
             <TextField
-              placeholder="Hãy viết mô tả Prompt của bài nhạc"
+              placeholder='Hãy viết mô tả Prompt của bài nhạc'
               value={musicPrompt}
               onChange={(e) => setMusicPrompt(e.target.value)}
-              variant="outlined"
+              variant='outlined'
               multiline
               rows={3}
               fullWidth
-              margin="normal"
+              margin='normal'
               sx={{
                 borderRadius: "8px",
                 color: "white",
@@ -1413,20 +1524,19 @@ function MusicPromptUI({
               }}
             />
             <Typography
-              variant="h6"
+              variant='h6'
               fontSize={isMobile ? "1rem" : "1.25rem"}
-              fontWeight="500"
-              my={1}
-            >
+              fontWeight='500'
+              my={1}>
               Nhập số giây
             </Typography>
             <TextField
-              placeholder="Nhập số giây"
-              variant="outlined"
+              placeholder='Nhập số giây'
+              variant='outlined'
               value={duration}
               onChange={(e) => setDuration(e.target.value)}
               fullWidth
-              margin="normal"
+              margin='normal'
               sx={{
                 borderRadius: "8px",
                 color: "white",
@@ -1438,9 +1548,9 @@ function MusicPromptUI({
               }}
             />
 
-            <Box display="flex" justifyContent="end" gap={2} mt={3}>
+            <Box display='flex' justifyContent='end' gap={2} mt={3}>
               <Button
-                variant="contained"
+                variant='contained'
                 onClick={handleGenerateMusic}
                 sx={{
                   backgroundColor: "#6C63FF",
@@ -1448,21 +1558,23 @@ function MusicPromptUI({
                   px: 4,
                   opacity: loading ? 0.7 : 1,
                   pointerEvents: loading ? "none" : "unset",
-                }}
-              >
+                }}>
                 {loading ? (
                   <>
-                    <CircularProgress size={15} color="inherit" /> đang tạo...
+                    <CircularProgress size={15} color='inherit' /> đang tạo...
                   </>
                 ) : (
                   "Tạo nhạc nền"
                 )}
               </Button>
               <Button
-                variant="contained"
+                variant='contained'
                 onClick={() => onDeleteMusic(musicData.id)}
-                sx={{ backgroundColor: "#2d2d5a", borderRadius: "12px", px: 4 }}
-              >
+                sx={{
+                  backgroundColor: "#2d2d5a",
+                  borderRadius: "12px",
+                  px: 4,
+                }}>
                 Xóa
               </Button>
             </Box>

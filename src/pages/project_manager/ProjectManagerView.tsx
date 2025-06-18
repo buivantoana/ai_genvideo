@@ -205,7 +205,7 @@ const ProjectCard = ({
               },
             }}
             onClick={() => {
-              console.log("pro", project);
+              localStorage.setItem("gen_script", JSON.stringify(project));
               if (project?.current_step == "gen_script") {
                 navigate(`/create-image?id=${project.id}`);
               }
@@ -218,7 +218,7 @@ const ProjectCard = ({
               if (project?.current_step == "gen_voice") {
                 navigate(`/sub?id=${project.id}`);
               }
-              if (project?.current_step == "gen_audio_sub") {
+              if (project?.current_step == "complete") {
                 navigate(`/success?id=${project.id}`);
               }
               if (!project?.current_step) {

@@ -18,17 +18,17 @@ const isAuthenticated = () => {
   return localStorage.getItem("token");
 };
 
-const PrivateRoute = ({ element }:any) => {
-  return isAuthenticated() ? element : <Navigate to="/login" replace />;
+const PrivateRoute = ({ element }: any) => {
+  return isAuthenticated() ? element : <Navigate to='/login' replace />;
 };
 
 const Router = () => {
   const context: any = useCoursesContext();
   return (
     <Routes>
-      <Route path='/' element={<PrivateRoute element={<LayoutWebsite />}/> }>
-        <Route path='' element={<HomeController />} />
-        <Route path='/idea' element={<IdeaController />} />
+      <Route path='/' element={<PrivateRoute element={<LayoutWebsite />} />}>
+        {/* <Route path='' element={<HomeController />} /> */}
+        <Route path='' element={<IdeaController />} />
         <Route path='/script' element={<ScriptController />} />
         <Route path='/create-image' element={<CreateImageController />} />
         <Route path='/create-video' element={<CreateVideoController />} />

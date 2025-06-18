@@ -630,14 +630,14 @@ const VoiceItem = ({
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs < 10 ? "0" : ""}${secs}`;
   };
-  useEffect(() => {
-    return () => {
-      if (currentAudio) {
-        currentAudio.pause();
-        currentAudio.ontimeupdate = null; // Xóa sự kiện
-      }
-    };
-  }, [currentAudio]);
+  // useEffect(() => {
+  //   return () => {
+  //     if (currentAudio) {
+  //       currentAudio.pause();
+  //       currentAudio.ontimeupdate = null; // Xóa sự kiện
+  //     }
+  //   };
+  // }, [currentAudio]);
   const handleGenerateDialogue = async () => {
     console.log({
       selectedModel,
@@ -787,14 +787,72 @@ const VoiceItem = ({
     const video = videoRef.current;
     if (!video) return;
 
-    if (video.paused) {
-      video.play();
-      setIsPlayingVideo(true);
-    } else {
+    // Dừng cả video và audio hiện tại nếu đang phát
+    if (isPlayingVideo || isPlaying) {
       video.pause();
+      if (currentAudio) {
+        currentAudio.pause();
+      }
       setIsPlayingVideo(false);
+      setIsPlaying(false);
+      return;
     }
+
+    // Phát video
+    video
+      .play()
+      .then(() => {
+        setIsPlayingVideo(true);
+
+        // Nếu có voice URL thì phát voice cùng lúc
+        const voiceUrl = values.find((item) => item.scene === scene)?.voice
+          ?.url;
+        if (voiceUrl) {
+          if (currentAudio) {
+            currentAudio.pause();
+          }
+
+          const audio = new Audio(voiceUrl);
+          audio.onplay = () => setIsPlaying(true);
+          audio.onpause = () => setIsPlaying(false);
+          audio.onended = () => setIsPlaying(false);
+          audio.ontimeupdate = () => setCurrentTime(audio.currentTime);
+
+          audio
+            .play()
+            .then(() => {
+              setCurrentAudio(audio);
+            })
+            .catch((error) => {
+              console.error("Lỗi khi phát audio:", error);
+            });
+        }
+      })
+      .catch((error) => {
+        console.error("Lỗi khi phát video:", error);
+      });
   };
+
+  // Thêm sự kiện khi video kết thúc
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+
+    const handleVideoEnd = () => {
+      setIsPlayingVideo(false);
+      // Dừng audio khi video kết thúc
+      if (currentAudio) {
+        currentAudio.pause();
+        setIsPlaying(false);
+      }
+    };
+
+    video.addEventListener("ended", handleVideoEnd);
+
+    return () => {
+      video.removeEventListener("ended", handleVideoEnd);
+    };
+  }, [currentAudio]);
   return (
     <>
       <Typography fontSize={isMobile ? 20 : 24} fontWeight='bold' mb={2}>
