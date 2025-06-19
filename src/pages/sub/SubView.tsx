@@ -382,8 +382,39 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
         <Button
           onClick={async () => {
             setLoading(true);
+            try {
+              const updatedBackgroundMusics = await Promise.all(
+                backgroundMusics.map(async (music) => {
+                  // Check if the URL is a blob (from file upload)
+                  if (music.url && music.url.startsWith('blob:')) {
+                    if (!music.file) {
+                      throw new Error("File data missing for uploaded audio");
+                    }
+                    
+                    // Upload the audio file to server
+                    const uploadResult = await uploadAudio({
+                      file: music.file,
+                      folder: "audios"
+                    });
+                    
+                    if (!uploadResult || !uploadResult.url) {
+                      throw new Error("Failed to upload audio file");
+                    }
+                    
+                    // Return updated music data with server URL
+                    return {
+                      ...music,
+                      url: uploadResult.url,
+                      id : Math.random(1000)
+                      
+                    };
+                  }
+                  return music; 
+                })
+              );
+              console.log("updatedBackgroundMusics",updatedBackgroundMusics)
             let body: any = {
-              audios: backgroundMusics,
+              audios: updatedBackgroundMusics,
             };
             if (active != 0) {
               let position = null;
@@ -408,7 +439,7 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
                 position: position,
               };
             }
-            try {
+           
               let result = await updateProject(id, {
                 current_step: "gen_audio_sub",
                 script: {
@@ -948,6 +979,7 @@ import {
   genBackgroundMusic,
   genMusicStatus,
   updateProject,
+  uploadAudio,
 } from "../../service/project";
 
 const Container = styled("div")(({ theme }) => ({
@@ -1020,8 +1052,10 @@ function MusicPromptUI({
     duration: parseInt(musicData?.duration || "50"),
   });
   const [videoDuration, setVideoDuration] = useState(100);
-  const [isDragging, setIsDragging] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [isUploading, setIsUploading] = useState(false);
   const audioRef = useRef(null);
+  const fileInputRef = useRef(null);
   const isMobile = useMediaQuery("(max-width:768px)");
   const audioDuration = musicData.duration;
 
@@ -1068,7 +1102,7 @@ function MusicPromptUI({
         if (audioRef.current) {
           audioRef.current.pause();
           audioRef.current.removeEventListener("timeupdate", updateProgress);
-          audioRef.current.removeEventListener("ended", () => {});
+          audioRef.current.removeEventListener("ended", () => { });
         }
       };
     }
@@ -1103,45 +1137,73 @@ function MusicPromptUI({
     }
   }, [isPlaying, timeline.end_time]);
 
-  // Xử lý thay đổi timeline
-  const handleTimelineChange = (event, newValue) => {
-    setIsDragging(true);
-    setTimeline({
-      ...timeline,
-      start_time: newValue[0],
-      end_time: newValue[1],
-    });
-  };
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
 
-  const handleTimelineCommit = (event, newValue) => {
-    setIsDragging(false);
-    const [newStart, newEnd] = newValue;
-    setTimeline({
-      ...timeline,
-      start_time: newStart,
-      end_time: newEnd,
-    });
-
-    // Cập nhật lên parent component
-    const updatedMusic = {
-      ...musicData,
-      start_time: newStart,
-      end_time: newEnd,
-    };
-    onUpdateMusic(updatedMusic);
-
-    // Nếu đang phát thì cập nhật vị trí phát
-    if (isPlaying && audioRef.current) {
-      if (
-        audioRef.current.currentTime < newStart ||
-        audioRef.current.currentTime > newEnd
-      ) {
-        audioRef.current.currentTime = newStart;
-      }
+    // Check if file is audio type
+    if (!file.type.match('audio.*')) {
+      toast.error("Vui lòng chọn file audio");
+      return;
     }
+
+    setIsUploading(true);
+    setUploadProgress(0);
+
+    // Create a blob URL for immediate playback
+    const blobUrl = URL.createObjectURL(file);
+
+    // Get audio duration
+    const audio = new Audio();
+    audio.src = blobUrl;
+    audio.onloadedmetadata = () => {
+      const audioDuration = Math.floor(audio.duration);
+
+      const updatedMusic = {
+        ...musicData,
+        url: blobUrl,
+        file: file, 
+        fileName: file.name,
+        duration: audioDuration,
+        start_time: 0,
+        end_time: audioDuration,
+        model: "uploaded",
+        modelName: "Uploaded Audio",
+        prompt: "Uploaded audio file",
+      };
+
+      onUpdateMusic(updatedMusic);
+      setTimeline({
+        start_time: 0,
+        end_time: audioDuration,
+        duration: audioDuration,
+      });
+      setVideoDuration(audioDuration);
+      setIsUploading(false);
+    };
+
+    audio.onerror = () => {
+      toast.error("Không thể tải file audio");
+      setIsUploading(false);
+    };
+
+    // Simulate upload progress (replace with actual upload if needed)
+    const progressInterval = setInterval(() => {
+      setUploadProgress(prev => {
+        if (prev >= 100) {
+          clearInterval(progressInterval);
+          return 100;
+        }
+        return prev + 10;
+      });
+    }, 200);
+    setTab(0)
   };
 
-  // Format thời gian MM:SS
+  const triggerFileInput = () => {
+    fileInputRef.current.click();
+  };
+
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
@@ -1238,7 +1300,7 @@ function MusicPromptUI({
     <Box
       sx={{
         background: "#1D1D41",
-        p: isMobile ? 1 : 3,
+        p: isMobile ? 1 :!musicData.url? 3:1,
         borderRadius: 2,
         position: "relative",
         border: isActive ? "2px solid #6C63FF" : "1px solid #444",
@@ -1247,20 +1309,21 @@ function MusicPromptUI({
       <Box
         onClick={() => onSetActive(musicData.index)}
         sx={{ cursor: "pointer" }}>
-        <Box display='flex' justifyContent='center'>
-          <Box width='max-content'>
-            <TabGroup>
-              <TabButton active={tab === 0} onClick={() => setTab(0)}>
-                Prompt
-              </TabButton>
-              <TabButton active={tab === 1} onClick={() => setTab(1)}>
-                Tải nhạc lên
-              </TabButton>
-            </TabGroup>
-          </Box>
-        </Box>
+        {!musicData.url &&
+          <Box display='flex' justifyContent='center'>
+            <Box width='max-content'>
+              <TabGroup>
+                <TabButton active={tab === 0} onClick={() => setTab(0)}>
+                  Prompt
+                </TabButton>
+                <TabButton active={tab === 1} onClick={() => setTab(1)}>
+                  Tải nhạc lên
+                </TabButton>
+              </TabGroup>
+            </Box>
+          </Box>}
 
-        {tab == 1 && <Box
+          {tab == 1 && <Box
           mt={2}
           display='flex'
           flexDirection='column'
@@ -1268,19 +1331,48 @@ function MusicPromptUI({
           justifyContent='center'
           p={2}
           border='1px dashed #444'
-          borderRadius={2}>
-          <CloudUpload sx={{ fontSize: 40, color: "#888" }} />
-          <Typography mt={1} variant='body2' color='gray'>
-            Kéo và thả hoặc bấm để tải tệp lên
-          </Typography>
-          <Button
-            variant='contained'
-            sx={{ mt: 2, backgroundColor: "#6C63FF", borderRadius: "12px" }}>
-            Chọn tệp
-          </Button>
+          borderRadius={2}
+          onClick={triggerFileInput}
+          sx={{ cursor: 'pointer' }}
+        >
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileUpload}
+            accept="audio/*"
+            style={{ display: 'none' }}
+          />
+          {isUploading ? (
+            <>
+              <CircularProgress variant="determinate" value={uploadProgress} />
+              <Typography mt={1} variant='body2' color='gray'>
+                Đang tải lên... {uploadProgress}%
+              </Typography>
+            </>
+          ) : (
+            <>
+              <CloudUpload sx={{ fontSize: 40, color: "#888" }} />
+              <Typography mt={1} variant='body2' color='gray'>
+                Kéo và thả hoặc bấm để tải tệp lên
+              </Typography>
+              <Typography variant='caption' color='gray' mt={1}>
+                Hỗ trợ: MP3, WAV, AAC (tối đa 50MB)
+              </Typography>
+              <Button
+                variant='contained'
+                sx={{ mt: 2, backgroundColor: "#6C63FF", borderRadius: "12px" }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  triggerFileInput();
+                }}
+              >
+                Chọn tệp
+              </Button>
+            </>
+          )}
         </Box>}
 
-        
+
         <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
           <IconButton
             size='small'
@@ -1393,7 +1485,7 @@ function MusicPromptUI({
               sx={{ color: "white" }}>
               {volume > 0 ? <VolumeUp /> : <VolumeOff />}
             </IconButton>
-            {/* <IconButton
+            {musicData.url && <IconButton
               size="small"
               onClick={(e) => {
                 e.stopPropagation();
@@ -1402,52 +1494,13 @@ function MusicPromptUI({
               sx={{ color: "white" }}
             >
               <Delete />
-            </IconButton> */}
+            </IconButton>}
           </Box>
         </Box>
 
-        {isActive && (
+        {isActive &&   !musicData.url && (
           <>
-            {/* Thanh timeline tương tác */}
-            {/* <Box sx={{ width: '100%', p: 1, mt: 2 }}>
-              <Slider
-                min={0}
-                max={timeline.duration}
-                value={[timeline.start_time, timeline.end_time]}
-                onChange={handleTimelineChange}
-                onChangeCommitted={handleTimelineCommit}
-                valueLabelDisplay="auto"
-                valueLabelFormat={formatTime}
-                sx={{
-                  '& .MuiSlider-track': {
-                    backgroundColor: 'rgba(89, 50, 234, 1)',
-                    height: 6,
-                  },
-                  '& .MuiSlider-rail': {
-                    backgroundColor: 'rgba(217, 217, 217, 1)',
-                    height: 6,
-                  },
-                  '& .MuiSlider-thumb': {
-                    width: 16,
-                    height: 16,
-                    backgroundColor: '#fff',
-                    border: '2px solid rgba(89, 50, 234, 1)',
-                  },
-                }}
-              />
-              <Box sx={{ display: 'flex', justifyContent: 'space-between', mt: 1 }}>
-                <Typography variant="caption">
-                  Start: {formatTime(timeline.start_time)}
-                </Typography>
-                <Typography variant="caption">
-                  End: {formatTime(timeline.end_time)}
-                </Typography>
-                <Typography variant="caption">
-                  Duration: {formatTime(timeline.end_time - timeline.start_time)}
-                </Typography>
-              </Box>
-            </Box> */}
-
+            {tab !== 1 && <>
             <FormControl
               variant='outlined'
               size='small'
@@ -1547,6 +1600,7 @@ function MusicPromptUI({
                 },
               }}
             />
+              </>}
 
             <Box display='flex' justifyContent='end' gap={2} mt={3}>
               <Button
