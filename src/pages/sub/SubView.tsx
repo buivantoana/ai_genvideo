@@ -1137,69 +1137,73 @@ function MusicPromptUI({
     }
   }, [isPlaying, timeline.end_time]);
 
-  const handleFileUpload = (event) => {
+  const handleFileUpload = async (event) => {
     const file = event.target.files[0];
     if (!file) return;
-
-    // Check if file is audio type
+  
     if (!file.type.match('audio.*')) {
       toast.error("Vui lòng chọn file audio");
       return;
     }
-
+  
     setIsUploading(true);
     setUploadProgress(0);
-
-    // Create a blob URL for immediate playback
-    const blobUrl = URL.createObjectURL(file);
-
-    // Get audio duration
-    const audio = new Audio();
-    audio.src = blobUrl;
-    audio.onloadedmetadata = () => {
-      const audioDuration = Math.floor(audio.duration);
-
+  
+    try {
+      const blobUrl = URL.createObjectURL(file);
+      const duration = await getAudioDuration(file);
+      console.log("duration",duration)
       const updatedMusic = {
         ...musicData,
         url: blobUrl,
-        file: file, 
+        file: file,
         fileName: file.name,
-        duration: audioDuration,
+        duration: duration,
         start_time: 0,
-        end_time: audioDuration,
+        end_time: duration,
         model: "uploaded",
         modelName: "Uploaded Audio",
         prompt: "Uploaded audio file",
       };
-
+  
       onUpdateMusic(updatedMusic);
       setTimeline({
         start_time: 0,
-        end_time: audioDuration,
-        duration: audioDuration,
+        end_time: duration,
+        duration: duration,
       });
-      setVideoDuration(audioDuration);
+      setVideoDuration(duration);
+      
+    } catch (error) {
+      console.error('Error processing audio:', error);
+      toast.error("Không thể xử lý file audio");
+    } finally {
       setIsUploading(false);
-    };
-
-    audio.onerror = () => {
-      toast.error("Không thể tải file audio");
-      setIsUploading(false);
-    };
-
-    // Simulate upload progress (replace with actual upload if needed)
-    const progressInterval = setInterval(() => {
-      setUploadProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(progressInterval);
-          return 100;
-        }
-        return prev + 10;
-      });
-    }, 200);
-    setTab(0)
+      setTab(0);
+    }
   };
 
+  const getAudioDuration = (file) => {
+    return new Promise((resolve, reject) => {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const reader = new FileReader();
+  
+      reader.onload = function(e) {
+        const arrayBuffer = e.target.result;
+        audioContext.decodeAudioData(arrayBuffer)
+          .then(buffer => {
+            const duration = Math.floor(buffer.duration);
+            resolve(duration);
+          })
+          .catch(error => {
+            reject(error);
+          });
+      };
+  
+      reader.onerror = error => reject(error);
+      reader.readAsArrayBuffer(file);
+    });
+  };
   const triggerFileInput = () => {
     fileInputRef.current.click();
   };
@@ -1489,7 +1493,7 @@ function MusicPromptUI({
               size="small"
               onClick={(e) => {
                 e.stopPropagation();
-                onDeleteMusic(musicData.id);
+                onDeleteMusic(musicData.index);
               }}
               sx={{ color: "white" }}
             >
