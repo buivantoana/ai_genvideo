@@ -245,7 +245,7 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
                   onEnded={() => setIsPlayingVideo(false)}
                   onLoadedMetadata={(e) => setDuration(e.target.duration)}
                   onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}>
-                  <source src={videoUrl} type='video/mp4' />
+                  <source src={videoUrl}  />
                   Trình duyệt của bạn không hỗ trợ video HTML5.
                 </video>
               )}
@@ -338,6 +338,7 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
                   onDeleteMusic={handleDeleteMusic}
                   isActive={activeMusicId === music.index}
                   onSetActive={setActiveMusicId}
+                  durationVideo={duration}
                 />
               ))}
             </Box>
@@ -1033,6 +1034,7 @@ function MusicPromptUI({
   onDeleteMusic,
   isActive,
   onSetActive,
+  durationVideo
 }) {
   const [selectedModel, setSelectedModel] = useState(
     musicData?.model || model[0]?.id
@@ -1051,7 +1053,7 @@ function MusicPromptUI({
     end_time: musicData?.end_time || 0,
     duration: parseInt(musicData?.duration || "50"),
   });
-  const [videoDuration, setVideoDuration] = useState(100);
+  const [videoDuration, setVideoDuration] = useState(durationVideo);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const audioRef = useRef(null);
