@@ -884,7 +884,7 @@ const VoiceItem = ({
               </Typography>
             </Box>
           </Box>
-          <Box display='flex' alignItems='center' gap={3}>
+          <Box display='flex' alignItems='center' flexWrap={isMobile?"wrap":"nowrap"} gap={3}>
             <Box sx={{ position: "relative", width: 250, height: 150 }}>
               {videoUrl&&<video
                 ref={videoRef}

@@ -204,7 +204,7 @@ const CreateImageView = ({
                 backgroundColor: "#1E1C34",
                 color: "#fff",
                 p: 4,
-                width: 600,
+                width:isMobile ? "unset": 600,
                 mx: "auto",
                 mt: "15%",
                 borderRadius: 2,
@@ -212,8 +212,8 @@ const CreateImageView = ({
               <Typography variant='h6' mb={2}>
                 Thêm mới model
               </Typography>
-              <Box display={"flex"} justifyContent={"space-between"}>
-                <Box width={"48%"}>
+              <Box display={isMobile?"unset":"flex"} justifyContent={"space-between"}>
+                <Box width={isMobile? "100%":"48%"}>
                   <Typography>Tên</Typography>
                   <TextField
                     value={newModel.name}
@@ -238,7 +238,7 @@ const CreateImageView = ({
                     }}
                   />
                 </Box>
-                <Box width={"48%"}>
+                <Box width={isMobile? "100%":"48%"}>
                   {" "}
                   <Typography>Kiểu</Typography>{" "}
                   <Select
@@ -903,7 +903,7 @@ const SceneCard = forwardRef((props, ref) => {
             minRows={2}
             maxRows={5}
             value={sceneData?.image?.n_prompt}
-            onChange={(e) => handleChange("prompt", e.target.value)}
+            onChange={(e) => handleChange("n_prompt", e.target.value)}
             variant='outlined'
             sx={{
               "& .MuiOutlinedInput-notchedOutline": {
