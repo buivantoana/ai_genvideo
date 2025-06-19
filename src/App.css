@@ -9,6 +9,53 @@
   color: #f2f2f2;
   animation: animloader 0.3s 0.3s linear infinite alternate;
 }
+.slider-container {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  background-color: #ddd;
+  border-radius: 6px;
+  margin: 20px 0;
+  user-select: none;
+}
+
+.slider-range:hover {
+  transform: scale(1.1); /* phình to chiều cao khi hover giữa */
+  box-shadow: 0 0 4px rgba(89, 50, 234, 0.6);
+}
+.slider-handle:hover {
+  transform: scale(1.1); /* to lên khi hover vào đầu kéo */
+  box-shadow: 0 0 6px rgba(89, 50, 234, 0.6);
+}
+.slider-range {
+  position: absolute;
+  height: 100%;
+  background-color: rgba(89, 50, 234, 1);
+  border-radius: 6px;
+  cursor: grab;
+}
+
+.slider-handle {
+  position: absolute;
+  top: -6px;
+  width: 15px;
+  height: 15px;
+  background: white;
+  border: 2px solid rgba(89, 50, 234, 1);
+  border-radius: 50%;
+  cursor: ew-resize;
+}
+
+.slider-handle.left {
+  left: 0;
+  transform: translateX(-50%);
+}
+
+.slider-handle.right {
+  right: 0;
+  transform: translateX(50%);
+}
+
 * {
   margin: 0;
   padding: 0;

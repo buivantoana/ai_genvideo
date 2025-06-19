@@ -103,7 +103,7 @@ export async function addModelImage(body: any) {
   }
 }
 
-export async function uploadAudio(body: any) {
+export async function upload(body: any) {
   try {
     let token = localStorage.getItem("token");
     const response = await api.post(`/upload`, body, {
@@ -129,7 +129,6 @@ export async function uploadAudio(body: any) {
     }
   }
 }
-
 
 export async function genScriptVideo(body: any) {
   try {

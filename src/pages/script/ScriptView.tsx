@@ -290,7 +290,47 @@ const PromptEditorUI = ({
             mb={1}>
             Lời kể:
           </Typography>
-          {scene.dialogue && scene.dialogue.length > 0 && script.style_type ? (
+          <Box position='relative'>
+            <TextField
+              multiline
+              fullWidth
+              minRows={2}
+              maxRows={4}
+              value={scene.narrator}
+              onChange={(e) => handleChange(index, "narrator", e.target.value)}
+              variant='outlined'
+              sx={{
+                "& .MuiOutlinedInput-notchedOutline": {
+                  border: "2px solid",
+                  borderColor: "#414188",
+                },
+                opacity: !isEditing(index, "narrator") ? 0.7 : 1,
+              }}
+              InputProps={{
+                readOnly: !isEditing(index, "narrator"),
+                style: {
+                  backgroundColor: "#1A1836",
+                  color: "#fff",
+                  borderRadius: 10,
+                },
+              }}
+            />
+            <IconButton
+              sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
+              onClick={() => handleEdit(index, "narrator")}>
+              <EditIcon fontSize='small' />
+            </IconButton>
+          </Box>
+
+          <Typography
+            fontSize={14}
+            sx={{ fontStyle: "italic" }}
+            color='#A3A4B5'
+            mt={2}
+            mb={1}>
+            Lời thoại/narration:
+          </Typography>
+          {scene.dialogue && scene.dialogue.length > 0 && script.style_type && (
             <>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {scene.dialogue.map((item, dIndex) => {
@@ -354,40 +394,6 @@ const PromptEditorUI = ({
                 })}
               </Box>
             </>
-          ) : (
-            <Box position='relative'>
-              <TextField
-                multiline
-                fullWidth
-                minRows={2}
-                maxRows={4}
-                value={scene.narrator}
-                onChange={(e) =>
-                  handleChange(index, "narrator", e.target.value)
-                }
-                variant='outlined'
-                sx={{
-                  "& .MuiOutlinedInput-notchedOutline": {
-                    border: "2px solid",
-                    borderColor: "#414188",
-                  },
-                  opacity: !isEditing(index, "narrator") ? 0.7 : 1,
-                }}
-                InputProps={{
-                  readOnly: !isEditing(index, "narrator"),
-                  style: {
-                    backgroundColor: "#1A1836",
-                    color: "#fff",
-                    borderRadius: 10,
-                  },
-                }}
-              />
-              <IconButton
-                sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
-                onClick={() => handleEdit(index, "narrator")}>
-                <EditIcon fontSize='small' />
-              </IconButton>
-            </Box>
           )}
         </Box>
       ))}

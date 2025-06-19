@@ -2,7 +2,15 @@ import React from "react";
 import { Box, Typography } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const linkStep = ['idea','script','create-image',"create-video",'narrator','sub',"success"]
+const linkStep = [
+  "idea",
+  "script",
+  "create-image",
+  "create-video",
+  "narrator",
+  "sub",
+  "success",
+];
 
 const StepComponent = ({ steps = [] }) => {
   const location = useLocation();
@@ -13,29 +21,29 @@ const StepComponent = ({ steps = [] }) => {
   return (
     <Box
       bgcolor='#0D0C2B'
-      width="100%"
+      width='100%'
       py={2}
-     
-      sx={{ overflowX:{ xs: "auto",md:"unset"}, whiteSpace: "nowrap" }}
-    >
+      sx={{ overflowX: { xs: "auto", md: "unset" }, whiteSpace: "nowrap" }}>
       <Box
         display='flex'
         alignItems='flex-start'
-        justifyContent='flex-start'
-        sx={{ minWidth: "max-content" }}
-      >
+        justifyContent={{ xs: "flex-start", md: "center" }}
+        sx={{ minWidth: "max-content" }}>
         {steps.map((step, index) => (
           <Box key={index} display='flex' alignItems='flex-start'>
             <Box
-              onClick={step.status === "completed" ? () => navigate(`/${linkStep[index]}?id=${id}`) : undefined}
+              onClick={
+                step.status === "completed"
+                  ? () => navigate(`/${linkStep[index]}?id=${id}`)
+                  : undefined
+              }
               sx={{
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 gap: { xs: "4px", md: "6px" },
-                cursor: step.status === "completed" ? "pointer" : "default"
-              }}
-            >
+                cursor: step.status === "completed" ? "pointer" : "default",
+              }}>
               <Box
                 sx={{
                   width: { xs: 28, md: 44 },
@@ -59,8 +67,7 @@ const StepComponent = ({ steps = [] }) => {
                       : step.status === "active"
                       ? "0px 0px 0px 6px rgba(157, 0, 255, 0.2)"
                       : "none",
-                }}
-              >
+                }}>
                 <Typography>
                   {step.status === "completed" ? "✓" : index + 1}
                 </Typography>
@@ -76,9 +83,8 @@ const StepComponent = ({ steps = [] }) => {
                   fontWeight: step.status === "active" ? 600 : 400,
                   fontSize: { xs: 9, md: 13 },
                   textAlign: "center",
-                  maxWidth: 70
-                }}
-              >
+                  maxWidth: 70,
+                }}>
                 {step.label}
               </Typography>
             </Box>

@@ -204,7 +204,7 @@ const CreateImageView = ({
                 backgroundColor: "#1E1C34",
                 color: "#fff",
                 p: 4,
-                width:isMobile ? "unset": 600,
+                width: isMobile ? "unset" : 600,
                 mx: "auto",
                 mt: "15%",
                 borderRadius: 2,
@@ -212,8 +212,10 @@ const CreateImageView = ({
               <Typography variant='h6' mb={2}>
                 Thêm mới model
               </Typography>
-              <Box display={isMobile?"unset":"flex"} justifyContent={"space-between"}>
-                <Box width={isMobile? "100%":"48%"}>
+              <Box
+                display={isMobile ? "unset" : "flex"}
+                justifyContent={"space-between"}>
+                <Box width={isMobile ? "100%" : "48%"}>
                   <Typography>Tên</Typography>
                   <TextField
                     value={newModel.name}
@@ -238,7 +240,7 @@ const CreateImageView = ({
                     }}
                   />
                 </Box>
-                <Box width={isMobile? "100%":"48%"}>
+                <Box width={isMobile ? "100%" : "48%"}>
                   {" "}
                   <Typography>Kiểu</Typography>{" "}
                   <Select
@@ -526,6 +528,7 @@ import {
   genScriptImage,
   genScriptImageStatus,
   updateProject,
+  upload,
 } from "../../service/project";
 import { toast } from "react-toastify";
 
@@ -686,7 +689,72 @@ const SceneCard = forwardRef((props, ref) => {
     };
     if (image) {
       if (isUploadedImage(image)) {
-        formData.append("input_image_file", sceneData.image.file);
+        const uploadResult = await upload({
+          file: sceneData.image.file,
+          folder: "images",
+        });
+
+        if (!uploadResult || !uploadResult.url) {
+          throw new Error("Failed to upload audio file");
+        }
+        let script: any = localStorage.getItem("gen_script");
+        if (script) {
+          script = JSON.parse(script);
+          script.script.scenes = values.map((item) => {
+            if (item.scene == scene) {
+              return {
+                ...item,
+                image: {
+                  ...item.image,
+                  ids: [
+                    ...(item.image.ids || []),
+                    Math.floor(Math.random(1000)),
+                  ],
+                  imageUrls: [
+                    ...(item.image.imageUrls || []),
+                    uploadResult.url,
+                  ].filter((item) => item != image),
+                  selected:
+                    (item.image.imageUrls?.length || 0) === 0
+                      ? 0
+                      : item.image.selected,
+                },
+              };
+            }
+            return item;
+          });
+          localStorage.setItem("gen_script", JSON.stringify(script));
+        }
+        setValues((prev) =>
+          prev.map((item) =>
+            item.scene === scene
+              ? {
+                  ...item,
+                  image: {
+                    ...item.image,
+                    ids: [
+                      ...(item.image.ids || []),
+                      Math.floor(Math.random(1000)),
+                    ],
+                    imageUrls: [
+                      ...(item.image.imageUrls || []),
+                      uploadResult.url,
+                    ].filter((item) => item != image),
+                    selected:
+                      (item.image.imageUrls?.length || 0) === 0
+                        ? 0
+                        : item.image.selected,
+                  },
+                }
+              : item
+          )
+        );
+        if (fileImage) {
+          setLoadingUpload(false);
+        } else {
+          setLoading(false);
+        }
+        return;
       } else {
         formData.append("input_image_url", image);
       }
@@ -1273,7 +1341,89 @@ const SceneCardDialogue = forwardRef((props, ref) => {
 
     if (image) {
       if (isUploadedImage(image)) {
-        formData.append("input_image_file", dialogueItem.image.file);
+        const uploadResult = await upload({
+          file: dialogueItem.image.file,
+          folder: "images",
+        });
+
+        if (!uploadResult || !uploadResult.url) {
+          throw new Error("Failed to upload audio file");
+        }
+
+        setValues((prev) =>
+          prev.map((item) =>
+            item.scene === parentScene
+              ? {
+                  ...item,
+                  dialogue: item.dialogue.map((d, i) =>
+                    i === index
+                      ? {
+                          ...d,
+                          image: {
+                            ...d.image,
+                            ids: [
+                              ...(d.image?.ids || []),
+                              Math.floor(Math.random(1000)),
+                            ],
+                            imageUrls: [
+                              ...(d.image?.imageUrls || []),
+                              uploadResult.url,
+                            ].filter((item) => item != image),
+                            selected:
+                              (d.image?.imageUrls?.length || 0) === 0
+                                ? 0
+                                : d.image?.selected,
+                          },
+                        }
+                      : d
+                  ),
+                }
+              : item
+          )
+        );
+
+        // Cập nhật localStorage
+        let script: any = localStorage.getItem("gen_script");
+        if (script) {
+          script = JSON.parse(script);
+          script.script.scenes = script.script.scenes.map((item) =>
+            item.scene === parentScene
+              ? {
+                  ...item,
+                  dialogue: item.dialogue.map((d, i) =>
+                    i === index
+                      ? {
+                          ...d,
+                          image: {
+                            ...d.image,
+                            ids: [
+                              ...(d.image?.ids || []),
+                              Math.floor(Math.random(1000)),
+                            ],
+                            imageUrls: [
+                              ...(d.image?.imageUrls || []),
+                              uploadResult.url,
+                            ].filter((item) => item != image),
+                            selected:
+                              (d.image?.imageUrls?.length || 0) === 0
+                                ? 0
+                                : d.image?.selected,
+                          },
+                        }
+                      : d
+                  ),
+                }
+              : item
+          );
+          localStorage.setItem("gen_script", JSON.stringify(script));
+        }
+
+        if (fileImage) {
+          setLoadingUpload(false);
+        } else {
+          setLoading(false);
+        }
+        return;
       } else {
         formData.append("input_image_url", image);
       }
@@ -2077,45 +2227,21 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                     if (
                       isUploadedImage(imageData.imageUrls[imageData.selected])
                     ) {
-                      let formData = new FormData();
-                      formData.append("input_image_file", imageData.file);
-                      formData.append("width", width);
-                      formData.append("height", height);
-                      formData.append("prompt", imageData.prompt);
-                      formData.append("n_prompt", imageData.n_prompt);
-                      formData.append("model", model);
+                      const uploadResult = await upload({
+                        file: imageData.file,
+                        folder: "images",
+                      });
 
-                      const result = await genScriptImage(formData);
-                      if (result && result.code === 2) {
-                        const status = await new Promise((resolve, reject) => {
-                          const poll = setInterval(async () => {
-                            try {
-                              const status = await genScriptImageStatus(
-                                result.id
-                              );
-                              if (status?.code === 0 && status?.image_url) {
-                                clearInterval(poll);
-                                resolve(status);
-                              }
-                            } catch (error) {
-                              clearInterval(poll);
-                              reject(error);
-                            }
-                          }, 2000);
-                          setTimeout(() => {
-                            clearInterval(poll);
-                            reject(
-                              new Error("Hết thời gian chờ trạng thái ảnh")
-                            );
-                          }, 120000);
-                        });
-                        return {
-                          id: result.id,
-                          image_url: status?.image_url,
-                          n_prompt: imageData.n_prompt,
-                          prompt: imageData.prompt,
-                        };
+                      if (!uploadResult || !uploadResult.url) {
+                        throw new Error("Failed to upload audio file");
                       }
+
+                      return {
+                        id: Math.floor(Math.random(1000)),
+                        image_url: uploadResult.url,
+                        n_prompt: imageData.n_prompt,
+                        prompt: imageData.prompt,
+                      };
                     }
                     return {
                       id: imageData.ids[imageData.selected],
