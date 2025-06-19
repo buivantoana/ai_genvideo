@@ -40,7 +40,7 @@ const CreateImageController = (props: Props) => {
           result.map((item) => {
             return {
               value: item.name,
-              key: item.name,
+              key: item.id,
             };
           })
         );

@@ -25,10 +25,7 @@ import StepComponent from "../../components/StepComponent";
 import EditIcon from "@mui/icons-material/Edit";
 import group from "../../images/Group 13.png";
 import CheckIcon from "@mui/icons-material/Check";
-const modelOptions1 = [
-  { value: "SDXL", key: "sdxl" },
-  { value: "Flux", key: "flux" },
-];
+
 const modelOptions2 = ["ChatGPT", "Runpod"];
 const modelOptions4 = ["Local"];
 const modelOptions3 = [
