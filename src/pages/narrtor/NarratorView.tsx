@@ -512,7 +512,7 @@ const VoiceItem = ({
   const [open, setOpen] = useState(isOpenDefault);
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  console.log("model", model);
+ 
   // State for form inputs
   const [selectedModel, setSelectedModel] = useState(
     values.find((item) => item.scene === scene)?.voice?.model ||
@@ -521,12 +521,9 @@ const VoiceItem = ({
   );
 
   const [selectedCharacter, setSelectedCharacter] = useState(
-    values.find((item) => item.scene === scene)?.charactors[0] || ""
+    (values.find((item) => item.scene === scene)?.charactors && values.find((item) => item.scene === scene)?.charactors.length>0&& values.find((item) => item.scene === scene)?.charactors[0])|| ""
   );
-  console.log(
-    "selectedCharacter",
-    values.find((item) => item.scene === scene)?.charactors[0]
-  );
+ 
   const [readingSpeed, setReadingSpeed] = useState(
     values.find((item) => item.scene === scene)?.voice?.speed || 1
   );
@@ -535,6 +532,7 @@ const VoiceItem = ({
     values.find((item) => item.scene === scene)?.voice?.delay || "0.5"
   );
   const [selectedVoice, setSelectedVoice] = useState(""); // Voice for "Lời thoại"
+  const [videoUrl, setVideoUrl] = useState("");
 
   const [narrationText, setNarrationText] = useState(text); // Narration text input
   const [intervalId, setIntervalId] = useState(null);
@@ -780,9 +778,12 @@ const VoiceItem = ({
   const videoRef = useRef(null);
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
 
-  const currentScene = values?.find((item) => item.scene === scene);
-  const videoUrl = currentScene?.voice ? currentScene?.video?.url : "";
-
+  
+  useEffect(()=>{
+    const currentScene = values?.find((item) => item.scene === scene);
+   setVideoUrl(currentScene?.video ? currentScene?.video?.url : "") 
+  },[values,scene])
+ 
   const handleTogglePlay = () => {
     const video = videoRef.current;
     if (!video) return;
@@ -885,7 +886,7 @@ const VoiceItem = ({
           </Box>
           <Box display='flex' alignItems='center' gap={3}>
             <Box sx={{ position: "relative", width: 250, height: 150 }}>
-              <video
+              {videoUrl&&<video
                 ref={videoRef}
                 width='250'
                 height='150'
@@ -894,9 +895,9 @@ const VoiceItem = ({
                 controls={isPlayingVideo} // 👈 Chỉ hiện controls khi đang phát
                 onEnded={() => setIsPlayingVideo(false)} // Khi phát xong thì tắt controls
               >
-                <source src={videoUrl} type='video/mp4' />
+                <source src={videoUrl}  />
                 Trình duyệt của bạn không hỗ trợ video HTML5.
-              </video>
+              </video>}
 
               {!isPlayingVideo && (
                 <Box
