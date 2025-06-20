@@ -405,8 +405,11 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
                     // Return updated music data with server URL
                     return {
                       ...music,
+                      start_time:Math.floor(music.start_time),
+                      end_time:Math.floor(music.end_time),
                       url: uploadResult.url,
-                      id: Math.random(1000),
+                      id: uploadResult.id,
+
                     };
                   }
                   return music;
@@ -1051,7 +1054,7 @@ function MusicPromptUI({
   const [timeline, setTimeline] = useState({
     start_time: musicData?.start_time || 0,
     end_time: musicData?.end_time || 0,
-    duration: parseInt(musicData?.duration || "50"),
+    duration: parseInt(musicData?.duration),
   });
   const [videoDuration, setVideoDuration] = useState(100);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -1061,8 +1064,9 @@ function MusicPromptUI({
   const isMobile = useMediaQuery("(max-width:768px)");
   const audioDuration = musicData.duration;
 
+  console.log("timeline",timeline)
   useEffect(() => {
-    const newDuration = parseInt(duration) || 10;
+    const newDuration = parseInt(duration);
     setTimeline((prev) => ({
       start_time: prev.start_time,
       end_time: Math.min(prev.end_time, newDuration),
@@ -1463,9 +1467,10 @@ function MusicPromptUI({
                 setTimeline={setTimeline}
                 audioRef={audioRef}
                 onUpdateMusic={onUpdateMusic}
+                musicData={musicData}
                 isPlaying={isPlaying}
                 max={videoDuration}
-                maxDuration={10}
+                maxDuration={timeline.duration}
               />
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Typography variant='caption'>
@@ -1874,6 +1879,8 @@ function AddMusicPromptUI({ setOn }) {
   );
 }
 
+
+
 const CustomSlider = ({
   max = 60,
   timeline,
@@ -1882,95 +1889,130 @@ const CustomSlider = ({
   isPlaying,
   audioRef,
   maxDuration,
+  musicData
 }) => {
+  console.log("max", max);
   const durationMax = maxDuration || max;
-  const sliderRef = useRef(null);
-  const [dragging, setDragging] = useState<null | "left" | "right" | "block">(
-    null
-  );
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const [dragging, setDragging] = useState<null | "left" | "right" | "block">(null);
   const [startX, setStartX] = useState(0);
   const [initialTimeline, setInitialTimeline] = useState(timeline);
+  console.log("max", {
+    max,
+    timeline,
+    setTimeline,
+    onUpdateMusic,
+    isPlaying,
+    audioRef,
+    maxDuration,
+    musicData
+  });
+  // Memoize các hàm tính toán
+  const toPercent = useCallback((time: number) => {
+    return Math.max(0, Math.min(100, (time / max) * 100));
+  }, [max]);
 
-  const toPercent = (time: number) => (time / max) * 100;
-
-  const onMouseDown = (e, type) => {
+  const onMouseDown = useCallback((e: React.MouseEvent, type: "left" | "right" | "block") => {
     e.stopPropagation();
     setDragging(type);
     setStartX(e.clientX);
     setInitialTimeline(timeline);
-  };
+  }, [timeline]);
 
-  const onMouseMove = (e) => {
-    if (!dragging) return;
+  // Kiểm tra xem timeline có hợp lệ không
+  const isValidTimeline = useCallback((start: number, end: number) => {
+    return (end - start) <= durationMax;
+  }, [durationMax]);
 
-    const deltaPx = e.clientX - startX;
-    const sliderWidth = sliderRef.current.offsetWidth;
-    const deltaSec = (deltaPx / sliderWidth) * max;
-
-    let { start_time, end_time } = initialTimeline;
-
-    if (dragging === "left") {
-      let newStart = Math.min(Math.max(0, start_time + deltaSec), end_time - 1);
-      if (end_time - newStart > durationMax) {
-        newStart = end_time - durationMax;
-      }
-      start_time = newStart;
-    } else if (dragging === "right") {
-      let newEnd = Math.max(Math.min(max, end_time + deltaSec), start_time + 1);
-      if (newEnd - start_time > durationMax) {
-        newEnd = start_time + durationMax;
-      }
-      end_time = newEnd;
-    } else if (dragging === "block") {
-      let newStart = start_time + deltaSec;
-      let newEnd = end_time + deltaSec;
-
+  // Sử dụng requestAnimationFrame cho chuyển động mượt mà
+  const onMouseMove = useCallback((e: MouseEvent) => {
+    if (!dragging || !sliderRef.current) return;
+  
+    requestAnimationFrame(() => {
+      const deltaPx = e.clientX - startX;
+      const sliderWidth = sliderRef.current?.offsetWidth || 1;
+      const deltaSec = (deltaPx / sliderWidth) * max;
+  
+      let { start_time, end_time } = initialTimeline;
       const blockLength = end_time - start_time;
-
-      // Giới hạn trong khung [0, max] và không vượt max duration
-      if (blockLength > durationMax) return; // bỏ qua nếu block quá dài
-
-      if (newStart < 0) {
-        newEnd -= newStart;
-        newStart = 0;
+  
+      if (dragging === "left") {
+        const newStart = Math.max(0, start_time + deltaSec);
+        // Luôn cho phép kéo vào (thu nhỏ)
+        start_time = newStart;
+      } 
+      else if (dragging === "right") {
+        const newEnd = Math.min(max, end_time + deltaSec);
+        // Chỉ chặn nếu kéo ra làm tăng độ dài vượt quá durationMax
+        if ((newEnd - start_time) > durationMax) return;
+        end_time = newEnd;
+      } 
+      else if (dragging === "block") {
+        // Block phải luôn nhỏ hơn hoặc bằng durationMax
+        if (blockLength > durationMax) return;
+  
+        let newStart = start_time + deltaSec;
+        let newEnd = end_time + deltaSec;
+  
+        // Xử lý vượt biên
+        if (newStart < 0) {
+          newEnd -= newStart;
+          newStart = 0;
+        } else if (newEnd > max) {
+          newStart -= (newEnd - max);
+          newEnd = max;
+        }
+  
+        // Kiểm tra lại sau khi điều chỉnh biên
+        if ((newEnd - newStart) > durationMax) return;
+  
+        start_time = newStart;
+        end_time = newEnd;
       }
-      if (newEnd > max) {
-        const over = newEnd - max;
-        newStart -= over;
-        newEnd = max;
+  
+      // Đảm bảo timeline hợp lệ
+      if (start_time >= end_time) {
+        if (dragging === "left") start_time = Math.max(0, end_time - 1);
+        else end_time = Math.min(max, start_time + 1);
       }
-
-      start_time = newStart;
-      end_time = newEnd;
-    }
-
-    setTimeline({
-      start_time,
-      end_time,
-      duration: end_time - start_time,
-    });
-  };
-
-  const onMouseUp = () => {
-    if (dragging) {
-      onUpdateMusic({
-        ...timeline,
+  
+      setTimeline({
+        start_time: Math.max(0, Math.min(max - 1, start_time)),
+        end_time: Math.min(max, Math.max(1, end_time)),
+        duration: end_time - start_time,
       });
-      if (isPlaying && audioRef.current) {
-        audioRef.current.currentTime = timeline.start_time;
+    });
+  }, [dragging, startX, initialTimeline, max, durationMax, setTimeline]);
+
+  const onMouseUp = useCallback(() => {
+    if (dragging) {
+      // Final validation trước khi update
+      if (isValidTimeline(timeline.start_time, timeline.end_time)) {
+        const updatedMusic = {
+          ...musicData,
+          start_time: timeline.start_time,
+          end_time: timeline.end_time,
+        };
+        onUpdateMusic(updatedMusic);
+        
+        if (isPlaying && audioRef.current) {
+          audioRef.current.currentTime = timeline.start_time;
+        }
       }
     }
     setDragging(null);
-  };
+  }, [dragging, timeline, musicData, onUpdateMusic, isPlaying, audioRef, isValidTimeline]);
 
   useEffect(() => {
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-    return () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
-  });
+    if (dragging) {
+      window.addEventListener("mousemove", onMouseMove);
+      window.addEventListener("mouseup", onMouseUp);
+      return () => {
+        window.removeEventListener("mousemove", onMouseMove);
+        window.removeEventListener("mouseup", onMouseUp);
+      };
+    }
+  }, [dragging, onMouseMove, onMouseUp]);
 
   return (
     <div className='slider-container' ref={sliderRef}>
@@ -1979,8 +2021,12 @@ const CustomSlider = ({
         style={{
           left: `${toPercent(timeline.start_time)}%`,
           width: `${toPercent(timeline.end_time - timeline.start_time)}%`,
+          transition: dragging ? 'none' : 'left 0.1s, width 0.1s',
+          // Thêm visual feedback khi vượt quá độ dài cho phép
+          // backgroundColor: (timeline.end_time - timeline.start_time) > durationMax ? '#ff6b6b' : '#4a90e2'
         }}
-        onMouseDown={(e) => onMouseDown(e, "block")}>
+        onMouseDown={(e) => onMouseDown(e, "block")}
+      >
         <div
           className='slider-handle left'
           onMouseDown={(e) => onMouseDown(e, "left")}
@@ -1993,6 +2039,8 @@ const CustomSlider = ({
     </div>
   );
 };
+
+
 
 function VolumeControl({ volume, setVolume }) {
   const [isHovered, setIsHovered] = useState(false);

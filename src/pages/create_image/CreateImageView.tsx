@@ -708,7 +708,7 @@ const SceneCard = forwardRef((props, ref) => {
                   ...item.image,
                   ids: [
                     ...(item.image.ids || []),
-                    Math.floor(Math.random(1000)),
+                    uploadResult.id,
                   ],
                   imageUrls: [
                     ...(item.image.imageUrls || []),
@@ -734,7 +734,7 @@ const SceneCard = forwardRef((props, ref) => {
                     ...item.image,
                     ids: [
                       ...(item.image.ids || []),
-                      Math.floor(Math.random(1000)),
+                      uploadResult.id,
                     ],
                     imageUrls: [
                       ...(item.image.imageUrls || []),
@@ -1363,7 +1363,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                             ...d.image,
                             ids: [
                               ...(d.image?.ids || []),
-                              Math.floor(Math.random(1000)),
+                              uploadResult.id,
                             ],
                             imageUrls: [
                               ...(d.image?.imageUrls || []),
@@ -1398,7 +1398,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                             ...d.image,
                             ids: [
                               ...(d.image?.ids || []),
-                              Math.floor(Math.random(1000)),
+                              uploadResult.id,
                             ],
                             imageUrls: [
                               ...(d.image?.imageUrls || []),
@@ -2237,7 +2237,7 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                       }
 
                       return {
-                        id: Math.floor(Math.random(1000)),
+                        id: uploadResult.id,
                         image_url: uploadResult.url,
                         n_prompt: imageData.n_prompt,
                         prompt: imageData.prompt,
