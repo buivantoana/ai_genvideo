@@ -102,6 +102,7 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
   const [active, setActive]: any = useState(1);
   const [textTransform, setTextTransform] = useState("normal");
   const [fontFamily, setFontFamily] = useState("SF Pro Display");
+  const [fontSize, setFontSize] = useState(15);
   const [subtitleStyle, setSubtitleStyle] = useState("default"); // hoặc 'karaoke'
   const [selectedColor, setSelectedColor]: any = useState([
     "#1b1c34",
@@ -338,7 +339,7 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
                   onDeleteMusic={handleDeleteMusic}
                   isActive={activeMusicId === music.index}
                   onSetActive={setActiveMusicId}
-                  durationVideo={duration}
+                  durationVideo={Number(duration)}
                 />
               ))}
             </Box>
@@ -375,11 +376,13 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
             setActive={setActive}
             textTransform={textTransform}
             setTextTransform={setTextTransform}
+            setFontSize={setFontSize}
+            fontSize={fontSize}
           />
         </Box>
       </Stack>
 
-      <Box mt={6} textAlign='center'>
+      <Box mt={isMobile ? 2 : 6} textAlign='center'>
         <Button
           onClick={async () => {
             setLoading(true);
@@ -405,11 +408,10 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
                     // Return updated music data with server URL
                     return {
                       ...music,
-                      start_time:Math.floor(music.start_time),
-                      end_time:Math.floor(music.end_time),
+                      start_time: Math.floor(music.start_time),
+                      end_time: Math.floor(music.end_time),
                       url: uploadResult.url,
                       id: uploadResult.id,
-
                     };
                   }
                   return music;
@@ -435,11 +437,12 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
                 }
                 body.subtitles = {
                   font: fontFamily,
-                  size: 12,
+                  size: fontSize,
                   color_base: selectedColor[0],
                   color_highlight: selectedColor[1],
                   type: textTransform,
                   position: position,
+                  style: subtitleStyle,
                 };
               }
 
@@ -504,6 +507,8 @@ const Settings = ({
   setSubtitleStyle,
   selectedColor,
   setSelectedColor,
+  fontSize,
+  setFontSize,
 }) => {
   const isMobile = useMediaQuery("(max-width:768px)");
 
@@ -522,7 +527,7 @@ const Settings = ({
   return (
     <Box
       sx={{
-        minHeight: "100vh",
+        minHeight: isMobile ? "max-content" : "100vh",
         color: "white",
         px: isMobile ? 2 : 4,
       }}>
@@ -595,7 +600,7 @@ const Settings = ({
               <Box
                 display={"flex"}
                 justifyContent={"space-between"}
-                alignItems={"end"}>
+                alignItems={isMobile ? "center" : "end"}>
                 <RadioControl
                   label='Kiểu chữ'
                   defaultValue='normal'
@@ -605,50 +610,92 @@ const Settings = ({
                     ["upper", "Chữ hoa"],
                   ]}
                 />
-                <FormControl sx={{ mb: "14px" }} fullWidth>
-                  <InputLabel sx={{ color: "#aaa" }}>Font chữ</InputLabel>
-                  <Select
-                    defaultValue='SF Pro Display'
-                    label='Font chữ'
-                    value={fontFamily}
-                    onChange={(e) => setFontFamily(e.target.value)}
-                    MenuProps={{
-                      PaperProps: {
-                        sx: {
-                          backgroundColor: "#2A274B", // nền của dropdown list
-                          color: "#fff",
-                          borderRadius: 2,
-                          mt: 1,
-                          "& .MuiMenuItem-root": {
-                            "&:hover": {
-                              backgroundColor: "#3A375F", // màu hover
-                              borderRadius: 1,
-                            },
-                            "&.Mui-selected": {
-                              backgroundColor: "#4B3A79", // màu selected
-                              borderRadius: 1,
+                <Box
+                  display={"flex"}
+                  flexDirection={isMobile ? "column" : "row"}
+                  gap={isMobile ? 0.5 : 2}>
+                  <FormControl sx={{ mb: "14px" }}>
+                    <InputLabel sx={{ color: "white" }}>Font chữ</InputLabel>
+                    <Select
+                      defaultValue='SF Pro Display'
+                      label='Font chữ'
+                      value={fontFamily}
+                      onChange={(e) => setFontFamily(e.target.value)}
+                      MenuProps={{
+                        PaperProps: {
+                          sx: {
+                            backgroundColor: "#2A274B", // nền của dropdown list
+                            color: "#fff",
+                            borderRadius: 2,
+                            mt: 1,
+                            "& .MuiMenuItem-root": {
+                              "&:hover": {
+                                backgroundColor: "#3A375F", // màu hover
+                                borderRadius: 1,
+                              },
+                              "&.Mui-selected": {
+                                backgroundColor: "#4B3A79", // màu selected
+                                borderRadius: 1,
+                              },
                             },
                           },
                         },
-                      },
-                    }}
-                    sx={{
-                      color: "white",
-                      ".MuiSelect-icon": { color: "white" },
-                      ".MuiOutlinedInput-notchedOutline": {
-                        borderColor: "white",
-                      },
-                      "&:hover .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "white",
-                      },
-                      "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-                        borderColor: "white",
-                      },
-                      height: isMobile ? "38px" : "unset",
-                    }}>
-                    <MenuItem value='SF Pro Display'>SF Pro Display</MenuItem>
-                  </Select>
-                </FormControl>
+                      }}
+                      sx={{
+                        color: "white",
+                        ".MuiSelect-icon": { color: "white" },
+                        ".MuiOutlinedInput-notchedOutline": {
+                          borderColor: "white",
+                        },
+                        "&:hover .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "white",
+                        },
+                        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                          borderColor: "white",
+                        },
+                        height: isMobile ? "38px" : "50px",
+                        width: "150px",
+                      }}>
+                      <MenuItem value='SF Pro Display'>SF Pro Display</MenuItem>
+                    </Select>
+                  </FormControl>
+                  <FormControl sx={{ mb: "14px" }}>
+                    <TextField
+                      fullWidth
+                      type='number'
+                      value={fontSize}
+                      onChange={(e) => setFontSize(e.target.value)}
+                      label='Font size'
+                      variant='outlined'
+                      size='small'
+                      sx={{
+                        backgroundColor: "#1A1836",
+                        borderRadius: 2,
+                        width: "150px",
+                        input: { color: "white" },
+                        "& .MuiOutlinedInput-root": {
+                          height: isMobile ? "40px" : "50px", // 👈 Đặt ở đây mới ăn
+                          alignItems: "center", // Canh giữa input text
+                        },
+                        "& .MuiOutlinedInput-notchedOutline": {
+                          border: "1px solid",
+                          borderColor: "white",
+                        },
+                        "& .MuiInputLabel-root": {
+                          color: "#a0a0a0", // Màu khi không focus
+                          transition: "all 0.3s ease",
+                        },
+                        "& .MuiInputLabel-root.Mui-focused": {
+                          color: "#ffffff",
+                          transform: "translate(14px, -9px) scale(0.75)",
+                        },
+                        "& .MuiInputLabel-root.MuiFormLabel-filled": {
+                          color: "#ffffff", // Màu khi có giá trị
+                        },
+                      }}
+                    />
+                  </FormControl>
+                </Box>
               </Box>
 
               {/* Subtitle style selections */}
@@ -1056,15 +1103,15 @@ function MusicPromptUI({
     end_time: musicData?.end_time || 0,
     duration: parseInt(musicData?.duration),
   });
-  const [videoDuration, setVideoDuration] = useState(100);
+  const [videoDuration, setVideoDuration] = useState(durationVideo);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const audioRef = useRef(null);
   const fileInputRef = useRef(null);
   const isMobile = useMediaQuery("(max-width:768px)");
   const audioDuration = musicData.duration;
-
-  console.log("timeline",timeline)
+  console.log("durationVideo", durationVideo);
+  console.log("timeline", timeline);
   useEffect(() => {
     const newDuration = parseInt(duration);
     setTimeline((prev) => ({
@@ -1073,10 +1120,17 @@ function MusicPromptUI({
       duration: newDuration,
     }));
   }, [duration]);
+  useEffect(() => {
+    if (musicData.volume) {
+      setVolume(musicData.volume);
+    }
+  }, [musicData.volume]);
+  useEffect(() => {
+    if (durationVideo) {
+      setVideoDuration(durationVideo);
+    }
+  }, [durationVideo]);
 
-  // Khởi tạo audio khi URL thay đổi
-
-  // Khởi tạo audio khi có URL
   useEffect(() => {
     if (musicData?.url) {
       // Xóa audio cũ nếu có
@@ -1372,7 +1426,7 @@ function MusicPromptUI({
           </Box>
         )}
 
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 5 }}>
           <IconButton
             size='small'
             onClick={(e) => {
@@ -1384,84 +1438,13 @@ function MusicPromptUI({
               background: "rgba(89, 50, 234, 1)",
               width: 24,
               height: 24,
+              ml: 2,
             }}>
             {isPlaying ? <Pause fontSize='13' /> : <PlayArrow fontSize='13' />}
           </IconButton>
 
           <Box display='flex' flexDirection='column' gap='10px' flexGrow={1}>
-            {/* <Typography fontSize={12} color="white">
-              {musicData.modelName || selectedModel}
-            </Typography>
-            <Box
-              width={100}
-              sx={{ display: "flex", justifyContent: "space-between" }}
-            >
-              <Typography fontSize={10} color="rgba(130, 130, 130, 1)">
-                {formatTime(timeline.start_time + (progress * (timeline.end_time - timeline.start_time)) / 100)}
-              </Typography>
-              <Typography fontSize={10} color="rgba(130, 130, 130, 1)">
-                {formatTime(timeline.end_time)}
-              </Typography>
-            </Box> */}
             <Box sx={{ width: "100%", p: 1, mt: 2.7 }}>
-              {/* <Slider
-                min={0}
-                max={videoDuration}
-                value={[
-                  Math.min(timeline.start_time, videoDuration - 1),
-                  Math.min(timeline.end_time, videoDuration),
-                ]}
-                onChange={(event, newValue) => {
-                  let [start, end]: any = newValue;
-
-                  // Chỉ cần đảm bảo khoảng cách tối thiểu 1 giây
-                  if (end - start < 1) {
-                    if (event.target?.dataset?.index === "0") {
-                      start = end - 1; // Nếu kéo đầu trái
-                    } else {
-                      end = start + 1; // Nếu kéo đầu phải
-                    }
-                  }
-
-                  setTimeline({
-                    start_time: start,
-                    end_time: end,
-                    duration: end - start,
-                  });
-                }}
-                onChangeCommitted={(event, newValue) => {
-                  const [start, end] = newValue;
-                  const updatedMusic = {
-                    ...musicData,
-                    start_time: start,
-                    end_time: end,
-                  };
-                  onUpdateMusic(updatedMusic);
-
-                  if (isPlaying && audioRef.current) {
-                    audioRef.current.currentTime = updatedMusic.start_time;
-                  }
-                }}
-                valueLabelDisplay='auto'
-                valueLabelFormat={formatTime}
-                disableSwap // Giữ nguyên để tránh start > end
-                sx={{
-                  "& .MuiSlider-track": {
-                    backgroundColor: "rgba(89, 50, 234, 1)",
-                    height: 6,
-                  },
-                  "& .MuiSlider-rail": {
-                    backgroundColor: "rgba(217, 217, 217, 1)",
-                    height: 6,
-                  },
-                  "& .MuiSlider-thumb": {
-                    width: 16,
-                    height: 16,
-                    backgroundColor: "#fff",
-                    border: "2px solid rgba(89, 50, 234, 1)",
-                  },
-                }}
-              /> */}
               <CustomSlider
                 timeline={timeline}
                 setTimeline={setTimeline}
@@ -1470,7 +1453,7 @@ function MusicPromptUI({
                 musicData={musicData}
                 isPlaying={isPlaying}
                 max={videoDuration}
-                maxDuration={timeline.duration}
+                maxDuration={Number(duration)}
               />
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Typography variant='caption'>
@@ -1492,7 +1475,12 @@ function MusicPromptUI({
                 // handleToggleVolume();
               }}
               sx={{ color: "white" }}>
-              <VolumeControl volume={volume} setVolume={setVolume} />
+              <VolumeControl
+                volume={volume}
+                onUpdateMusic={onUpdateMusic}
+                musicData={musicData}
+                setVolume={setVolume}
+              />
             </IconButton>
             {musicData.url && (
               <IconButton
@@ -1635,7 +1623,7 @@ function MusicPromptUI({
               </Button>
               <Button
                 variant='contained'
-                onClick={() => onDeleteMusic(musicData.id)}
+                onClick={() => onDeleteMusic(musicData.index)}
                 sx={{
                   backgroundColor: "#2d2d5a",
                   borderRadius: "12px",
@@ -1879,8 +1867,6 @@ function AddMusicPromptUI({ setOn }) {
   );
 }
 
-
-
 const CustomSlider = ({
   max = 60,
   timeline,
@@ -1889,15 +1875,15 @@ const CustomSlider = ({
   isPlaying,
   audioRef,
   maxDuration,
-  musicData
+  musicData,
 }) => {
-  console.log("max", max);
-  const durationMax = maxDuration || max;
   const sliderRef = useRef<HTMLDivElement>(null);
-  const [dragging, setDragging] = useState<null | "left" | "right" | "block">(null);
+  const [dragging, setDragging] = useState<null | "left" | "right" | "block">(
+    null
+  );
   const [startX, setStartX] = useState(0);
   const [initialTimeline, setInitialTimeline] = useState(timeline);
-  console.log("max", {
+  console.log("props", {
     max,
     timeline,
     setTimeline,
@@ -1905,103 +1891,96 @@ const CustomSlider = ({
     isPlaying,
     audioRef,
     maxDuration,
-    musicData
+    musicData,
   });
-  // Memoize các hàm tính toán
-  const toPercent = useCallback((time: number) => {
-    return Math.max(0, Math.min(100, (time / max) * 100));
-  }, [max]);
+  const toPercent = useCallback(
+    (time: number) => {
+      return Math.max(0, Math.min(100, (time / max) * 100));
+    },
+    [max]
+  );
 
-  const onMouseDown = useCallback((e: React.MouseEvent, type: "left" | "right" | "block") => {
-    e.stopPropagation();
-    setDragging(type);
-    setStartX(e.clientX);
-    setInitialTimeline(timeline);
-  }, [timeline]);
+  const onMouseDown = useCallback(
+    (e: React.MouseEvent, type: "left" | "right" | "block") => {
+      e.stopPropagation();
+      setDragging(type);
+      setStartX(e.clientX);
+      setInitialTimeline(timeline);
+    },
+    [timeline]
+  );
 
-  // Kiểm tra xem timeline có hợp lệ không
-  const isValidTimeline = useCallback((start: number, end: number) => {
-    return (end - start) <= durationMax;
-  }, [durationMax]);
+  const onMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (!dragging || !sliderRef.current) return;
 
-  // Sử dụng requestAnimationFrame cho chuyển động mượt mà
-  const onMouseMove = useCallback((e: MouseEvent) => {
-    if (!dragging || !sliderRef.current) return;
-  
-    requestAnimationFrame(() => {
-      const deltaPx = e.clientX - startX;
-      const sliderWidth = sliderRef.current?.offsetWidth || 1;
-      const deltaSec = (deltaPx / sliderWidth) * max;
-  
-      let { start_time, end_time } = initialTimeline;
-      const blockLength = end_time - start_time;
-  
+      const sliderWidth = sliderRef.current.offsetWidth;
+      const deltaX = e.clientX - startX;
+      const deltaTime = (deltaX / sliderWidth) * max;
+
+      let newStart = initialTimeline.start_time;
+      let newEnd = initialTimeline.end_time;
+      const currentDuration = newEnd - newStart;
+
       if (dragging === "left") {
-        const newStart = Math.max(0, start_time + deltaSec);
-        // Luôn cho phép kéo vào (thu nhỏ)
-        start_time = newStart;
-      } 
-      else if (dragging === "right") {
-        const newEnd = Math.min(max, end_time + deltaSec);
-        // Chỉ chặn nếu kéo ra làm tăng độ dài vượt quá durationMax
-        if ((newEnd - start_time) > durationMax) return;
-        end_time = newEnd;
-      } 
-      else if (dragging === "block") {
-        // Block phải luôn nhỏ hơn hoặc bằng durationMax
-        if (blockLength > durationMax) return;
-  
-        let newStart = start_time + deltaSec;
-        let newEnd = end_time + deltaSec;
-  
+        // Kéo handle trái - chỉ thay đổi start time
+        newStart = Math.max(0, initialTimeline.start_time + deltaTime);
+        // Không cho phép kéo nếu làm giảm duration xuống dưới 0.1s
+        newStart = Math.min(newStart, newEnd - 0.1);
+        // Không cho phép kéo nếu duration vượt quá maxDuration
+        if (newEnd - newStart > maxDuration) {
+          newStart = newEnd - maxDuration;
+        }
+      } else if (dragging === "right") {
+        // Kéo handle phải - chỉ thay đổi end time
+        newEnd = Math.min(max, initialTimeline.end_time + deltaTime);
+        // Không cho phép kéo nếu làm giảm duration xuống dưới 0.1s
+        newEnd = Math.max(newEnd, newStart + 0.1);
+        // Không cho phép kéo nếu duration vượt quá maxDuration
+        if (newEnd - newStart > maxDuration) {
+          newEnd = newStart + maxDuration;
+        }
+      } else if (dragging === "block") {
+        // Kéo cả block - giữ nguyên duration
+        if (currentDuration > maxDuration) return; // Nếu duration hiện tại đã lớn hơn maxDuration thì không cho kéo
+
+        newStart = initialTimeline.start_time + deltaTime;
+        newEnd = initialTimeline.end_time + deltaTime;
+
         // Xử lý vượt biên
         if (newStart < 0) {
-          newEnd -= newStart;
           newStart = 0;
+          newEnd = newStart + currentDuration;
         } else if (newEnd > max) {
-          newStart -= (newEnd - max);
           newEnd = max;
+          newStart = newEnd - currentDuration;
         }
-  
-        // Kiểm tra lại sau khi điều chỉnh biên
-        if ((newEnd - newStart) > durationMax) return;
-  
-        start_time = newStart;
-        end_time = newEnd;
       }
-  
-      // Đảm bảo timeline hợp lệ
-      if (start_time >= end_time) {
-        if (dragging === "left") start_time = Math.max(0, end_time - 1);
-        else end_time = Math.min(max, start_time + 1);
-      }
-  
+
       setTimeline({
-        start_time: Math.max(0, Math.min(max - 1, start_time)),
-        end_time: Math.min(max, Math.max(1, end_time)),
-        duration: end_time - start_time,
+        start_time: Math.floor(newStart),
+        end_time: Math.floor(newEnd),
+        duration: Math.floor(newEnd - newStart),
       });
-    });
-  }, [dragging, startX, initialTimeline, max, durationMax, setTimeline]);
+    },
+    [dragging, startX, initialTimeline, max, maxDuration, setTimeline]
+  );
 
   const onMouseUp = useCallback(() => {
     if (dragging) {
-      // Final validation trước khi update
-      if (isValidTimeline(timeline.start_time, timeline.end_time)) {
-        const updatedMusic = {
-          ...musicData,
-          start_time: timeline.start_time,
-          end_time: timeline.end_time,
-        };
-        onUpdateMusic(updatedMusic);
-        
-        if (isPlaying && audioRef.current) {
-          audioRef.current.currentTime = timeline.start_time;
-        }
+      const updatedMusic = {
+        ...musicData,
+        start_time: Math.floor(timeline.start_time),
+        end_time: Math.floor(timeline.end_time),
+      };
+      onUpdateMusic(updatedMusic);
+
+      if (isPlaying && audioRef.current) {
+        audioRef.current.currentTime = timeline.start_time;
       }
     }
     setDragging(null);
-  }, [dragging, timeline, musicData, onUpdateMusic, isPlaying, audioRef, isValidTimeline]);
+  }, [dragging, timeline, musicData, onUpdateMusic, isPlaying, audioRef]);
 
   useEffect(() => {
     if (dragging) {
@@ -2021,12 +2000,13 @@ const CustomSlider = ({
         style={{
           left: `${toPercent(timeline.start_time)}%`,
           width: `${toPercent(timeline.end_time - timeline.start_time)}%`,
-          transition: dragging ? 'none' : 'left 0.1s, width 0.1s',
-          // Thêm visual feedback khi vượt quá độ dài cho phép
-          // backgroundColor: (timeline.end_time - timeline.start_time) > durationMax ? '#ff6b6b' : '#4a90e2'
+          transition: dragging ? "none" : "left 0.1s, width 0.1s",
+          // backgroundColor:
+          //   timeline.end_time - timeline.start_time > maxDuration
+          //     ? "#ff6b6b"
+          //     : "#4a90e2",
         }}
-        onMouseDown={(e) => onMouseDown(e, "block")}
-      >
+        onMouseDown={(e) => onMouseDown(e, "block")}>
         <div
           className='slider-handle left'
           onMouseDown={(e) => onMouseDown(e, "left")}
@@ -2040,14 +2020,17 @@ const CustomSlider = ({
   );
 };
 
-
-
-function VolumeControl({ volume, setVolume }) {
+function VolumeControl({ volume, setVolume, onUpdateMusic, musicData }) {
   const [isHovered, setIsHovered] = useState(false);
   const volumeRef = useRef<HTMLDivElement>(null);
 
   const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newVolume = parseFloat(e.target.value);
+    let update = {
+      ...musicData,
+      volume: Number(newVolume.toFixed(1)),
+    };
+    onUpdateMusic(update);
     setVolume(newVolume);
   };
 

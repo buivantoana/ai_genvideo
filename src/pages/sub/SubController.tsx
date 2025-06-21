@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import SubView from "./SubView";
-import { getVoiceModels } from "../../service/project";
+import { getAudioModels, getVoiceModels } from "../../service/project";
 import { useLocation } from "react-router-dom";
 import Loading from "../../components/Loading";
 
@@ -18,7 +18,7 @@ const SubController = (props: Props) => {
   }, []);
   const getModels = async () => {
     try {
-      let result = await getVoiceModels();
+      let result = await getAudioModels();
       console.log("result", result);
       if (result && result.length) {
         setModel(result);
