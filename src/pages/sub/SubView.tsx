@@ -1445,16 +1445,29 @@ function MusicPromptUI({
 
           <Box display='flex' flexDirection='column' gap='10px' flexGrow={1}>
             <Box sx={{ width: "100%", p: 1, mt: 2.7 }}>
-              <CustomSlider
-                timeline={timeline}
-                setTimeline={setTimeline}
-                audioRef={audioRef}
-                onUpdateMusic={onUpdateMusic}
-                musicData={musicData}
-                isPlaying={isPlaying}
-                max={videoDuration}
-                maxDuration={Number(duration)}
-              />
+              {isMobile ? (
+                <MobileSlider
+                  timeline={timeline}
+                  setTimeline={setTimeline}
+                  audioRef={audioRef}
+                  onUpdateMusic={onUpdateMusic}
+                  musicData={musicData}
+                  isPlaying={isPlaying}
+                  max={videoDuration}
+                  maxDuration={Number(duration)}
+                />
+              ) : (
+                <CustomSlider
+                  timeline={timeline}
+                  setTimeline={setTimeline}
+                  audioRef={audioRef}
+                  onUpdateMusic={onUpdateMusic}
+                  musicData={musicData}
+                  isPlaying={isPlaying}
+                  max={videoDuration}
+                  maxDuration={Number(duration)}
+                />
+              )}
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
                 <Typography variant='caption'>
                   Start:{" "}
@@ -2014,6 +2027,166 @@ const CustomSlider = ({
         <div
           className='slider-handle right'
           onMouseDown={(e) => onMouseDown(e, "right")}
+        />
+      </div>
+    </div>
+  );
+};
+
+const MobileSlider = ({
+  max = 60,
+  timeline,
+  setTimeline,
+  onUpdateMusic,
+  isPlaying,
+  audioRef,
+  maxDuration,
+  musicData,
+}) => {
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const [dragging, setDragging] = useState<null | "left" | "right" | "block">(
+    null
+  );
+  const [startX, setStartX] = useState(0);
+  const [initialTimeline, setInitialTimeline] = useState(timeline);
+
+  const toPercent = useCallback(
+    (time: number) => Math.max(0, Math.min(100, (time / max) * 100)),
+    [max]
+  );
+
+  // Hàm xử lý cả touch và mouse events
+  const handleStart = useCallback(
+    (clientX: number, type: "left" | "right" | "block") => {
+      setDragging(type);
+      setStartX(clientX);
+      setInitialTimeline(timeline);
+    },
+    [timeline]
+  );
+
+  const handleMove = useCallback(
+    (clientX: number) => {
+      if (!dragging || !sliderRef.current) return;
+
+      const sliderWidth = sliderRef.current.offsetWidth;
+      const deltaX = clientX - startX;
+      const deltaTime = (deltaX / sliderWidth) * max;
+
+      let newStart = initialTimeline.start_time;
+      let newEnd = initialTimeline.end_time;
+      const currentDuration = newEnd - newStart;
+
+      if (dragging === "left") {
+        newStart = Math.max(0, initialTimeline.start_time + deltaTime);
+        newStart = Math.min(newStart, newEnd - 0.1);
+        if (newEnd - newStart > maxDuration) {
+          newStart = newEnd - maxDuration;
+        }
+      } else if (dragging === "right") {
+        newEnd = Math.min(max, initialTimeline.end_time + deltaTime);
+        newEnd = Math.max(newEnd, newStart + 0.1);
+        if (newEnd - newStart > maxDuration) {
+          newEnd = newStart + maxDuration;
+        }
+      } else if (dragging === "block") {
+        if (currentDuration > maxDuration) return;
+
+        newStart = initialTimeline.start_time + deltaTime;
+        newEnd = initialTimeline.end_time + deltaTime;
+
+        if (newStart < 0) {
+          newStart = 0;
+          newEnd = newStart + currentDuration;
+        } else if (newEnd > max) {
+          newEnd = max;
+          newStart = newEnd - currentDuration;
+        }
+      }
+
+      setTimeline({
+        start_time: Math.floor(newStart),
+        end_time: Math.floor(newEnd),
+        duration: Math.floor(newEnd - newStart),
+      });
+    },
+    [dragging, startX, initialTimeline, max, maxDuration, setTimeline]
+  );
+
+  const handleEnd = useCallback(() => {
+    if (dragging) {
+      const updatedMusic = {
+        ...musicData,
+        start_time: Math.floor(timeline.start_time),
+        end_time: Math.floor(timeline.end_time),
+      };
+      onUpdateMusic(updatedMusic);
+
+      if (isPlaying && audioRef.current) {
+        audioRef.current.currentTime = timeline.start_time;
+      }
+    }
+    setDragging(null);
+  }, [dragging, timeline, musicData, onUpdateMusic, isPlaying, audioRef]);
+
+  // Thêm event listeners cho cả mouse và touch
+  useEffect(() => {
+    if (!dragging) return;
+
+    const handleMouseMove = (e: MouseEvent) => handleMove(e.clientX);
+    const handleTouchMove = (e: TouchEvent) => {
+      e.preventDefault();
+      handleMove(e.touches[0].clientX);
+    };
+
+    const handleMouseUp = () => handleEnd();
+    const handleTouchEnd = () => handleEnd();
+
+    window.addEventListener("mousemove", handleMouseMove);
+    window.addEventListener("touchmove", handleTouchMove, { passive: false });
+    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("touchend", handleTouchEnd);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+      window.removeEventListener("touchmove", handleTouchMove);
+      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("touchend", handleTouchEnd);
+    };
+  }, [dragging, handleMove, handleEnd]);
+
+  return (
+    <div className='slider-container' ref={sliderRef}>
+      <div
+        className='slider-range'
+        style={{
+          left: `${toPercent(timeline.start_time)}%`,
+          width: `${toPercent(timeline.end_time - timeline.start_time)}%`,
+          transition: dragging ? "none" : "left 0.1s, width 0.1s",
+        }}
+        onMouseDown={(e) => handleStart(e.clientX, "block")}
+        onTouchStart={(e) => handleStart(e.touches[0].clientX, "block")}>
+        <div
+          className='slider-handle left'
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            handleStart(e.clientX, "left");
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+            handleStart(e.touches[0].clientX, "left");
+          }}
+        />
+        <div
+          className='slider-handle right'
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            handleStart(e.clientX, "right");
+          }}
+          onTouchStart={(e) => {
+            e.stopPropagation();
+            handleStart(e.touches[0].clientX, "right");
+          }}
         />
       </div>
     </div>
