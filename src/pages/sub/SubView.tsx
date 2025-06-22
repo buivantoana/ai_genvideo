@@ -13,9 +13,11 @@ import {
   Switch,
   Card,
   CircularProgress,
+  Popover,
+  Modal,
 } from "@mui/material";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";
-
+import CheckIcon from "@mui/icons-material/Check";
 import StepComponent from "../../components/StepComponent";
 import EditIcon from "@mui/icons-material/Edit";
 import group from "../../images/Group 13.png";
@@ -108,6 +110,7 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
     "#1b1c34",
     "#ffffff",
   ]);
+  const [openModal, setOpenModal] = useState(false);
   console.log("backgroundMusics", backgroundMusics);
   // Thêm nhạc mới
   useEffect(() => {
@@ -378,6 +381,8 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
             setTextTransform={setTextTransform}
             setFontSize={setFontSize}
             fontSize={fontSize}
+            setOpenModal={setOpenModal}
+            openModal={openModal}
           />
         </Box>
       </Stack>
@@ -509,21 +514,119 @@ const Settings = ({
   setSelectedColor,
   fontSize,
   setFontSize,
+  openModal,
+  setOpenModal,
 }) => {
   const isMobile = useMediaQuery("(max-width:768px)");
-
-  const colorOptions1 = [
+  const [font, setFont] = useState([]);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [colorOptions1, setColorOptions1] = useState([
     ["#1b1c34", "#ffffff"],
     ["#000000", "#ffffff"],
     ["#00FF00", "#000000"],
     ["#FFD600", "#000000"],
-  ];
-  const colorOptions2 = [
+  ]);
+  const [colorOptions2, setColorOptions2] = useState([
     ["#ffffff", "#000000"],
     ["#00ffc8", "#000000"],
     ["#3d3dff", "#ffffff"],
-  ];
+  ]);
+  const [selectedFile, setSelectedFile] = useState(null);
+  useEffect(() => {
+    getFontAll();
+  }, []);
+  const getFontAll = async () => {
+    try {
+      let result = await getFont();
+      if (result && result.length > 0) {
+        setFont(result);
+        setFontFamily(result[0]);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  const handleCustomClick = (event) => {
+    setAnchorEl(event.currentTarget);
+  };
 
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const handleColorChange = (type, color) => {
+    const newColors = [...selectedColor];
+    if (type === "base") {
+      newColors[0] = color;
+    } else {
+      newColors[1] = color;
+    }
+
+    // Update selected color immediately
+    setSelectedColor(newColors);
+
+    // Find the index of the current selectedColor in colorOptions1 or colorOptions2
+    const indexInOptions1 = colorOptions1.findIndex(
+      (option) =>
+        option[0] === selectedColor[0] && option[1] === selectedColor[1]
+    );
+    const indexInOptions2 = colorOptions2.findIndex(
+      (option) =>
+        option[0] === selectedColor[0] && option[1] === selectedColor[1]
+    );
+
+    // If the current selectedColor is in colorOptions1, update it at that index
+    if (indexInOptions1 !== -1) {
+      setColorOptions1((prev) =>
+        prev.map((option, i) => (i === indexInOptions1 ? newColors : option))
+      );
+    }
+    // If the current selectedColor is in colorOptions2, update it at that index
+    else if (indexInOptions2 !== -1) {
+      setColorOptions2((prev) =>
+        prev.map((option, i) => (i === indexInOptions2 ? newColors : option))
+      );
+    }
+    // If the current selectedColor is not in either, add newColors to colorOptions1
+    else {
+      setColorOptions1((prev) => [
+        newColors,
+        ...prev.slice(0, 3), // Keep only 4 items total
+      ]);
+    }
+  };
+
+  const open = Boolean(anchorEl);
+  const id = open ? "color-popover" : undefined;
+  const handleAddFont = async () => {
+    setLoading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      let result = await addFont(formData);
+      if (result) {
+        setOpenModal(false);
+        setSelectedFile(null); // Reset file after success
+        getFontAll();
+      } else {
+        toast.warning(result.detail);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+    setLoading(false);
+  };
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
   return (
     <Box
       sx={{
@@ -617,10 +720,16 @@ const Settings = ({
                   <FormControl sx={{ mb: "14px" }}>
                     <InputLabel sx={{ color: "white" }}>Font chữ</InputLabel>
                     <Select
-                      defaultValue='SF Pro Display'
                       label='Font chữ'
                       value={fontFamily}
-                      onChange={(e) => setFontFamily(e.target.value)}
+                      onChange={(e) => {
+                        const selected = e.target.value;
+                        if (selected === "add_new") {
+                          setOpenModal(true);
+                        } else {
+                          setFontFamily(e.target.value);
+                        }
+                      }}
                       MenuProps={{
                         PaperProps: {
                           sx: {
@@ -656,9 +765,102 @@ const Settings = ({
                         height: isMobile ? "38px" : "50px",
                         width: "150px",
                       }}>
-                      <MenuItem value='SF Pro Display'>SF Pro Display</MenuItem>
+                      {font &&
+                        font.map((item) => {
+                          return (
+                            <MenuItem value={item}>
+                              <Box
+                                display='flex'
+                                justifyContent='space-between'
+                                gap={3}
+                                width='100%'>
+                                {item}
+                                {item === fontFamily && (
+                                  <CheckIcon fontSize='small' />
+                                )}
+                              </Box>
+                            </MenuItem>
+                          );
+                        })}
+                      <MenuItem value='add_new'>Thêm mới</MenuItem>
                     </Select>
                   </FormControl>
+                  <Modal open={openModal} onClose={() => setOpenModal(false)}>
+                    <Box
+                      sx={{
+                        backgroundColor: "#1E1C34",
+                        color: "#fff",
+                        p: 4,
+                        width: isMobile ? "unset" : 600,
+                        mx: "auto",
+                        mt: "15%",
+                        borderRadius: 2,
+                      }}>
+                      <Typography variant='h6' mb={2}>
+                        Thêm mới Font
+                      </Typography>
+
+                      <Box
+                        sx={{
+                          textAlign: "center",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}>
+                        <input
+                          type='file'
+                          accept='.ttf,.otf'
+                          onChange={handleFileChange}
+                          style={{
+                            display: "none",
+                          }}
+                          id='upload-font'
+                        />
+                        <label htmlFor='upload-font'>
+                          <Button
+                            variant='contained'
+                            component='span'
+                            sx={{
+                              backgroundColor: "rgba(89, 50, 234, 1)",
+                              borderRadius: 1,
+
+                              width: "max-content",
+                              height: isMobile ? "40px" : "50px",
+                              padding: "0 20px",
+                              textTransform: "none",
+                              "&:hover": {
+                                backgroundColor: "rgba(89, 50, 234, 0.8)",
+                              },
+                            }}>
+                            Chọn tệp Font
+                          </Button>
+                        </label>
+                        {selectedFile && (
+                          <Typography
+                            variant='body2'
+                            mt={1}
+                            sx={{ color: "#a0a0a0" }}>
+                            Đã chọn: {selectedFile.name}
+                          </Typography>
+                        )}
+                        <Button
+                          variant='contained'
+                          sx={{
+                            backgroundColor: "rgba(89, 50, 234, 1)",
+                            borderRadius: 1,
+
+                            width: "max-content",
+                            height: isMobile ? "40px" : "50px",
+                            ml: 2,
+                            opacity: !selectedFile ? ".8" : "unset",
+                            pointerEvents: !selectedFile ? "none" : "unset",
+                          }}
+                          onClick={handleAddFont}>
+                          {loading ? "Đang tải..." : "Thêm mới Font"}
+                        </Button>
+                      </Box>
+                    </Box>
+                  </Modal>
                   <FormControl sx={{ mb: "14px" }}>
                     <TextField
                       fullWidth
@@ -785,13 +987,12 @@ const Settings = ({
                       selectedColor[0] === bg && selectedColor[1] === fg;
                     return (
                       <Box
-                        key={i}
+                        key={`opt1-${i}`}
                         onClick={() => setSelectedColor([bg, fg])}
                         sx={{
                           width: isMobile ? 64 : 74,
                           height: 36,
                           borderRadius: 1,
-
                           border: isActive
                             ? "2px solid #00ffae"
                             : "1px solid white",
@@ -800,6 +1001,7 @@ const Settings = ({
                           justifyContent: "space-between",
                           px: 1,
                           backgroundColor: "#1b1c34",
+                          cursor: "pointer",
                         }}>
                         <Box
                           sx={{
@@ -807,6 +1009,7 @@ const Settings = ({
                             height: 26,
                             borderRadius: "50%",
                             bgcolor: bg,
+                            border: "1px solid rgba(255,255,255,0.3)",
                           }}
                         />
                         <Box
@@ -815,12 +1018,15 @@ const Settings = ({
                             height: 26,
                             borderRadius: "50%",
                             bgcolor: fg,
+                            border: "1px solid rgba(0,0,0,0.3)",
                           }}
                         />
                       </Box>
                     );
                   })}
                 </Box>
+
+                {/* Second row of color options */}
                 <Box
                   display={"flex"}
                   gap={1}
@@ -831,13 +1037,12 @@ const Settings = ({
                       selectedColor[0] === bg && selectedColor[1] === fg;
                     return (
                       <Box
-                        key={i}
+                        key={`opt2-${i}`}
                         onClick={() => setSelectedColor([bg, fg])}
                         sx={{
                           width: isMobile ? 64 : 74,
                           height: 36,
                           borderRadius: 1,
-
                           border: isActive
                             ? "2px solid #00ffae"
                             : "1px solid white",
@@ -846,6 +1051,7 @@ const Settings = ({
                           justifyContent: "space-between",
                           px: 1,
                           backgroundColor: "#1b1c34",
+                          cursor: "pointer",
                         }}>
                         <Box
                           sx={{
@@ -853,6 +1059,7 @@ const Settings = ({
                             height: 26,
                             borderRadius: "50%",
                             bgcolor: bg,
+                            border: "1px solid rgba(255,255,255,0.3)",
                           }}
                         />
                         <Box
@@ -861,12 +1068,16 @@ const Settings = ({
                             height: 26,
                             borderRadius: "50%",
                             bgcolor: fg,
+                            border: "1px solid rgba(0,0,0,0.3)",
                           }}
                         />
                       </Box>
                     );
                   })}
+
+                  {/* Custom color button */}
                   <Box
+                    onClick={handleCustomClick}
                     sx={{
                       width: 92,
                       height: 36,
@@ -878,11 +1089,141 @@ const Settings = ({
                       alignItems: "center",
                       justifyContent: "center",
                       color: "white",
+                      cursor: "pointer",
+                      "&:hover": {
+                        bgcolor: "#3a3c5f",
+                      },
                     }}>
                     Tuỳ chỉnh
                   </Box>
                 </Box>
               </Box>
+
+              {/* Custom Color Popover */}
+              <Popover
+                id={id}
+                open={open}
+                anchorEl={anchorEl}
+                onClose={handleClose}
+                anchorOrigin={{
+                  vertical: "bottom",
+                  horizontal: "center",
+                }}
+                transformOrigin={{
+                  vertical: "top",
+                  horizontal: "center",
+                }}
+                sx={{
+                  "& .MuiPopover-paper": {
+                    backgroundColor: "#2A274B",
+                    color: "white",
+                    p: 2,
+                    borderRadius: 2,
+                    width: "max-content",
+                    boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.5)",
+                    height: "max-content",
+                  },
+                }}>
+                {/* Base color picker */}
+                <Box mb={3}>
+                  <Typography
+                    variant='body1'
+                    mb={1}
+                    fontWeight='medium'
+                    sx={{ color: "white" }}>
+                    Màu Base
+                  </Typography>
+                  <Box display='flex' alignItems='center' gap={2}>
+                    <Box
+                      overflow={"hidden"}
+                      width={30}
+                      sx={{ position: "relative" }}
+                      height={30}
+                      borderRadius={"50%"}>
+                      <input
+                        type='color'
+                        value={selectedColor[0]}
+                        onChange={(e) =>
+                          handleColorChange("base", e.target.value)
+                        }
+                        style={{
+                          width: "100px",
+                          height: "100px",
+                          cursor: "pointer",
+                          backgroundColor: "#1b1c34",
+                          position: "absolute",
+                          left: "-30%",
+                          top: "-30%",
+                          padding: "2px",
+                        }}
+                      />
+                    </Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}>
+                      <Typography
+                        variant='body1'
+                        fontWeight='medium'
+                        sx={{ color: "white" }}>
+                        {selectedColor[0]}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+
+                {/* Highlight color picker */}
+                <Box mb={3}>
+                  <Typography
+                    variant='body1'
+                    mb={1}
+                    fontWeight='medium'
+                    sx={{ color: "white" }}>
+                    Màu Highlight
+                  </Typography>
+                  <Box display='flex' alignItems='center' gap={2}>
+                    <Box
+                      overflow={"hidden"}
+                      width={30}
+                      sx={{ position: "relative" }}
+                      height={30}
+                      borderRadius={"50%"}>
+                      <input
+                        type='color'
+                        value={selectedColor[1]}
+                        onChange={(e) =>
+                          handleColorChange("highlight", e.target.value)
+                        }
+                        style={{
+                          width: "100px",
+                          height: "100px",
+                          cursor: "pointer",
+                          backgroundColor: "#1b1c34",
+                          position: "absolute",
+                          left: "-30%",
+                          top: "-30%",
+                          padding: "2px",
+                        }}
+                      />
+                    </Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}>
+                      <Typography
+                        variant='body1'
+                        fontWeight='medium'
+                        sx={{ color: "white" }}>
+                        {selectedColor[1]}
+                      </Typography>
+                    </Box>
+                  </Box>
+                </Box>
+              </Popover>
             </Box>
           )}
 
@@ -1027,8 +1368,10 @@ import ResponsiveBox from "../../components/ResponsiveBox";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
+  addFont,
   genBackgroundMusic,
   genMusicStatus,
+  getFont,
   updateProject,
   upload,
 } from "../../service/project";
@@ -1067,11 +1410,6 @@ const TabButton = styled("button")(({ active }) => ({
   maxWidth: "max-content",
 }));
 
-const CustomCard = styled(Card)({
-  backgroundColor: "#222244",
-  borderRadius: "16px",
-  padding: "1rem",
-});
 const styleOptions = ["Thuyết minh", "Có hội thoại"];
 import { useRef, useEffect } from "react";
 

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { url_video } from "../config";
+
 const api = axios.create({
   baseURL: url_video, // Thay thế bằng API của bạn
   headers: {
@@ -7,7 +8,30 @@ const api = axios.create({
   },
 });
 
-// Thêm interceptor cho request để tự động gắn token
+// Tạo một instance axios riêng cho refresh token
+const refreshApi = axios.create({
+  baseURL: url_video,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
+
+// Biến để lưu trữ request đang chờ retry
+let isRefreshing = false;
+let failedQueue: any = [];
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach((prom) => {
+    if (token) {
+      prom.resolve(token);
+    } else {
+      prom.reject(error);
+    }
+  });
+
+  failedQueue = [];
+};
+
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -21,14 +45,95 @@ api.interceptors.request.use(
   }
 );
 
-// Thêm interceptor cho response để kiểm tra lỗi 401
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response && error.response.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login"; // Chuyển hướng về trang chủ
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (
+      error.response &&
+      error.response.status === 401 &&
+      !originalRequest._retry
+    ) {
+      if (!isRefreshing) {
+        isRefreshing = true;
+        originalRequest._retry = true;
+
+        try {
+          const refresh_token = localStorage.getItem("refresh_token"); // Giả sử bạn lưu refresh token trong localStorage
+          if (!refresh_token) {
+            localStorage.setItem(
+              "redirectAfterLogin",
+              window.location.pathname
+            );
+            localStorage.removeItem("token");
+            window.location.href = "/login";
+            return Promise.reject(error);
+          }
+
+          const response = await refreshApi.post(
+            "/user/refresh",
+            {
+              refresh_token,
+            },
+            {
+              headers: {
+                "Content-Type": "application/json", // Header bạn muốn thêm
+                "refresh-token": refresh_token,
+              },
+            }
+          );
+
+          const newToken = response.data.access_token; // Giả sử API trả về token mới trong response.data.token
+          localStorage.setItem("token", newToken);
+          const redirectPath = localStorage.getItem("redirectAfterLogin");
+          if (redirectPath) {
+            localStorage.removeItem("redirectAfterLogin");
+            window.location.href = redirectPath;
+            return;
+          }
+          processQueue(null, newToken);
+
+          // Retry request ban đầu với token mới
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          return api(originalRequest);
+        } catch (refreshError) {
+          processQueue(refreshError, null);
+          localStorage.removeItem("token");
+          localStorage.removeItem("refreshToken");
+          window.location.href = "/login";
+          return Promise.reject(refreshError);
+        } finally {
+          isRefreshing = false;
+        }
+      } else {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then((token) => {
+            originalRequest.headers.Authorization = `Bearer ${token}`;
+            return api(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
+      }
     }
+
+    return Promise.reject(error);
+  }
+);
+
+// Thêm interceptor cho refreshApi để tránh vòng lặp vô hạn
+refreshApi.interceptors.request.use(
+  (config) => {
+    const refreshToken = localStorage.getItem("refreshToken");
+    if (refreshToken) {
+      config.headers.Authorization = `Bearer ${refreshToken}`;
+    }
+    return config;
+  },
+  (error) => {
     return Promise.reject(error);
   }
 );

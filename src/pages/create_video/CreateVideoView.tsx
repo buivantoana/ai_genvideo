@@ -216,6 +216,7 @@ import {
   genScriptVideoStatus,
   updateProject,
 } from "../../service/project";
+import { toast } from "react-toastify";
 
 // const SceneCard = ({ sceneNumber, imageUrl, narrationText, dialogText }) => {
 //   const theme = useTheme();
@@ -562,7 +563,7 @@ const SceneCard = forwardRef((props, ref) => {
             color='white'>
             Phần lời kể:
           </Typography>
-          {sceneData.video.ids && (
+          {sceneData?.video?.imageUrls?.length > 0 && (
             <Button
               startIcon={loading ? <></> : <RiRefreshLine />}
               onClick={() => genImage()}
@@ -658,7 +659,7 @@ const SceneCard = forwardRef((props, ref) => {
 
         <Box sx={{ margin: "30px 0 !important" }}>
           <Grid container gap={isMobile ? 2 : 2}>
-            {sceneData.video.imageUrls?.length > 0 ? (
+            {sceneData?.video?.imageUrls?.length > 0 ? (
               <>
                 {sceneData.video.imageUrls.map((item, index) => {
                   let selected = sceneData.video.selected == index;
@@ -737,6 +738,21 @@ const SceneCard = forwardRef((props, ref) => {
               </Grid>
             )}
           </Grid>
+          <Box display={"flex"} mt={2} alignItems={"center"} gap={2}>
+            <Typography variant='h6'> Hiệu ứng chuyển cảnh</Typography>
+            <Button
+              size='small'
+              sx={{
+                borderRadius: 1,
+                background: "rgba(89, 50, 234, 1)",
+                fontSize: isMobile ? "0.675rem" : "0.875rem",
+                opacity: loading ? 0.8 : 1,
+                pointerEvents: loading ? "none" : "unset",
+              }}
+              variant='contained'>
+              Mờ dần
+            </Button>
+          </Box>
         </Box>
 
         {/* <Box>
@@ -1066,7 +1082,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
             color='white'>
             Lời thoại {index + 1}:
           </Typography>
-          {dialogueItem.video.ids && (
+          {dialogueItem?.video?.imageUrls?.length > 0 && (
             <Button
               startIcon={loading ? <></> : <RiRefreshLine />}
               onClick={() => genImage()}
@@ -1162,7 +1178,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
 
         <Box sx={{ margin: "30px 0 !important" }}>
           <Grid container gap={isMobile ? 2 : 2}>
-            {dialogueItem.video.imageUrls?.length > 0 ? (
+            {dialogueItem?.video?.imageUrls?.length > 0 ? (
               <>
                 {dialogueItem.video.imageUrls.map((item, index) => {
                   let selected = dialogueItem.video.selected == index;
@@ -1197,7 +1213,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                       </>
                     </Grid>
                   );
-                })}{" "}
+                })}
               </>
             ) : (
               <Grid
@@ -1241,6 +1257,21 @@ const SceneCardDialogue = forwardRef((props, ref) => {
               </Grid>
             )}
           </Grid>
+          <Box display={"flex"} mt={2} alignItems={"center"} gap={2}>
+            <Typography variant='h6'> Hiệu ứng chuyển cảnh</Typography>
+            <Button
+              size='small'
+              sx={{
+                borderRadius: 1,
+                background: "rgba(89, 50, 234, 1)",
+                fontSize: isMobile ? "0.675rem" : "0.875rem",
+                opacity: loading ? 0.8 : 1,
+                pointerEvents: loading ? "none" : "unset",
+              }}
+              variant='contained'>
+              Mờ dần
+            </Button>
+          </Box>
         </Box>
       </Stack>
     </Box>
@@ -1340,60 +1371,75 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
               onClick={async () => {
                 setLoading(true);
                 try {
-                  let isCheckCreateVideo = values.filter(
-                    (item) => !(typeof item.video.selected == "number")
-                  )[0];
-                  if (isCheckCreateVideo) {
-                    toast.warning("Cần tạo đủ video");
+                  const hasMissingVideos = values.some((item) => {
+                    const mainImageMissing = !(
+                      typeof item.video.selected == "number"
+                    );
+
+                    // Kiểm tra ảnh trong dialogue (nếu có)
+                    const dialogueVideosMissing = item.dialogue?.some(
+                      (dialogueItem) => {
+                        return (
+                          dialogueItem.video &&
+                          !(typeof dialogueItem.video.selected == "number")
+                        );
+                      }
+                    );
+
+                    return mainImageMissing || dialogueVideosMissing;
+                  });
+                  console.log("hasMissingVideos", hasMissingVideos);
+                  if (hasMissingVideos) {
+                    toast.warning(
+                      "Bạn cần chọn ảnh cho mỗi phân cảnh và dialogue"
+                    );
+                    return;
+                  }
+
+                  const result = await updateProject(id, {
+                    current_step: "gen_video",
+                    script: {
+                      ...genScript.script,
+                      scenes: values.map((item) => {
+                        let dialogue =
+                          item.dialogue &&
+                          item.dialogue.length > 0 &&
+                          item.dialogue.map((ix) => {
+                            return {
+                              ...ix,
+                              video: {
+                                ...ix.video,
+                                id: ix.video && ix.video.ids[ix.video.selected],
+                                effect: "fade",
+                                url:
+                                  ix.video &&
+                                  ix.video.imageUrls[ix.video.selected],
+                              },
+                            };
+                          });
+                        return {
+                          ...item,
+                          dialogue,
+                          video: {
+                            ...item.video,
+                            id:
+                              item.video && item.video.ids[item.video.selected],
+                            effect: "fade",
+                            url:
+                              item.video &&
+                              item.video.imageUrls[item.video.selected],
+                          },
+                        };
+                      }),
+                    },
+                  });
+                  if (result && result.name) {
+                    localStorage.setItem("gen_script", JSON.stringify(result));
+                    setTimeout(() => {
+                      navigate(`/narrator?id=${id}`);
+                    }, 500);
                   } else {
-                    const result = await updateProject(id, {
-                      current_step: "gen_video",
-                      script: {
-                        ...genScript.script,
-                        scenes: values.map((item) => {
-                          let dialogue =
-                            item.dialogue &&
-                            item.dialogue.length > 0 &&
-                            item.dialogue.map((ix) => {
-                              return {
-                                ...ix,
-                                video: {
-                                  ...ix.video,
-                                  id:
-                                    ix.video && ix.video.ids[ix.video.selected],
-                                  url:
-                                    ix.video &&
-                                    ix.video.imageUrls[ix.video.selected],
-                                },
-                              };
-                            });
-                          return {
-                            ...item,
-                            dialogue,
-                            video: {
-                              ...item.video,
-                              id:
-                                item.video &&
-                                item.video.ids[item.video.selected],
-                              url:
-                                item.video &&
-                                item.video.imageUrls[item.video.selected],
-                            },
-                          };
-                        }),
-                      },
-                    });
-                    if (result && result.name) {
-                      localStorage.setItem(
-                        "gen_script",
-                        JSON.stringify(result)
-                      );
-                      setTimeout(() => {
-                        navigate(`/narrator?id=${id}`);
-                      }, 500);
-                    } else {
-                      throw new Error("Cập nhật dự án thất bại");
-                    }
+                    throw new Error("Cập nhật dự án thất bại");
                   }
                 } catch (error) {
                   console.log(error);
