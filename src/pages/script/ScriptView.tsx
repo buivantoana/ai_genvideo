@@ -322,16 +322,16 @@ const PromptEditorUI = ({
             </IconButton>
           </Box>
 
-          <Typography
-            fontSize={14}
-            sx={{ fontStyle: "italic" }}
-            color='#A3A4B5'
-            mt={2}
-            mb={1}>
-            Lời thoại/narration:
-          </Typography>
           {scene.dialogue && scene.dialogue.length > 0 && script.style_type && (
             <>
+              <Typography
+                fontSize={14}
+                sx={{ fontStyle: "italic" }}
+                color='#A3A4B5'
+                mt={2}
+                mb={1}>
+                Lời thoại/narration:
+              </Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {scene.dialogue.map((item, dIndex) => {
                   return (

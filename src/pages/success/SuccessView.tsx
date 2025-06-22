@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Box,
   Typography,
@@ -37,7 +37,7 @@ const dynamicSteps = [
   { label: "Nhạc nền và sub", status: "completed" },
   { label: "Hoàn thành", status: "active" },
 ];
-const SuccessView = () => {
+const SuccessView = ({ genScript }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -52,12 +52,11 @@ const SuccessView = () => {
         display: "flex",
         flexDirection: "column",
         gap: isMobile ? 2 : 4,
-       
       }}>
       <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
       {/* <ResponsiveBox /> */}
-      <VideoProjectUI />
+      <VideoProjectUI genScript={genScript} />
     </Box>
   );
 };
@@ -126,9 +125,28 @@ const ActionButton = styled(Button)(({ theme }) => ({
   textTransform: "none",
 }));
 
-function VideoProjectUI() {
+function VideoProjectUI({ genScript }) {
   const isMobile = useMediaQuery("(max-width:600px)");
+  const videoRef = useRef(null);
+  const [isPlayingVideo, setIsPlayingVideo] = useState(false);
+  const [videoUrl, setVideoUrl] = useState(
+    genScript?.output_video_url ? genScript?.output_video_url : ""
+  );
+  useEffect(() => {
+    setVideoUrl(genScript?.output_video_url ? genScript?.output_video_url : "");
+  }, [genScript]);
+  const handleTogglePlay = () => {
+    const video = videoRef.current;
+    if (!video) return;
 
+    if (video.paused) {
+      video.play();
+      setIsPlayingVideo(true);
+    } else {
+      video.pause();
+      setIsPlayingVideo(false);
+    }
+  };
   return (
     <Box>
       <Typography
@@ -151,41 +169,49 @@ function VideoProjectUI() {
             borderRadius: 1,
             overflow: "hidden",
           }}>
-          <Box sx={{ position: "absolute", bottom: 15, right: 15 }}>
-            <img src={download} alt='' />
+          <Box sx={{ position: "relative", width: "100%" }}>
+            {videoUrl && (
+              <video
+                ref={videoRef}
+                width='100%'
+                style={{ borderRadius: "15px" }}
+                onClick={handleTogglePlay}
+                controls={isPlayingVideo}
+                onEnded={() => setIsPlayingVideo(false)}>
+                <source src={videoUrl} />
+                Trình duyệt của bạn không hỗ trợ video HTML5.
+              </video>
+            )}
+            {!isPlayingVideo && (
+              <Box
+                onClick={handleTogglePlay}
+                sx={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                  width: "100%",
+                  height: "100%",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                }}>
+                <Box
+                  display='flex'
+                  justifyContent='center'
+                  alignItems='center'
+                  width='50px'
+                  height='50px'
+                  sx={{
+                    borderRadius: "50%",
+                    border: "1px solid white",
+                    background: "rgba(0,0,0,.5)",
+                  }}>
+                  <RiPlayFill size={40} color='white' />
+                </Box>
+              </Box>
+            )}
           </Box>
-          <Box
-            sx={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              width: "100%",
-              height: "100%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}>
-            <Box
-              display={"flex"}
-              justifyContent={"center"}
-              alignItems={"center"}
-              width={"50px"}
-              height={"50px"}
-              sx={{
-                borderRadius: "50%",
-                border: "1px solid white",
-                background: "rgba(0,0,0,.5)",
-              }}>
-              <RiPlayFill size={40} />
-            </Box>
-          </Box>
-          <img
-            src={image}
-            width={"100%"}
-            style={{ borderRadius: "8px" }}
-            height={"100%"}
-            alt=''
-          />
         </Box>
 
         <SideInfo sx={{ width: isMobile ? "90%" : "30%" }}>
@@ -210,13 +236,17 @@ function VideoProjectUI() {
         <ActionButton
           variant='contained'
           fullWidth={!isMobile}
-          sx={{ backgroundColor: "#6C63FF",height:{xs:40,md:50} }}>
+          sx={{ backgroundColor: "#6C63FF", height: { xs: 40, md: 50 } }}>
           Tải video xuống
         </ActionButton>
         <ActionButton
           variant='contained'
           fullWidth={!isMobile}
-          sx={{ backgroundColor: "#fff", color: "#5932EA" ,height:{xs:40,md:50} }}>
+          sx={{
+            backgroundColor: "#fff",
+            color: "#5932EA",
+            height: { xs: 40, md: 50 },
+          }}>
           Upload lên Driver
         </ActionButton>
       </Box>

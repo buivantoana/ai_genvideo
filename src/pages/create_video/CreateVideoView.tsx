@@ -1419,7 +1419,7 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                           });
                         return {
                           ...item,
-                          dialogue,
+                          dialogue: dialogue ? dialogue : [],
                           video: {
                             ...item.video,
                             id:
