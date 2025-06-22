@@ -48,6 +48,19 @@ const CreateVideoController = (props: Props) => {
               imageUrls: item.video?.url ? [item.video?.url] : null,
               selected: 0,
             },
+            dialogue: item.dialogue
+              ? item.dialogue.map((ix) => {
+                  return {
+                    ...ix,
+                    video: {
+                      ...ix.video,
+                      ids: ix.video?.id ? [ix.video?.id] : null,
+                      imageUrls: ix.video?.url ? [ix.video?.url] : null,
+                      selected: 0,
+                    },
+                  };
+                })
+              : [],
           };
         });
         script.script.scenes = prompt;
