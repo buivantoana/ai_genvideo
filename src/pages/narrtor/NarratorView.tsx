@@ -1391,12 +1391,11 @@ const VoiceItemDialog = ({
   const voices = Array.isArray(selectedModelData?.voices)
     ? selectedModelData.voices.flat()
     : [];
-  const characters =
-    dialogueData?.charactors?.map((char) => ({
-      id: char,
-      value: char,
-    })) || [];
+  const characters = [
+    { id: dialogueData?.charactor, value: dialogueData?.charactor },
+  ];
 
+  console.log("selectedCharacter111111111", characters);
   // Cập nhật state khi dialogueData thay đổi
   useEffect(() => {
     if (dialogueData?.voice) {

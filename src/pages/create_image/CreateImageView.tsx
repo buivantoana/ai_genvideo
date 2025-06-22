@@ -706,10 +706,7 @@ const SceneCard = forwardRef((props, ref) => {
                 ...item,
                 image: {
                   ...item.image,
-                  ids: [
-                    ...(item.image.ids || []),
-                    uploadResult.id,
-                  ],
+                  ids: [...(item.image.ids || []), uploadResult.id],
                   imageUrls: [
                     ...(item.image.imageUrls || []),
                     uploadResult.url,
@@ -732,10 +729,7 @@ const SceneCard = forwardRef((props, ref) => {
                   ...item,
                   image: {
                     ...item.image,
-                    ids: [
-                      ...(item.image.ids || []),
-                      uploadResult.id,
-                    ],
+                    ids: [...(item.image.ids || []), uploadResult.id],
                     imageUrls: [
                       ...(item.image.imageUrls || []),
                       uploadResult.url,
@@ -1361,10 +1355,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                           ...d,
                           image: {
                             ...d.image,
-                            ids: [
-                              ...(d.image?.ids || []),
-                              uploadResult.id,
-                            ],
+                            ids: [...(d.image?.ids || []), uploadResult.id],
                             imageUrls: [
                               ...(d.image?.imageUrls || []),
                               uploadResult.url,
@@ -1396,10 +1387,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                           ...d,
                           image: {
                             ...d.image,
-                            ids: [
-                              ...(d.image?.ids || []),
-                              uploadResult.id,
-                            ],
+                            ids: [...(d.image?.ids || []), uploadResult.id],
                             imageUrls: [
                               ...(d.image?.imageUrls || []),
                               uploadResult.url,
@@ -1951,17 +1939,15 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                         const status = await genScriptImageStatus(result.id);
                         if (status?.code === 0 && status?.image_url) {
                           dialogueItem.image.ids = [
-                            ...(dialogueItem.image.ids || []),
+                            ...(dialogueItem?.image?.ids || []),
                             result.id,
                           ];
                           dialogueItem.image.imageUrls = [
-                            ...(dialogueItem.image.imageUrls || []),
+                            ...(dialogueItem?.image?.imageUrls || []),
                             status.image_url,
                           ];
                           dialogueItem.image.selected =
-                            (dialogueItem.image.imageUrls?.length || 0) === 0
-                              ? 0
-                              : dialogueItem.image.selected;
+                            dialogueItem.image.imageUrls.length - 1;
                           clearInterval(poll);
                           resolve(status);
                         }
@@ -1987,9 +1973,7 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                     newImageUrl,
                   ];
                   dialogueItem.image.selected =
-                    (dialogueItem.image.imageUrls?.length || 0) === 0
-                      ? 0
-                      : dialogueItem.image.selected;
+                    dialogueItem.image.imageUrls.length - 1;
                 }
 
                 console.log(

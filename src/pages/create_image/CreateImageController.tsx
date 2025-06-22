@@ -63,6 +63,19 @@ const CreateImageController = (props: Props) => {
               imageUrls: item.image?.url ? [item.image?.url] : null,
               selected: 0,
             },
+            dialogue: item.dialogue
+              ? item.dialogue.map((ix) => {
+                  return {
+                    ...ix,
+                    image: {
+                      ...ix.image,
+                      ids: ix.image?.id ? [ix.image?.id] : null,
+                      imageUrls: ix.image?.url ? [ix.image?.url] : null,
+                      selected: 0,
+                    },
+                  };
+                })
+              : [],
           };
         });
         script.script.scenes = prompt;

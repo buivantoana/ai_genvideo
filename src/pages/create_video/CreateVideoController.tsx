@@ -3,6 +3,7 @@ import CreateVideoView from "./CreateVideoView";
 import { useLocation } from "react-router-dom";
 import { genScriptPromt, getVideoModels } from "../../service/project";
 import { toast } from "react-toastify";
+import Loading from "../../components/Loading";
 
 type Props = {};
 
@@ -77,12 +78,15 @@ const CreateVideoController = (props: Props) => {
   //   setLoading(false);
   // };
   return (
-    <CreateVideoView
-      genScript={genScript}
-      modelList={model}
-      setLoading={setLoading}
-      id={id}
-    />
+    <>
+      {loading && <Loading />}
+      <CreateVideoView
+        genScript={genScript}
+        modelList={model}
+        setLoading={setLoading}
+        id={id}
+      />
+    </>
   );
 };
 
