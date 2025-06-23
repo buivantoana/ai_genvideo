@@ -1369,33 +1369,30 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
             <Button
               variant='contained'
               onClick={async () => {
-                setLoading(true);
+                
                 try {
                   const hasMissingVideos = values.some((item) => {
-                    const mainImageMissing = !(
-                      typeof item.video.selected == "number"
-                    );
-
-                    // Kiểm tra ảnh trong dialogue (nếu có)
-                    const dialogueVideosMissing = item.dialogue?.some(
-                      (dialogueItem) => {
-                        return (
-                          dialogueItem.video &&
-                          !(typeof dialogueItem.video.selected == "number")
-                        );
-                      }
-                    );
-
+                    // Kiểm tra video chính
+                    const mainImageMissing = !item.video?.imageUrls || 
+                                           (typeof item.video.selected !== "number") || 
+                                           !item.video.imageUrls[item.video.selected];
+                  
+                    // Kiểm tra video trong dialogue (nếu có)
+                    const dialogueVideosMissing = item.dialogue?.some((dialogueItem) => {
+                      return dialogueItem.video && 
+                             (!dialogueItem.video.imageUrls || 
+                              (typeof dialogueItem.video.selected !== "number") || 
+                              !dialogueItem.video.imageUrls[dialogueItem.video.selected]);
+                    });
+                  
                     return mainImageMissing || dialogueVideosMissing;
                   });
-                  console.log("hasMissingVideos", hasMissingVideos);
+                  
                   if (hasMissingVideos) {
-                    toast.warning(
-                      "Bạn cần chọn ảnh cho mỗi phân cảnh và dialogue"
-                    );
+                    toast.warning("Bạn cần tạo Video cho mỗi phân cảnh và dialogue");
                     return;
                   }
-
+                  setLoading(true);
                   const result = await updateProject(id, {
                     current_step: "gen_video",
                     script: {

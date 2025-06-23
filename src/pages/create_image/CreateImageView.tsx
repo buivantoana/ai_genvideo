@@ -2167,28 +2167,25 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
               variant='contained'
               onClick={async () => {
                 // Kiểm tra ảnh chính và ảnh trong dialogue
-                const hasMissingImages = values.some((item) => {
-                  const mainImageMissing = !(
-                    typeof item.image.selected == "number"
-                  );
-
-                  // Kiểm tra ảnh trong dialogue (nếu có)
-                  const dialogueImagesMissing = item.dialogue?.some(
-                    (dialogueItem) => {
-                      return (
-                        dialogueItem.image &&
-                        !(typeof dialogueItem.image.selected == "number")
-                      );
-                    }
-                  );
-
-                  return mainImageMissing || dialogueImagesMissing;
+                const hasMissingImage = values.some((item) => {
+                  // Kiểm tra video chính
+                  const mainImageMissing = !item.image?.imageUrls || 
+                                         (typeof item.image.selected !== "number") || 
+                                         !item.image.imageUrls[item.image.selected];
+                
+                  // Kiểm tra video trong dialogue (nếu có)
+                  const dialogueImageMissing = item.dialogue?.some((dialogueItem) => {
+                    return dialogueItem.image && 
+                           (!dialogueItem.image.imageUrls || 
+                            (typeof dialogueItem.image.selected !== "number") || 
+                            !dialogueItem.image.imageUrls[dialogueItem.image.selected]);
+                  });
+                
+                  return mainImageMissing || dialogueImageMissing;
                 });
-
-                if (hasMissingImages) {
-                  toast.warning(
-                    "Bạn cần chọn ảnh cho mỗi phân cảnh và dialogue"
-                  );
+                
+                if (hasMissingImage) {
+                  toast.warning("Bạn cần tạo Video cho mỗi phân cảnh và dialogue");
                   return;
                 }
 
