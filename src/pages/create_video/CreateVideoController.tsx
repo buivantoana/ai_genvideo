@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import CreateVideoView from "./CreateVideoView";
 import { useLocation } from "react-router-dom";
-import { genScriptPromt, getVideoModels } from "../../service/project";
+import { genScriptPromt, getVideoEfect, getVideoModels } from "../../service/project";
 import { toast } from "react-toastify";
 import Loading from "../../components/Loading";
 
@@ -14,12 +14,14 @@ const CreateVideoController = (props: Props) => {
   const [loading, setLoading] = useState(false);
   const [genScript, setGenScript] = useState(null);
   const [model, setModel] = useState([]);
+  const [effect, setEffect] = useState([]);
   useEffect(() => {
     getModels();
   }, []);
   const getModels = async () => {
     try {
       let result = await getVideoModels();
+      let effectResult  = await getVideoEfect();
       if (result && result.length) {
         setModel(
           result.map((item) => {
@@ -29,6 +31,9 @@ const CreateVideoController = (props: Props) => {
             };
           })
         );
+      }
+      if(effectResult && effectResult.length){
+        setEffect(effectResult)
       }
     } catch (error) {
       console.log(error);
@@ -98,6 +103,7 @@ const CreateVideoController = (props: Props) => {
         modelList={model}
         setLoading={setLoading}
         id={id}
+        effect={effect}
       />
     </>
   );
