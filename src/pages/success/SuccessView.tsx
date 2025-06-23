@@ -37,7 +37,7 @@ const dynamicSteps = [
   { label: "Nhạc nền và sub", status: "completed" },
   { label: "Hoàn thành", status: "active" },
 ];
-const SuccessView = ({ genScript }) => {
+const SuccessView = ({ genScript, setLoading }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
@@ -56,7 +56,7 @@ const SuccessView = ({ genScript }) => {
       <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
       {/* <ResponsiveBox /> */}
-      <VideoProjectUI genScript={genScript} />
+      <VideoProjectUI genScript={genScript} setLoading={setLoading} />
     </Box>
   );
 };
@@ -69,6 +69,7 @@ import FileCopyIcon from "@mui/icons-material/FileCopyOutlined";
 import CloudUploadIcon from "@mui/icons-material/CloudUploadOutlined";
 import { RiPlayFill } from "react-icons/ri";
 import ResponsiveBox from "../../components/ResponsiveBox";
+import { uploadDrive } from "../../service/project";
 
 const Container = styled(Box)(({ theme }) => ({
   backgroundColor: "#1a1a2e",
@@ -102,12 +103,18 @@ const SideInfo = styled(Box)(({ theme }) => ({
 }));
 
 const MetaRow = ({ label, value }) => (
-  <Box display='flex' justifyContent='space-between' alignItems='center' mt={1}>
-    <Box display={"flex"}>
-      <Typography variant='body2' sx={{ color: "#bbb" }}>
-        {label}
-      </Typography>
-      <Typography variant='body2' sx={{ color: "white" }}>
+  <Box display='flex' justifyContent='space-between' alignItems='start' mt={1}>
+    <Box display={"flex"} gap={1}>
+      <Box width={"max-content"}>
+        <Typography
+          variant='body2'
+          sx={{ color: "#bbb", whiteSpace: "nowrap" }}>
+          {label}{" "}
+        </Typography>
+      </Box>
+      <Typography
+        variant='body2'
+        sx={{ color: "white", whiteSpace: "pre-line" }}>
         {value}
       </Typography>
     </Box>
@@ -125,7 +132,7 @@ const ActionButton = styled(Button)(({ theme }) => ({
   textTransform: "none",
 }));
 
-function VideoProjectUI({ genScript }) {
+function VideoProjectUI({ genScript, setLoading }) {
   const isMobile = useMediaQuery("(max-width:600px)");
   const videoRef = useRef(null);
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
@@ -155,7 +162,7 @@ function VideoProjectUI({ genScript }) {
         my={4}
         fontWeight={600}
         gutterBottom>
-        Dự án: Cuộc phiêu lưu cùng những người bạn
+        Dự án: {genScript?.name}
       </Typography>
 
       <Box
@@ -217,13 +224,25 @@ function VideoProjectUI({ genScript }) {
         <SideInfo sx={{ width: isMobile ? "90%" : "30%" }}>
           <Box display={"flex"} flexDirection={"column"} gap={2}>
             <Typography variant='h6' fontWeight={600}>
-              Tiêu đề: Phiêu lưu
+              Tiêu đề: {genScript?.name}
             </Typography>
-            <MetaRow label='Tên file:' value='Phieu-luu.mp4' />
-            <MetaRow label='Key word:' value='Phiêu lưu' />
-            <MetaRow label='Mô tả:' value='Có 2 người bạn' />
-            <MetaRow label='Tag/Hashtag:' value='phieu luu, tham hiem' />
-            <MetaRow label='Ảnh thumbnail:' value='' />
+            <MetaRow
+              label={`Phong cách: `}
+              value={genScript?.script?.info?.style}
+            />
+            <MetaRow label={`Độ tuổi: `} value={genScript?.script?.info?.age} />
+            <MetaRow
+              label={`Thông điệp: `}
+              value={genScript?.script?.info?.message}
+            />
+            <MetaRow
+              label={`Thời lượng: `}
+              value={genScript?.script?.info?.time}
+            />
+            <MetaRow
+              label={`Tag/Hashtag: `}
+              value={genScript?.script?.info?.hashtag}
+            />
           </Box>
         </SideInfo>
       </Box>
@@ -240,6 +259,18 @@ function VideoProjectUI({ genScript }) {
           Tải video xuống
         </ActionButton>
         <ActionButton
+          onClick={async () => {
+            setLoading(true);
+            try {
+              let formdata = new FormData();
+              formdata.append("url", genScript.output_video_url);
+              let result = await uploadDrive(formdata);
+              console.log("result", result);
+            } catch (error) {
+              console.log(error);
+            }
+            setLoading(false);
+          }}
           variant='contained'
           fullWidth={!isMobile}
           sx={{

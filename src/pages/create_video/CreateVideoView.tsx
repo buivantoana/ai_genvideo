@@ -37,7 +37,13 @@ const modelOptions2 = [
   "1024x1024 (1:1)",
 ];
 
-const CreateVideoView = ({ genScript, setLoading, modelList, id }: any) => {
+const CreateVideoView = ({
+  genScript,
+  setLoading,
+  modelList,
+  id,
+  effect,
+}: any) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [selectedTab, setSelectedTab]: any = useState(
@@ -198,6 +204,7 @@ const CreateVideoView = ({ genScript, setLoading, modelList, id }: any) => {
         px={px}
         setLoading={setLoading}
         id={id}
+        effect={effect}
       />
     </Box>
   );
@@ -346,15 +353,24 @@ import { toast } from "react-toastify";
 // };
 
 const SceneCard = forwardRef((props, ref) => {
-  const { scene, values, setValues, model, px }: any = props;
+  const { scene, values, setValues, model, px, effect }: any = props;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingUpload, setLoadingUpload] = useState(false);
   const [intervalId, setIntervalId] = useState(null);
+  const [selectedEffect, setSelectedEffect] = useState(
+    effect && effect.length > 0 && effect[0].id
+  );
   const sceneData = values.find((v) => v.scene === scene);
-
+  useEffect(() => {
+    if (sceneData && Object.keys(sceneData).length > 0 && sceneData.video.id) {
+      setSelectedEffect(sceneData.video.effect);
+    } else {
+      setSelectedEffect(effect && effect.length > 0 && effect[0].id);
+    }
+  }, [effect]);
   const handleChange = (field, value) => {
     setValues((prev) =>
       prev.map((item) =>
@@ -740,18 +756,93 @@ const SceneCard = forwardRef((props, ref) => {
           </Grid>
           <Box display={"flex"} mt={2} alignItems={"center"} gap={2}>
             <Typography variant='h6'> Hiệu ứng chuyển cảnh</Typography>
-            <Button
-              size='small'
-              sx={{
-                borderRadius: 1,
-                background: "rgba(89, 50, 234, 1)",
-                fontSize: isMobile ? "0.675rem" : "0.875rem",
-                opacity: loading ? 0.8 : 1,
-                pointerEvents: loading ? "none" : "unset",
-              }}
-              variant='contained'>
-              Mờ dần
-            </Button>
+            <FormControl variant='outlined' size='small'>
+              <Select
+                value={selectedEffect}
+                onChange={(e) => {
+                  let script: any = localStorage.getItem("gen_script");
+                  if (script) {
+                    script = JSON.parse(script);
+                    script.script.scenes = values.map((item) => {
+                      if (item.scene == scene) {
+                        return {
+                          ...item,
+                          video: {
+                            ...item.video,
+                            effect: e.target.value,
+                          },
+                        };
+                      }
+                      return item;
+                    });
+                    localStorage.setItem("gen_script", JSON.stringify(script));
+                  }
+                  setValues((prev) =>
+                    prev.map((item) =>
+                      item.scene === scene
+                        ? {
+                            ...item,
+                            video: {
+                              ...item.video,
+                              effect: e.target.value,
+                            },
+                          }
+                        : item
+                    )
+                  );
+                  setSelectedEffect(e.target.value);
+                }}
+                sx={{
+                  background: "#6E00FF",
+                  border: "none",
+                  color: "#fff",
+                  borderRadius: 2,
+                  height: "48px",
+                  width: "max-content", // 👈 Chiều cao mong muốn
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#3A375F", // 👈 Viền mặc định
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#414188", // 👈 Viền khi focus
+                  },
+                  "& .MuiSelect-select": {
+                    display: "flex",
+                    alignItems: "center",
+                    height: "100%", // Chiếm hết chiều cao wrapper
+                    padding: "0 14px",
+                  },
+                  ".MuiSelect-icon": { color: "#fff" },
+                }}
+                IconComponent={ArrowDropDownIcon}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      backgroundColor: "#2A274B",
+                      color: "#fff",
+                      borderRadius: 1,
+                      mt: 1,
+                      "& .MuiMenuItem-root": {
+                        "&:hover": {
+                          backgroundColor: "#3A375F",
+                          borderRadius: 1,
+                        },
+                        "&.Mui-selected": {
+                          backgroundColor: "#4B3A79",
+                          borderRadius: 1,
+                          border: "2px solid",
+                          borderColor: "#414188",
+                        },
+                      },
+                    },
+                  },
+                }}>
+                {effect.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Box>
         </Box>
 
@@ -781,6 +872,7 @@ const SceneCard = forwardRef((props, ref) => {
               setValues={setValues}
               model={model}
               px={px}
+              effect={effect}
             />
           ))}
       </Stack>
@@ -788,19 +880,40 @@ const SceneCard = forwardRef((props, ref) => {
   );
 });
 const SceneCardDialogue = forwardRef((props, ref) => {
-  const { scene, values, setValues, model, px, index, parentScene }: any =
-    props;
+  const {
+    scene,
+    values,
+    setValues,
+    model,
+    px,
+    index,
+    parentScene,
+    effect,
+  }: any = props;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [loadingUpload, setLoadingUpload] = useState(false);
   const [intervalId, setIntervalId] = useState(null);
-
-  // Tìm scene cha
+  const [selectedEffect, setSelectedEffect] = useState(
+    effect && effect.length > 0 && effect[0].id
+  );
   const parentSceneData = values.find((v) => v.scene === parentScene);
   // Lấy dialogue item dựa vào index
   const dialogueItem = parentSceneData?.dialogue?.[index] || {};
+  useEffect(() => {
+    if (
+      dialogueItem &&
+      Object.keys(dialogueItem).length > 0 &&
+      dialogueItem.video.id
+    ) {
+      setSelectedEffect(dialogueItem.video.effect);
+    } else {
+      setSelectedEffect(effect && effect.length > 0 && effect[0].id);
+    }
+  }, [effect]);
+  // Tìm scene cha
 
   const handleChange = (field, value) => {
     setValues((prev) =>
@@ -1259,18 +1372,108 @@ const SceneCardDialogue = forwardRef((props, ref) => {
           </Grid>
           <Box display={"flex"} mt={2} alignItems={"center"} gap={2}>
             <Typography variant='h6'> Hiệu ứng chuyển cảnh</Typography>
-            <Button
-              size='small'
-              sx={{
-                borderRadius: 1,
-                background: "rgba(89, 50, 234, 1)",
-                fontSize: isMobile ? "0.675rem" : "0.875rem",
-                opacity: loading ? 0.8 : 1,
-                pointerEvents: loading ? "none" : "unset",
-              }}
-              variant='contained'>
-              Mờ dần
-            </Button>
+            <FormControl variant='outlined' size='small'>
+              <Select
+                value={selectedEffect}
+                onChange={(e) => {
+                  setValues((prev) =>
+                    prev.map((item) =>
+                      item.scene === parentScene
+                        ? {
+                            ...item,
+                            dialogue: item.dialogue.map((d, i) =>
+                              i === index
+                                ? {
+                                    ...d,
+                                    video: {
+                                      ...d.video,
+                                      effect: e.target.value,
+                                    },
+                                  }
+                                : d
+                            ),
+                          }
+                        : item
+                    )
+                  );
+
+                  // Cập nhật localStorage
+                  let script: any = localStorage.getItem("gen_script");
+                  if (script) {
+                    script = JSON.parse(script);
+                    script.script.scenes = script.script.scenes.map((item) =>
+                      item.scene === parentScene
+                        ? {
+                            ...item,
+                            dialogue: item.dialogue.map((d, i) =>
+                              i === index
+                                ? {
+                                    ...d,
+                                    video: {
+                                      ...d.video,
+                                      effect: e.target.value,
+                                    },
+                                  }
+                                : d
+                            ),
+                          }
+                        : item
+                    );
+                    localStorage.setItem("gen_script", JSON.stringify(script));
+                  }
+                  setSelectedEffect(e.target.value);
+                }}
+                sx={{
+                  background: "#6E00FF",
+                  border: "none",
+                  color: "#fff",
+                  borderRadius: 2,
+                  height: "48px",
+                  width: "max-content", // 👈 Chiều cao mong muốn
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#3A375F", // 👈 Viền mặc định
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#414188", // 👈 Viền khi focus
+                  },
+                  "& .MuiSelect-select": {
+                    display: "flex",
+                    alignItems: "center",
+                    height: "100%", // Chiếm hết chiều cao wrapper
+                    padding: "0 14px",
+                  },
+                  ".MuiSelect-icon": { color: "#fff" },
+                }}
+                IconComponent={ArrowDropDownIcon}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      backgroundColor: "#2A274B",
+                      color: "#fff",
+                      borderRadius: 1,
+                      mt: 1,
+                      "& .MuiMenuItem-root": {
+                        "&:hover": {
+                          backgroundColor: "#3A375F",
+                          borderRadius: 1,
+                        },
+                        "&.Mui-selected": {
+                          backgroundColor: "#4B3A79",
+                          borderRadius: 1,
+                          border: "2px solid",
+                          borderColor: "#414188",
+                        },
+                      },
+                    },
+                  },
+                }}>
+                {effect.map((option) => (
+                  <MenuItem key={option.id} value={option.id}>
+                    {option.name}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
           </Box>
         </Box>
       </Stack>
@@ -1278,7 +1481,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
   );
 });
 
-function SceneEditor({ genScript, model, px, setLoading, id }) {
+function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
   const isMobile = useMediaQuery("(max-width:600px)");
   const navigate = useNavigate();
   const [values, setValues] = useState(genScript?.script.scenes || []);
@@ -1354,6 +1557,7 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
             setValues={setValues}
             model={model}
             px={px}
+            effect={effect}
           />
         )}
         <Box textAlign='center'>
@@ -1369,27 +1573,35 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
             <Button
               variant='contained'
               onClick={async () => {
-                
                 try {
                   const hasMissingVideos = values.some((item) => {
                     // Kiểm tra video chính
-                    const mainImageMissing = !item.video?.imageUrls || 
-                                           (typeof item.video.selected !== "number") || 
-                                           !item.video.imageUrls[item.video.selected];
-                  
+                    const mainImageMissing =
+                      !item.video?.imageUrls ||
+                      typeof item.video.selected !== "number" ||
+                      !item.video.imageUrls[item.video.selected];
+
                     // Kiểm tra video trong dialogue (nếu có)
-                    const dialogueVideosMissing = item.dialogue?.some((dialogueItem) => {
-                      return dialogueItem.video && 
-                             (!dialogueItem.video.imageUrls || 
-                              (typeof dialogueItem.video.selected !== "number") || 
-                              !dialogueItem.video.imageUrls[dialogueItem.video.selected]);
-                    });
-                  
+                    const dialogueVideosMissing = item.dialogue?.some(
+                      (dialogueItem) => {
+                        return (
+                          dialogueItem.video &&
+                          (!dialogueItem.video.imageUrls ||
+                            typeof dialogueItem.video.selected !== "number" ||
+                            !dialogueItem.video.imageUrls[
+                              dialogueItem.video.selected
+                            ])
+                        );
+                      }
+                    );
+
                     return mainImageMissing || dialogueVideosMissing;
                   });
-                  
+
                   if (hasMissingVideos) {
-                    toast.warning("Bạn cần tạo Video cho mỗi phân cảnh và dialogue");
+                    toast.warning(
+                      "Bạn cần tạo Video cho mỗi phân cảnh và dialogue"
+                    );
                     return;
                   }
                   setLoading(true);
@@ -1407,7 +1619,7 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                               video: {
                                 ...ix.video,
                                 id: ix.video && ix.video.ids[ix.video.selected],
-                                effect: "fade",
+
                                 url:
                                   ix.video &&
                                   ix.video.imageUrls[ix.video.selected],
@@ -1421,7 +1633,7 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                             ...item.video,
                             id:
                               item.video && item.video.ids[item.video.selected],
-                            effect: "fade",
+
                             url:
                               item.video &&
                               item.video.imageUrls[item.video.selected],

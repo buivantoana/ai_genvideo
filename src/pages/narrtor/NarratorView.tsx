@@ -676,7 +676,7 @@ const VoiceItem = ({
             return;
           }
           const status = await genScriptVoiceStatus(result.id);
-          if (status?.code === 0 && status?.voice_url) {
+          if (status?.code === 0 && status?.imageimage_url) {
             console.log(status);
             let script: any = localStorage.getItem("gen_script");
             if (script) {
