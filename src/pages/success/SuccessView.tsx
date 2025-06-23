@@ -70,6 +70,7 @@ import CloudUploadIcon from "@mui/icons-material/CloudUploadOutlined";
 import { RiPlayFill } from "react-icons/ri";
 import ResponsiveBox from "../../components/ResponsiveBox";
 import { uploadDrive } from "../../service/project";
+import { toast } from "react-toastify";
 
 const Container = styled(Box)(({ theme }) => ({
   backgroundColor: "#1a1a2e",
@@ -266,6 +267,7 @@ function VideoProjectUI({ genScript, setLoading }) {
               formdata.append("url", genScript.output_video_url);
               let result = await uploadDrive(formdata);
               console.log("result", result);
+              toast.success("Upload success");
             } catch (error) {
               console.log(error);
             }
