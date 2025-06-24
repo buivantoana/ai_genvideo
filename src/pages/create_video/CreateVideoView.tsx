@@ -1576,74 +1576,72 @@ function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
               variant='contained'
               onClick={async () => {
                 try {
-                  const hasMissingVideos = values.some((item) => {
-                    // Kiểm tra video chính
-                    const mainImageMissing =
-                      !item.video?.imageUrls ||
-                      typeof item.video.selected !== "number" ||
-                      !item.video.imageUrls[item.video.selected];
+                  // const hasMissingVideos = values.some((item) => {
+                  //   // Kiểm tra video chính
+                  //   const mainImageMissing =
+                  //     !item.video?.imageUrls ||
+                  //     typeof item.video.selected !== "number" ||
+                  //     !item.video.imageUrls[item.video.selected];
 
-                    // Kiểm tra video trong dialogue (nếu có)
-                    const dialogueVideosMissing = item.dialogue?.some(
-                      (dialogueItem) => {
-                        return (
-                          dialogueItem.video &&
-                          (!dialogueItem.video.imageUrls ||
-                            typeof dialogueItem.video.selected !== "number" ||
-                            !dialogueItem.video.imageUrls[
-                              dialogueItem.video.selected
-                            ])
-                        );
-                      }
-                    );
+                  //   // Kiểm tra video trong dialogue (nếu có)
+                  //   const dialogueVideosMissing = item.dialogue?.some(
+                  //     (dialogueItem) => {
+                  //       return (
+                  //         dialogueItem.video &&
+                  //         (!dialogueItem.video.imageUrls ||
+                  //           typeof dialogueItem.video.selected !== "number" ||
+                  //           !dialogueItem.video.imageUrls[
+                  //             dialogueItem.video.selected
+                  //           ])
+                  //       );
+                  //     }
+                  //   );
 
-                    return mainImageMissing || dialogueVideosMissing;
-                  });
+                  //   return mainImageMissing || dialogueVideosMissing;
+                  // });
 
-                  if (hasMissingVideos) {
-                    toast.warning(
-                      "Bạn cần tạo Video cho mỗi phân cảnh và dialogue"
-                    );
-                    return;
-                  }
+                  // if (hasMissingVideos) {
+                  //   toast.warning(
+                  //     "Bạn cần tạo Video cho mỗi phân cảnh và dialogue"
+                  //   );
+                  //   return;
+                  // }
                   setLoading(true);
                   const result = await updateProject(id, {
                     current_step: "gen_video",
                     script: {
                       ...genScript.script,
                       scenes: values.map((item) => {
-                        let dialogue =
-                          item.dialogue &&
-                          item.dialogue.length > 0 &&
-                          item.dialogue.map((ix) => {
-                            return {
-                              ...ix,
-                              video: {
-                                ...ix.video,
-                                id: ix.video && ix.video.ids[ix.video.selected],
-
-                                url:
-                                  ix.video &&
-                                  ix.video.imageUrls[ix.video.selected],
-                              },
-                            };
-                          });
+                        const dialogue =
+                          item.dialogue?.length > 0
+                            ? item.dialogue.map((ix) => {
+                                const selected = ix.video?.selected ?? 0;
+                                return {
+                                  ...ix,
+                                  video: {
+                                    ...ix.video,
+                                    id: ix.video?.ids?.[selected] ?? null,
+                                    url: ix.video?.imageUrls?.[selected] ?? null,
+                                  },
+                                };
+                              })
+                            : [];
+                  
+                        const selected = item.video?.selected ?? 0;
+                  
                         return {
                           ...item,
-                          dialogue: dialogue ? dialogue : [],
+                          dialogue,
                           video: {
                             ...item.video,
-                            id:
-                              item.video && item.video.ids[item.video.selected],
-
-                            url:
-                              item.video &&
-                              item.video.imageUrls[item.video.selected],
+                            id: item.video?.ids?.[selected] ?? null,
+                            url: item.video?.imageUrls?.[selected] ?? null,
                           },
                         };
                       }),
                     },
                   });
+                  
                   if (result && result.name) {
                     localStorage.setItem("gen_script", JSON.stringify(result));
                     setTimeout(() => {

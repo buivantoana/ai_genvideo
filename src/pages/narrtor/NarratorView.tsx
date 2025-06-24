@@ -2092,23 +2092,23 @@ const VoiceScene = ({ model, genScript, setLoading, id }) => {
             setLoading(true);
             try {
               // Kiểm tra xem có scene nào thiếu voice hoặc dialogue nào thiếu voice
-              const hasMissingVoice = values.some((item) => {
-                // Kiểm tra voice của scene
-                if (!item.voice) {
-                  return true;
-                }
-                // Kiểm tra voice của từng dialogue trong scene
-                if (item.dialogue && item.dialogue.length > 0) {
-                  return item.dialogue.some((dialogue) => !dialogue.voice);
-                }
-                return false;
-              });
+              // const hasMissingVoice = values.some((item) => {
+              //   // Kiểm tra voice của scene
+              //   if (!item.voice) {
+              //     return true;
+              //   }
+              //   // Kiểm tra voice của từng dialogue trong scene
+              //   if (item.dialogue && item.dialogue.length > 0) {
+              //     return item.dialogue.some((dialogue) => !dialogue.voice);
+              //   }
+              //   return false;
+              // });
 
-              if (hasMissingVoice) {
-                toast.warning("Cần tạo đủ voice cho tất cả scene và dialogue");
-                setLoading(false);
-                return;
-              }
+              // if (hasMissingVoice) {
+              //   toast.warning("Cần tạo đủ voice cho tất cả scene và dialogue");
+              //   setLoading(false);
+              //   return;
+              // }
 
               const result = await updateProject(id, {
                 current_step: "gen_voice",
