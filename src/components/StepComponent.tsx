@@ -3,7 +3,7 @@ import { Box, Typography } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const linkStep = [
-  "idea",
+  "",
   "script",
   "create-image",
   "create-video",
