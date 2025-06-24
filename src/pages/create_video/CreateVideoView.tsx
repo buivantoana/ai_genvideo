@@ -433,8 +433,8 @@ const SceneCard = forwardRef((props, ref) => {
     formData.append("prompt", sceneData.video.prompt);
     formData.append("n_prompt", sceneData.video.n_prompt);
     formData.append("model", model);
-    if (fileImage) {
-      formData.append("input_image_file", fileImage);
+    if (sceneData && sceneData.image && sceneData.image.url) {
+      formData.append("input_image_url", sceneData.image.url);
     }
     try {
       let result = await genScriptVideo(formData);
@@ -1016,7 +1016,9 @@ const SceneCardDialogue = forwardRef((props, ref) => {
     formData.append("prompt", dialogueItem.video?.prompt || "");
     formData.append("n_prompt", dialogueItem.video?.n_prompt || "");
     formData.append("model", model);
-
+    if (dialogueItem && dialogueItem.image && dialogueItem.image.url) {
+      formData.append("input_image_url", dialogueItem.image.url);
+    }
     try {
       let result = await genScriptVideo(formData);
 
