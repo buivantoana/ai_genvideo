@@ -1,7 +1,11 @@
 import React, { useEffect, useState } from "react";
 import CreateVideoView from "./CreateVideoView";
 import { useLocation } from "react-router-dom";
-import { genScriptPromt, getVideoEfect, getVideoModels } from "../../service/project";
+import {
+  genScriptPromt,
+  getVideoEfect,
+  getVideoModels,
+} from "../../service/project";
 import { toast } from "react-toastify";
 import Loading from "../../components/Loading";
 
@@ -21,7 +25,7 @@ const CreateVideoController = (props: Props) => {
   const getModels = async () => {
     try {
       let result = await getVideoModels();
-      let effectResult  = await getVideoEfect();
+      let effectResult = await getVideoEfect();
       if (result && result.length) {
         setModel(
           result.map((item) => {
@@ -32,8 +36,8 @@ const CreateVideoController = (props: Props) => {
           })
         );
       }
-      if(effectResult && effectResult.length){
-        setEffect(effectResult)
+      if (effectResult && effectResult.length) {
+        setEffect(effectResult);
       }
     } catch (error) {
       console.log(error);
@@ -49,7 +53,7 @@ const CreateVideoController = (props: Props) => {
             ...item,
             video: {
               ...item.video,
-              ids: item.video?.id ? [item.video?.id] : null,
+              ids: typeof item.video?.id == "number" ? [item.video?.id] : null,
               imageUrls: item.video?.url ? [item.video?.url] : null,
               selected: 0,
             },
@@ -59,7 +63,8 @@ const CreateVideoController = (props: Props) => {
                     ...ix,
                     video: {
                       ...ix.video,
-                      ids: ix.video?.id ? [ix.video?.id] : null,
+                      ids:
+                        typeof ix.video?.id == "number" ? [ix.video?.id] : null,
                       imageUrls: ix.video?.url ? [ix.video?.url] : null,
                       selected: 0,
                     },

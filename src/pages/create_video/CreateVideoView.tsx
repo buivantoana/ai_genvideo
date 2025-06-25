@@ -374,7 +374,7 @@ const SceneCard = forwardRef((props, ref) => {
   const sceneData = values.find((v) => v.scene === scene);
   useEffect(() => {
     if (sceneData && Object.keys(sceneData).length > 0 && sceneData.video.id) {
-      setSelectedEffect(sceneData.video.effect);
+      setSelectedEffect(sceneData.video.effect || "none");
     } else {
       setSelectedEffect(
         effect &&
@@ -1039,7 +1039,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
       Object.keys(dialogueItem).length > 0 &&
       dialogueItem.video.id
     ) {
-      setSelectedEffect(dialogueItem.video.effect);
+      setSelectedEffect(dialogueItem.video.effect || "none");
     } else {
       setSelectedEffect(
         effect &&

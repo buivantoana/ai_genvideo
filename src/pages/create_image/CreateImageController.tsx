@@ -59,7 +59,7 @@ const CreateImageController = (props: Props) => {
             ...item,
             image: {
               ...item.image,
-              ids: item.image?.id ? [item.image?.id] : null,
+              ids: typeof item.image?.id == "number" ? [item.image?.id] : 0,
               imageUrls: item.image?.url ? [item.image?.url] : null,
               selected: 0,
             },
@@ -69,9 +69,10 @@ const CreateImageController = (props: Props) => {
                     ...ix,
                     image: {
                       ...ix.image,
-                      ids: ix.image?.id ? [ix.image?.id] : null,
+                      ids: typeof ix.image?.id == "number" ? [ix.image?.id] : 0,
                       imageUrls: ix.image?.url ? [ix.image?.url] : null,
                       selected: 0,
+                      id: ix?.image?.id || 0,
                     },
                   };
                 })
