@@ -49,7 +49,11 @@ const CreateVideoView = ({
   const [selectedTab, setSelectedTab]: any = useState(
     genScript && genScript.video_type == "video2video" ? 1 : 0
   );
-  const [model, setModel] = useState("framepack");
+  const [model, setModel] = useState(
+    localStorage.getItem("model_video")
+      ? localStorage.getItem("model_video")
+      : "framepack"
+  );
   const [px, setPx] = useState("1920x1080 (16:9)");
   useEffect(() => {
     if (genScript) {
@@ -58,7 +62,7 @@ const CreateVideoView = ({
   }, [genScript]);
   return (
     <Box
-      className="hidden-add-voice"
+      className='hidden-add-voice'
       sx={{
         bgcolor: "#0D0C2B",
         p: isMobile ? 1.5 : 6,
@@ -67,8 +71,7 @@ const CreateVideoView = ({
         display: "flex",
         flexDirection: "column",
         gap: isMobile ? 2 : 4,
-      }}
-    >
+      }}>
       <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
       {/* <ResponsiveBox
@@ -76,10 +79,13 @@ const CreateVideoView = ({
         onTabChange={(index) => setSelectedTab(index)}
       /> */}
       <Box display={"flex"} gap={3}>
-        <FormControl variant="outlined" size="small">
+        <FormControl variant='outlined' size='small'>
           <Select
             value={model}
-            onChange={(e) => setModel(e.target.value)}
+            onChange={(e) => {
+              localStorage.setItem("model_video", e.target.value);
+              setModel(e.target.value);
+            }}
             sx={{
               background: "transparent",
               color: "#fff",
@@ -122,8 +128,7 @@ const CreateVideoView = ({
                   },
                 },
               },
-            }}
-          >
+            }}>
             {modelList.map((option) => (
               <MenuItem key={option.key} value={option.key}>
                 {option.value}
@@ -131,7 +136,7 @@ const CreateVideoView = ({
             ))}
           </Select>
         </FormControl>
-        <FormControl variant="outlined" size="small">
+        <FormControl variant='outlined' size='small'>
           <Select
             value={px}
             onChange={(e) => setPx(e.target.value)}
@@ -177,8 +182,7 @@ const CreateVideoView = ({
                   },
                 },
               },
-            }}
-          >
+            }}>
             {modelOptions2.map((option) => (
               <MenuItem key={option} value={option}>
                 {option}
@@ -586,22 +590,20 @@ const SceneCard = forwardRef((props, ref) => {
       sx={{
         borderRadius: 2,
         mb: 4,
-      }}
-    >
+      }}>
       <Stack spacing={2}>
-        <Stack direction="row" gap={"30px"} alignItems="center">
+        <Stack direction='row' gap={"30px"} alignItems='center'>
           <Typography
-            variant="h6"
+            variant='h6'
             fontSize={{ xs: ".9rem", md: "1.25rem" }}
-            color="white"
-          >
+            color='white'>
             Phần lời kể:
           </Typography>
           {sceneData?.video?.imageUrls?.length > 0 && (
             <Button
               startIcon={loading ? <></> : <RiRefreshLine />}
               onClick={() => genImage()}
-              size="small"
+              size='small'
               sx={{
                 borderRadius: 1,
                 background: "rgba(89, 50, 234, 1)",
@@ -609,11 +611,10 @@ const SceneCard = forwardRef((props, ref) => {
                 opacity: loading ? 0.8 : 1,
                 pointerEvents: loading ? "none" : "unset",
               }}
-              variant="contained"
-            >
+              variant='contained'>
               {loading ? (
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <CircularProgress size={16} color="inherit" />
+                <Stack direction='row' alignItems='center' spacing={1}>
+                  <CircularProgress size={16} color='inherit' />
                   <span>Đang tạo video...</span>
                 </Stack>
               ) : (
@@ -624,7 +625,7 @@ const SceneCard = forwardRef((props, ref) => {
         </Stack>
 
         <Typography mb={2}>Prompt:</Typography>
-        <Box position="relative">
+        <Box position='relative'>
           <TextField
             multiline
             fullWidth
@@ -632,7 +633,7 @@ const SceneCard = forwardRef((props, ref) => {
             maxRows={5}
             value={sceneData?.video?.prompt}
             onChange={(e) => handleChange("prompt", e.target.value)}
-            variant="outlined"
+            variant='outlined'
             sx={{
               "& .MuiOutlinedInput-notchedOutline": {
                 border: "2px solid",
@@ -653,13 +654,12 @@ const SceneCard = forwardRef((props, ref) => {
           <IconButton
             onClick={() => setIsEditing(!isEditing)}
             sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
-            size="small"
-          >
-            <EditIcon fontSize="small" />
+            size='small'>
+            <EditIcon fontSize='small' />
           </IconButton>
         </Box>
         <Typography mb={2}>Negative Prompt:</Typography>
-        <Box position="relative">
+        <Box position='relative'>
           <TextField
             multiline
             fullWidth
@@ -667,7 +667,7 @@ const SceneCard = forwardRef((props, ref) => {
             maxRows={5}
             value={sceneData?.video?.n_prompt}
             onChange={(e) => handleChange("n_prompt", e.target.value)}
-            variant="outlined"
+            variant='outlined'
             sx={{
               "& .MuiOutlinedInput-notchedOutline": {
                 border: "2px solid",
@@ -688,9 +688,8 @@ const SceneCard = forwardRef((props, ref) => {
           <IconButton
             onClick={() => setIsEditing(!isEditing)}
             sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
-            size="small"
-          >
-            <EditIcon fontSize="small" />
+            size='small'>
+            <EditIcon fontSize='small' />
           </IconButton>
         </Box>
 
@@ -711,8 +710,7 @@ const SceneCard = forwardRef((props, ref) => {
                         gap: "10px",
                       }}
                       sm={4}
-                      md={6}
-                    >
+                      md={6}>
                       <>
                         <Box
                           height={isMobile ? "150px" : "250px"}
@@ -720,14 +718,12 @@ const SceneCard = forwardRef((props, ref) => {
                             objectFit: "cover",
                             borderRadius: 1,
                             border: selected ? "3px solid green" : "none",
-                          }}
-                        >
+                          }}>
                           <video
-                            width="100%"
+                            width='100%'
                             height={"100%"}
                             controls
-                            src={item}
-                          >
+                            src={item}>
                             Trình duyệt của bạn không hỗ trợ video.
                           </video>
                         </Box>
@@ -742,8 +738,7 @@ const SceneCard = forwardRef((props, ref) => {
                 xs={5}
                 sx={{ mr: isMobile ? "0px" : "20px" }}
                 sm={4}
-                md={6}
-              >
+                md={6}>
                 <Card
                   sx={{
                     bgcolor: "#292a45",
@@ -753,11 +748,10 @@ const SceneCard = forwardRef((props, ref) => {
                     alignItems: "center",
                     justifyContent: "center",
                     padding: 0,
-                  }}
-                >
+                  }}>
                   <Button
                     onClick={() => genImage()}
-                    variant="contained"
+                    variant='contained'
                     sx={{
                       background: "rgba(89, 50, 234, 1)",
                       borderRadius: 1,
@@ -766,11 +760,10 @@ const SceneCard = forwardRef((props, ref) => {
                       height: 36,
                       opacity: loading ? 0.8 : 1,
                       pointerEvents: loading ? "none" : "unset",
-                    }}
-                  >
+                    }}>
                     {loading ? (
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <CircularProgress size={16} color="inherit" />
+                      <Stack direction='row' alignItems='center' spacing={1}>
+                        <CircularProgress size={16} color='inherit' />
                         <span>Đang tạo video...</span>
                       </Stack>
                     ) : (
@@ -783,8 +776,8 @@ const SceneCard = forwardRef((props, ref) => {
           </Grid>
           <Box sx={{ display: "flex", gap: 4 }}>
             <Box display={"flex"} mt={2} alignItems={"center"} gap={2}>
-              <Typography variant="h6"> Thời lượng (s)</Typography>
-              <FormControl variant="outlined" size="small">
+              <Typography variant='h6'> Thời lượng (s)</Typography>
+              <FormControl variant='outlined' size='small'>
                 <Select
                   value={duration}
                   onChange={(e) => {
@@ -866,8 +859,7 @@ const SceneCard = forwardRef((props, ref) => {
                         },
                       },
                     },
-                  }}
-                >
+                  }}>
                   {durationData.map((option) => (
                     <MenuItem key={option} value={option}>
                       {option}
@@ -877,8 +869,8 @@ const SceneCard = forwardRef((props, ref) => {
               </FormControl>
             </Box>
             <Box display={"flex"} mt={2} alignItems={"center"} gap={2}>
-              <Typography variant="h6"> Hiệu ứng chuyển cảnh</Typography>
-              <FormControl variant="outlined" size="small">
+              <Typography variant='h6'> Hiệu ứng chuyển cảnh</Typography>
+              <FormControl variant='outlined' size='small'>
                 <Select
                   value={selectedEffect}
                   onChange={(e) => {
@@ -960,8 +952,7 @@ const SceneCard = forwardRef((props, ref) => {
                         },
                       },
                     },
-                  }}
-                >
+                  }}>
                   {effect.map((option) => (
                     <MenuItem key={option.id} value={option.id}>
                       {option.name}
@@ -1329,20 +1320,19 @@ const SceneCardDialogue = forwardRef((props, ref) => {
   return (
     <Box sx={{ borderRadius: 2, mb: 4 }}>
       <Stack spacing={2}>
-        <Stack direction="row" gap={"30px"} alignItems="center">
+        <Stack direction='row' gap={"30px"} alignItems='center'>
           <Typography
-            variant="h6"
+            variant='h6'
             fontSize={{ xs: ".8rem", md: "1.15rem" }}
             fontStyle={"italic"}
-            color="white"
-          >
+            color='white'>
             Lời thoại {index + 1}:
           </Typography>
           {dialogueItem?.video?.imageUrls?.length > 0 && (
             <Button
               startIcon={loading ? <></> : <RiRefreshLine />}
               onClick={() => genImage()}
-              size="small"
+              size='small'
               sx={{
                 borderRadius: 1,
                 background: "rgba(89, 50, 234, 1)",
@@ -1350,11 +1340,10 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                 opacity: loading ? 0.8 : 1,
                 pointerEvents: loading ? "none" : "unset",
               }}
-              variant="contained"
-            >
+              variant='contained'>
               {loading ? (
-                <Stack direction="row" alignItems="center" spacing={1}>
-                  <CircularProgress size={16} color="inherit" />
+                <Stack direction='row' alignItems='center' spacing={1}>
+                  <CircularProgress size={16} color='inherit' />
                   <span>Đang tạo video...</span>
                 </Stack>
               ) : (
@@ -1365,7 +1354,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
         </Stack>
 
         <Typography mb={2}>Prompt:</Typography>
-        <Box position="relative">
+        <Box position='relative'>
           <TextField
             multiline
             fullWidth
@@ -1373,7 +1362,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
             maxRows={5}
             value={dialogueItem?.video?.prompt}
             onChange={(e) => handleChange("prompt", e.target.value)}
-            variant="outlined"
+            variant='outlined'
             sx={{
               "& .MuiOutlinedInput-notchedOutline": {
                 border: "2px solid",
@@ -1394,13 +1383,12 @@ const SceneCardDialogue = forwardRef((props, ref) => {
           <IconButton
             onClick={() => setIsEditing(!isEditing)}
             sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
-            size="small"
-          >
-            <EditIcon fontSize="small" />
+            size='small'>
+            <EditIcon fontSize='small' />
           </IconButton>
         </Box>
         <Typography mb={2}>Negative Prompt:</Typography>
-        <Box position="relative">
+        <Box position='relative'>
           <TextField
             multiline
             fullWidth
@@ -1408,7 +1396,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
             maxRows={5}
             value={dialogueItem?.video?.n_prompt}
             onChange={(e) => handleChange("n_prompt", e.target.value)}
-            variant="outlined"
+            variant='outlined'
             sx={{
               "& .MuiOutlinedInput-notchedOutline": {
                 border: "2px solid",
@@ -1429,9 +1417,8 @@ const SceneCardDialogue = forwardRef((props, ref) => {
           <IconButton
             onClick={() => setIsEditing(!isEditing)}
             sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
-            size="small"
-          >
-            <EditIcon fontSize="small" />
+            size='small'>
+            <EditIcon fontSize='small' />
           </IconButton>
         </Box>
 
@@ -1452,8 +1439,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                         gap: "10px",
                       }}
                       sm={4}
-                      md={6}
-                    >
+                      md={6}>
                       <>
                         <Box
                           height={isMobile ? "150px" : "250px"}
@@ -1461,14 +1447,12 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                             objectFit: "cover",
                             borderRadius: 1,
                             border: selected ? "3px solid green" : "none",
-                          }}
-                        >
+                          }}>
                           <video
-                            width="100%"
+                            width='100%'
                             height={"100%"}
                             controls
-                            src={item}
-                          >
+                            src={item}>
                             Trình duyệt của bạn không hỗ trợ video.
                           </video>
                         </Box>
@@ -1483,8 +1467,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                 xs={5}
                 sx={{ mr: isMobile ? "0px" : "20px" }}
                 sm={4}
-                md={6}
-              >
+                md={6}>
                 <Card
                   sx={{
                     bgcolor: "#292a45",
@@ -1494,11 +1477,10 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                     alignItems: "center",
                     justifyContent: "center",
                     padding: 0,
-                  }}
-                >
+                  }}>
                   <Button
                     onClick={() => genImage()}
-                    variant="contained"
+                    variant='contained'
                     sx={{
                       background: "rgba(89, 50, 234, 1)",
                       borderRadius: 1,
@@ -1507,11 +1489,10 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                       height: 36,
                       opacity: loading ? 0.8 : 1,
                       pointerEvents: loading ? "none" : "unset",
-                    }}
-                  >
+                    }}>
                     {loading ? (
-                      <Stack direction="row" alignItems="center" spacing={1}>
-                        <CircularProgress size={16} color="inherit" />
+                      <Stack direction='row' alignItems='center' spacing={1}>
+                        <CircularProgress size={16} color='inherit' />
                         <span>Đang tạo video...</span>
                       </Stack>
                     ) : (
@@ -1525,8 +1506,8 @@ const SceneCardDialogue = forwardRef((props, ref) => {
 
           <Box sx={{ display: "flex", gap: 4 }}>
             <Box display={"flex"} mt={2} alignItems={"center"} gap={2}>
-              <Typography variant="h6"> Thời lượng (s)</Typography>
-              <FormControl variant="outlined" size="small">
+              <Typography variant='h6'> Thời lượng (s)</Typography>
+              <FormControl variant='outlined' size='small'>
                 <Select
                   value={duration}
                   onChange={(e) => {
@@ -1623,8 +1604,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                         },
                       },
                     },
-                  }}
-                >
+                  }}>
                   {durationData.map((option) => (
                     <MenuItem key={option} value={option}>
                       {option}
@@ -1634,8 +1614,8 @@ const SceneCardDialogue = forwardRef((props, ref) => {
               </FormControl>
             </Box>
             <Box display={"flex"} mt={2} alignItems={"center"} gap={2}>
-              <Typography variant="h6"> Hiệu ứng chuyển cảnh</Typography>
-              <FormControl variant="outlined" size="small">
+              <Typography variant='h6'> Hiệu ứng chuyển cảnh</Typography>
+              <FormControl variant='outlined' size='small'>
                 <Select
                   value={selectedEffect}
                   onChange={(e) => {
@@ -1732,8 +1712,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                         },
                       },
                     },
-                  }}
-                >
+                  }}>
                   {effect.map((option) => (
                     <MenuItem key={option.id} value={option.id}>
                       {option.name}
@@ -1777,8 +1756,7 @@ function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
               alignItems: "start",
               cursor: "pointer",
               gap: 2,
-            }}
-          >
+            }}>
             <Typography
               fontWeight={index == currentSceneIndex ? "bold" : 500}
               fontSize={isMobile ? "15px" : "20px"}
@@ -1789,8 +1767,7 @@ function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
                   index == currentSceneIndex
                     ? "white"
                     : "rgba(255, 255, 255, .6)",
-              }}
-            >
+              }}>
               Phân cảnh {index + 1}
               <Box
                 sx={{
@@ -1799,8 +1776,7 @@ function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
                   width: "100%",
                   display: "flex",
                   justifyContent: "center",
-                }}
-              >
+                }}>
                 <Box
                   sx={{
                     width: "80%",
@@ -1809,8 +1785,7 @@ function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
                       index == currentSceneIndex
                         ? "rgba(89, 50, 234, 1)"
                         : "unset",
-                  }}
-                ></Box>
+                  }}></Box>
               </Box>
             </Typography>
             {!(index == values.length - 1) && (
@@ -1826,8 +1801,7 @@ function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
             key={index}
             sx={{
               display: index === currentSceneIndex ? "block" : "none",
-            }}
-          >
+            }}>
             <SceneCard
               key={currentSceneIndex}
               scene={values[currentSceneIndex].scene}
@@ -1840,7 +1814,7 @@ function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
           </Box>
         ))}
 
-        <Box textAlign="center">
+        <Box textAlign='center'>
           <Box
             paddingBottom={4}
             sx={{
@@ -1849,10 +1823,9 @@ function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
               gap: 2,
               mt: 2,
               justifyContent: "center",
-            }}
-          >
+            }}>
             <Button
-              variant="contained"
+              variant='contained'
               onClick={async () => {
                 try {
                   // const hasMissingVideos = values.some((item) => {
@@ -1946,13 +1919,12 @@ function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
                 },
                 height: isMobile ? 40 : 50,
                 fontSize: isMobile ? "15px" : "18px",
-              }}
-            >
+              }}>
               Xác nhận tạo xong
             </Button>
 
             <Button
-              variant="contained"
+              variant='contained'
               sx={{
                 background: "white",
                 textTransform: "none",
@@ -1965,8 +1937,7 @@ function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
                 height: isMobile ? 40 : 50,
                 fontSize: isMobile ? "15px" : "18px",
                 color: "black",
-              }}
-            >
+              }}>
               Tải hàng loạt (2)
             </Button>
           </Box>

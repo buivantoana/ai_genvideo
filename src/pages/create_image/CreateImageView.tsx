@@ -57,7 +57,11 @@ const CreateImageView = ({
   const [selectedTab, setSelectedTab]: any = useState(
     genScript && genScript.video_type == "video2video" ? 1 : 0
   );
-  const [model, setModel] = useState(modelList[0]?.key || "");
+  const [model, setModel] = useState(
+    localStorage.getItem("model_image")
+      ? localStorage.getItem("model_image")
+      : modelList[0]?.key
+  );
   const [px, setPx] = useState("1920x1080 (16:9)");
   const [openModal, setOpenModal] = useState(false);
   const [newModel, setNewModel] = useState({
@@ -72,6 +76,7 @@ const CreateImageView = ({
     if (selected === "add_new") {
       setOpenModal(true);
     } else {
+      localStorage.setItem("model_image", selected);
       setModel(selected);
     }
   };
