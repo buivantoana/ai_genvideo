@@ -351,7 +351,7 @@ import { toast } from "react-toastify";
 //     </Box>
 //   );
 // };
-
+let durationData =  [1,2,3,4,5,6,7,8,9]
 const SceneCard = forwardRef((props, ref) => {
   const { scene, values, setValues, model, px, effect }: any = props;
   const theme = useTheme();
@@ -363,6 +363,9 @@ const SceneCard = forwardRef((props, ref) => {
   const [selectedEffect, setSelectedEffect] = useState(
     effect && effect.length > 0 && effect[0].id
   );
+  const [duration, setDuration] = useState(
+  1
+  );
   const sceneData = values.find((v) => v.scene === scene);
   useEffect(() => {
     if (sceneData && Object.keys(sceneData).length > 0 && sceneData.video.id) {
@@ -371,6 +374,13 @@ const SceneCard = forwardRef((props, ref) => {
       setSelectedEffect(effect && effect.length > 0 && effect[0].id);
     }
   }, [effect]);
+  useEffect(() => {
+    if (sceneData && Object.keys(sceneData).length > 0 && sceneData.video.id) {
+      setDuration(sceneData.video.duration);
+    } else {
+      setDuration(``);
+    }
+  }, [duration]);
   const handleChange = (field, value) => {
     setValues((prev) =>
       prev.map((item) =>
@@ -754,6 +764,99 @@ const SceneCard = forwardRef((props, ref) => {
               </Grid>
             )}
           </Grid>
+          <Box sx={{display:"flex",gap:4}}>
+
+          <Box display={"flex"} mt={2} alignItems={"center"} gap={2}>
+            <Typography variant='h6'> Thời lượng (s)</Typography>
+            <FormControl variant='outlined' size='small'>
+              <Select
+                value={duration}
+                onChange={(e) => {
+                  let script: any = localStorage.getItem("gen_script");
+                  if (script) {
+                    script = JSON.parse(script);
+                    script.script.scenes = values.map((item) => {
+                      if (item.scene == scene) {
+                        return {
+                          ...item,
+                          video: {
+                            ...item.video,
+                            duration: e.target.value,
+                            
+                          },
+                        };
+                      }
+                      return item;
+                    });
+                    localStorage.setItem("gen_script", JSON.stringify(script));
+                  }
+                  setValues((prev) =>
+                    prev.map((item) =>
+                      item.scene === scene
+                        ? {
+                            ...item,
+                            video: {
+                              ...item.video,
+                              duration: e.target.value,
+                            },
+                          }
+                        : item
+                    )
+                  );
+                  setDuration(e.target.value);
+                }}
+                sx={{
+                  background: "#6E00FF",
+                  border: "none",
+                  color: "#fff",
+                  borderRadius: 2,
+                  height: "48px",
+                  width: "max-content", // 👈 Chiều cao mong muốn
+                  "& .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#3A375F", // 👈 Viền mặc định
+                  },
+                  "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+                    borderColor: "#414188", // 👈 Viền khi focus
+                  },
+                  "& .MuiSelect-select": {
+                    display: "flex",
+                    alignItems: "center",
+                    height: "100%", // Chiếm hết chiều cao wrapper
+                    padding: "0 14px",
+                  },
+                  ".MuiSelect-icon": { color: "#fff" },
+                }}
+                IconComponent={ArrowDropDownIcon}
+                MenuProps={{
+                  PaperProps: {
+                    sx: {
+                      backgroundColor: "#2A274B",
+                      color: "#fff",
+                      borderRadius: 1,
+                      mt: 1,
+                      "& .MuiMenuItem-root": {
+                        "&:hover": {
+                          backgroundColor: "#3A375F",
+                          borderRadius: 1,
+                        },
+                        "&.Mui-selected": {
+                          backgroundColor: "#4B3A79",
+                          borderRadius: 1,
+                          border: "2px solid",
+                          borderColor: "#414188",
+                        },
+                      },
+                    },
+                  },
+                }}>
+                {durationData.map((option) => (
+                  <MenuItem key={option} value={option}>
+                    {option}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+          </Box>
           <Box display={"flex"} mt={2} alignItems={"center"} gap={2}>
             <Typography variant='h6'> Hiệu ứng chuyển cảnh</Typography>
             <FormControl variant='outlined' size='small'>
@@ -844,6 +947,7 @@ const SceneCard = forwardRef((props, ref) => {
               </Select>
             </FormControl>
           </Box>
+          </Box>
         </Box>
 
         {/* <Box>
@@ -899,6 +1003,9 @@ const SceneCardDialogue = forwardRef((props, ref) => {
   const [selectedEffect, setSelectedEffect] = useState(
     effect && effect.length > 0 && effect[0].id
   );
+  const [duration, setDuration] = useState(
+    1
+  );
   const parentSceneData = values.find((v) => v.scene === parentScene);
   // Lấy dialogue item dựa vào index
   const dialogueItem = parentSceneData?.dialogue?.[index] || {};
@@ -908,12 +1015,24 @@ const SceneCardDialogue = forwardRef((props, ref) => {
       Object.keys(dialogueItem).length > 0 &&
       dialogueItem.video.id
     ) {
+      setDuration(dialogueItem.video.duration);
+    } else {
+      setDuration(1);
+    }
+  }, [duration]);
+ 
+
+  useEffect(()=>{
+    if (
+      dialogueItem &&
+      Object.keys(dialogueItem).length > 0 &&
+      dialogueItem.video.id
+    ) {
       setSelectedEffect(dialogueItem.video.effect);
     } else {
       setSelectedEffect(effect && effect.length > 0 && effect[0].id);
     }
-  }, [effect]);
-  // Tìm scene cha
+  },[effect])
 
   const handleChange = (field, value) => {
     setValues((prev) =>
@@ -1372,7 +1491,115 @@ const SceneCardDialogue = forwardRef((props, ref) => {
               </Grid>
             )}
           </Grid>
-          <Box display={"flex"} mt={2} alignItems={"center"} gap={2}>
+          
+          <Box sx={{display:"flex",gap:4}}>
+
+<Box display={"flex"} mt={2} alignItems={"center"} gap={2}>
+  <Typography variant='h6'> Thời lượng (s)</Typography>
+  <FormControl variant='outlined' size='small'>
+    <Select
+      value={duration}
+      onChange={(e) => {
+        setValues((prev) =>
+        prev.map((item) =>
+          item.scene === parentScene
+            ? {
+                ...item,
+                dialogue: item.dialogue.map((d, i) =>
+                  i === index
+                    ? {
+                        ...d,
+                        video: {
+                          ...d.video,
+                          duration: e.target.value,
+                        },
+                      }
+                    : d
+                ),
+              }
+            : item
+        )
+      );
+
+      // Cập nhật localStorage
+      let script: any = localStorage.getItem("gen_script");
+      if (script) {
+        script = JSON.parse(script);
+        script.script.scenes = script.script.scenes.map((item) =>
+          item.scene === parentScene
+            ? {
+                ...item,
+                dialogue: item.dialogue.map((d, i) =>
+                  i === index
+                    ? {
+                        ...d,
+                        video: {
+                          ...d.video,
+                          duration: e.target.value,
+                        },
+                      }
+                    : d
+                ),
+              }
+            : item
+        );
+        localStorage.setItem("gen_script", JSON.stringify(script));
+      }
+      setDuration(e.target.value);
+      }}
+      sx={{
+        background: "#6E00FF",
+        border: "none",
+        color: "#fff",
+        borderRadius: 2,
+        height: "48px",
+        width: "max-content", // 👈 Chiều cao mong muốn
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: "#3A375F", // 👈 Viền mặc định
+        },
+        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+          borderColor: "#414188", // 👈 Viền khi focus
+        },
+        "& .MuiSelect-select": {
+          display: "flex",
+          alignItems: "center",
+          height: "100%", // Chiếm hết chiều cao wrapper
+          padding: "0 14px",
+        },
+        ".MuiSelect-icon": { color: "#fff" },
+      }}
+      IconComponent={ArrowDropDownIcon}
+      MenuProps={{
+        PaperProps: {
+          sx: {
+            backgroundColor: "#2A274B",
+            color: "#fff",
+            borderRadius: 1,
+            mt: 1,
+            "& .MuiMenuItem-root": {
+              "&:hover": {
+                backgroundColor: "#3A375F",
+                borderRadius: 1,
+              },
+              "&.Mui-selected": {
+                backgroundColor: "#4B3A79",
+                borderRadius: 1,
+                border: "2px solid",
+                borderColor: "#414188",
+              },
+            },
+          },
+        },
+      }}>
+      {durationData.map((option) => (
+        <MenuItem key={option} value={option}>
+          {option}
+        </MenuItem>
+      ))}
+    </Select>
+  </FormControl>
+</Box>
+<Box display={"flex"} mt={2} alignItems={"center"} gap={2}>
             <Typography variant='h6'> Hiệu ứng chuyển cảnh</Typography>
             <FormControl variant='outlined' size='small'>
               <Select
@@ -1477,6 +1704,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
               </Select>
             </FormControl>
           </Box>
+</Box>
         </Box>
       </Stack>
     </Box>

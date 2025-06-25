@@ -2185,7 +2185,7 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                 });
                 
                 if (hasMissingImage) {
-                  toast.warning("Bạn cần tạo Video cho mỗi phân cảnh và dialogue");
+                  toast.warning("Bạn cần tạo ảnh cho mỗi phân cảnh và dialogue");
                   return;
                 }
 
