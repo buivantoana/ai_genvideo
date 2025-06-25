@@ -828,6 +828,11 @@ const SceneCard = forwardRef((props, ref) => {
             }
             clearInterval(poll);
           }
+          if (status?.code === 99) {
+            clearInterval(poll);
+            toast.error("Error gen image");
+            setLoading(false);
+          }
         }, 2000);
         setIntervalId(poll);
       } else if (result.code == 0) {
@@ -1511,6 +1516,11 @@ const SceneCardDialogue = forwardRef((props, ref) => {
             }
             clearInterval(poll);
           }
+          if (status?.code === 99) {
+            clearInterval(poll);
+            toast.error("Error gen image");
+            setLoading(false);
+          }
         }, 2000);
         setIntervalId(poll);
       } else if (result.code === 0) {
@@ -1888,6 +1898,10 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                       clearInterval(poll);
                       resolve(status);
                     }
+                    if (status?.code === 99) {
+                      clearInterval(poll);
+                      resolve(status);
+                    }
                   } catch (error) {
                     clearInterval(poll);
                     reject(error);
@@ -2245,10 +2259,15 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                       if (!uploadResult || !uploadResult.url) {
                         throw new Error("Failed to upload audio file");
                       }
-
+                      console.log("teeeeeeeeeeee", {
+                        id: uploadResult.id,
+                        url: uploadResult.url,
+                        n_prompt: imageData.n_prompt,
+                        prompt: imageData.prompt,
+                      });
                       return {
                         id: uploadResult.id,
-                        image_url: uploadResult.url,
+                        url: uploadResult.url,
                         n_prompt: imageData.n_prompt,
                         prompt: imageData.prompt,
                       };

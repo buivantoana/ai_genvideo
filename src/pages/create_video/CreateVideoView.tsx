@@ -379,7 +379,7 @@ const SceneCard = forwardRef((props, ref) => {
       setSelectedEffect(
         effect &&
           effect.length > 0 &&
-          effect.finf((item) => item.id == "none")?.id
+          effect.find((item) => item.id == "none")?.id
       );
     }
   }, [effect]);
@@ -387,7 +387,7 @@ const SceneCard = forwardRef((props, ref) => {
     if (sceneData && Object.keys(sceneData).length > 0 && sceneData.video.id) {
       setDuration(sceneData.video.duration);
     } else {
-      setDuration(``);
+      setDuration(1);
     }
   }, [duration]);
   const handleChange = (field, value) => {
@@ -1041,7 +1041,11 @@ const SceneCardDialogue = forwardRef((props, ref) => {
     ) {
       setSelectedEffect(dialogueItem.video.effect);
     } else {
-      setSelectedEffect(effect && effect.length > 0 && effect[0].id);
+      setSelectedEffect(
+        effect &&
+          effect.length > 0 &&
+          effect.find((item) => item.id == "none")?.id
+      );
     }
   }, [effect]);
 
