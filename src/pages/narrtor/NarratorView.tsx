@@ -433,7 +433,7 @@ const NarratorView = ({ model, genScript, setLoading, id }) => {
 
   return (
     <Box
-      className='hidden-add-voice'
+      className="hidden-add-voice"
       sx={{
         bgcolor: "#0D0C2B",
         p: isMobile ? 1.5 : 6,
@@ -442,7 +442,8 @@ const NarratorView = ({ model, genScript, setLoading, id }) => {
         display: "flex",
         flexDirection: "column",
         gap: isMobile ? 2 : 4,
-      }}>
+      }}
+    >
       <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
       {/* <ResponsiveBox /> */}
@@ -657,9 +658,9 @@ const VoiceItem = ({
     formData.append("speed", String(readingSpeed));
     formData.append("voice", selectedVoice);
     formData.append("delay", duration);
-    if (voice) {
-      formData.append("sample_url", voice);
-    }
+    // if (voice) {
+    //   formData.append("sample_url", voice);
+    // }
 
     try {
       let result = await genScriptVoice(formData);
@@ -856,7 +857,7 @@ const VoiceItem = ({
   }, [currentAudio]);
   return (
     <>
-      <Typography fontSize={isMobile ? 20 : 24} fontWeight='bold' mb={2}>
+      <Typography fontSize={isMobile ? 20 : 24} fontWeight="bold" mb={2}>
         Video phân cảnh {scene}:
       </Typography>
       <Box
@@ -865,18 +866,20 @@ const VoiceItem = ({
           borderRadius: 2,
           backgroundColor: "#1B1A3C",
           mb: 2,
-        }}>
+        }}
+      >
         <Box
-          display='flex'
+          display="flex"
           alignItems={isMobile ? "start" : "center"}
-          justifyContent='space-between'
+          justifyContent="space-between"
           flexDirection={isMobile ? "column" : "row"}
           gap={2}
           p={2}
-          sx={{ cursor: "pointer" }}>
-          <Box display='flex' alignItems={isMobile ? "left" : "center"} gap={2}>
+          sx={{ cursor: "pointer" }}
+        >
+          <Box display="flex" alignItems={isMobile ? "left" : "center"} gap={2}>
             <Box>
-              <Typography variant='h6' fontWeight='bold'>
+              <Typography variant="h6" fontWeight="bold">
                 {title}
               </Typography>
               <Typography my={2} sx={{ fontStyle: "italic" }}>
@@ -885,16 +888,17 @@ const VoiceItem = ({
             </Box>
           </Box>
           <Box
-            display='flex'
-            alignItems='center'
+            display="flex"
+            alignItems="center"
             flexWrap={isMobile ? "wrap" : "nowrap"}
-            gap={3}>
+            gap={3}
+          >
             <Box sx={{ position: "relative", width: 250, height: 150 }}>
               {videoUrl && (
                 <video
                   ref={videoRef}
-                  width='250'
-                  height='150'
+                  width="250"
+                  height="150"
                   style={{ borderRadius: "15px" }}
                   onClick={handleTogglePlay}
                   controls={isPlayingVideo} // 👈 Chỉ hiện controls khi đang phát
@@ -918,19 +922,21 @@ const VoiceItem = ({
                     alignItems: "center",
                     justifyContent: "center",
                     cursor: "pointer",
-                  }}>
+                  }}
+                >
                   <Box
-                    display='flex'
-                    justifyContent='center'
-                    alignItems='center'
-                    width='50px'
-                    height='50px'
+                    display="flex"
+                    justifyContent="center"
+                    alignItems="center"
+                    width="50px"
+                    height="50px"
                     sx={{
                       borderRadius: "50%",
                       border: "1px solid white",
                       background: "rgba(0,0,0,.5)",
-                    }}>
-                    <RiPlayFill size={40} color='white' />
+                    }}
+                  >
+                    <RiPlayFill size={40} color="white" />
                   </Box>
                 </Box>
               )}
@@ -947,9 +953,10 @@ const VoiceItem = ({
                     alignItems: "center",
                     padding: "5px 8px",
                     gap: 1,
-                  }}>
-                  <img src={voice_high} alt='' />
-                  <Typography color='rgba(139, 139, 168, 1)'>
+                  }}
+                >
+                  <img src={voice_high} alt="" />
+                  <Typography color="rgba(139, 139, 168, 1)">
                     {(values &&
                       values.find((item) => item.scene === scene)?.voice
                         ?.delay) ||
@@ -970,7 +977,8 @@ const VoiceItem = ({
                     alignItems: "center",
                     padding: "5px 8px",
                     width: "max-content",
-                  }}>
+                  }}
+                >
                   <Typography>
                     {selectedCharacter &&
                       character.find((item) => item.id == selectedCharacter) &&
@@ -987,9 +995,10 @@ const VoiceItem = ({
                 justifyContent: "center",
                 alignItems: "center",
                 padding: "5px 8px",
-              }}>
-              <img src={speed} alt='' />
-              <Typography color='rgba(139, 139, 168, 1)'>
+              }}
+            >
+              <img src={speed} alt="" />
+              <Typography color="rgba(139, 139, 168, 1)">
                 {Math.floor(readingSpeed)}x
               </Typography>
             </Box>
@@ -1005,16 +1014,17 @@ const VoiceItem = ({
 
         <Collapse
           in={open}
-          sx={{ borderTop: "2px solid rgba(65, 65, 136, 1)" }}>
+          sx={{ borderTop: "2px solid rgba(65, 65, 136, 1)" }}
+        >
           <Box p={2}>
-            <Typography fontWeight='bold' mb={3}>
+            <Typography fontWeight="bold" mb={3}>
               Lời dẫn truyện
             </Typography>
             <TextField
               fullWidth
-              placeholder='Nhập lời dẫn truyện'
-              variant='outlined'
-              size='small'
+              placeholder="Nhập lời dẫn truyện"
+              variant="outlined"
+              size="small"
               value={narrationText}
               onChange={(e) => setNarrationText(e.target.value)}
               sx={{
@@ -1033,14 +1043,15 @@ const VoiceItem = ({
             />
 
             <Box mt={3}>
-              <Typography fontWeight='bold' mb={3}>
+              <Typography fontWeight="bold" mb={3}>
                 Cài đặt hệ thống và âm thanh
               </Typography>
 
               <Box
-                display='flex'
+                display="flex"
                 gap={2}
-                sx={{ flexDirection: isMobile ? "column" : "row" }}>
+                sx={{ flexDirection: isMobile ? "column" : "row" }}
+              >
                 <FormControl fullWidth>
                   <InputLabel sx={{ color: "white" }}>Mô hình</InputLabel>
                   <Select
@@ -1092,7 +1103,8 @@ const VoiceItem = ({
                       },
                       ".MuiSelect-icon": { color: "#fff" },
                     }}
-                    label='Mô hình'>
+                    label="Mô hình"
+                  >
                     {model.map((m) => (
                       <MenuItem key={m.id} value={m.id}>
                         {m.name}
@@ -1148,7 +1160,8 @@ const VoiceItem = ({
                       },
                       ".MuiSelect-icon": { color: "#fff" },
                     }}
-                    label='Lời thoại'>
+                    label="Lời thoại"
+                  >
                     {voices.length > 0 ? (
                       voices.map((voice) => (
                         <MenuItem key={voice.id} value={voice.id}>
@@ -1156,7 +1169,7 @@ const VoiceItem = ({
                         </MenuItem>
                       ))
                     ) : (
-                      <MenuItem value='' disabled>
+                      <MenuItem value="" disabled>
                         No voices available
                       </MenuItem>
                     )}
@@ -1211,7 +1224,8 @@ const VoiceItem = ({
                       },
                       ".MuiSelect-icon": { color: "#fff" },
                     }}
-                    label='Nhân vật'>
+                    label="Nhân vật"
+                  >
                     {character.length > 0 ? (
                       character.map((voice) => (
                         <MenuItem key={voice.id} value={voice.id}>
@@ -1219,7 +1233,7 @@ const VoiceItem = ({
                         </MenuItem>
                       ))
                     ) : (
-                      <MenuItem value='' disabled>
+                      <MenuItem value="" disabled>
                         No voices available
                       </MenuItem>
                     )}
@@ -1228,10 +1242,10 @@ const VoiceItem = ({
                 <FormControl fullWidth>
                   <TextField
                     fullWidth
-                    placeholder='Thời lượng'
-                    label='Độ trễ (s)'
-                    variant='outlined'
-                    size='small'
+                    placeholder="Thời lượng"
+                    label="Độ trễ (s)"
+                    variant="outlined"
+                    size="small"
                     value={duration}
                     onChange={(e) => setDuration(e.target.value)}
                     sx={{
@@ -1259,7 +1273,8 @@ const VoiceItem = ({
                 display={"flex"}
                 sx={{ flexDirection: isMobile ? "column" : "row" }}
                 justifyContent={"space-between"}
-                alignItems={"center"}>
+                alignItems={"center"}
+              >
                 <Box width={isMobile ? "100%" : "60%"}>
                   <Typography gutterBottom>Tốc độ đọc</Typography>
                   <Slider
@@ -1274,7 +1289,7 @@ const VoiceItem = ({
                       { value: 1.5, label: "1.5" },
                       { value: 2, label: "2.0" },
                     ]}
-                    valueLabelDisplay='auto'
+                    valueLabelDisplay="auto"
                     sx={{
                       color: "#6b5bfc",
                       "& .MuiSlider-markLabel": {
@@ -1287,9 +1302,9 @@ const VoiceItem = ({
                     }}
                   />
                 </Box>
-                <Box textAlign='right' width={isMobile ? "100%" : "30%"}>
+                <Box textAlign="right" width={isMobile ? "100%" : "30%"}>
                   <Button
-                    variant='contained'
+                    variant="contained"
                     onClick={handleGenerateDialogue}
                     sx={{
                       background: "#6E00FF",
@@ -1306,10 +1321,11 @@ const VoiceItem = ({
                       width: "100%",
                       opacity: loading ? 0.8 : 1,
                       pointerEvents: loading ? "none" : "unset",
-                    }}>
+                    }}
+                  >
                     {loading ? (
-                      <Stack direction='row' alignItems='center' spacing={1}>
-                        <CircularProgress size={16} color='inherit' />
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <CircularProgress size={16} color="inherit" />
                         <span>Tạo lời thoại...</span>
                       </Stack>
                     ) : (
@@ -1453,9 +1469,9 @@ const VoiceItemDialog = ({
     formData.append("speed", String(readingSpeed));
     formData.append("voice", selectedVoice);
     formData.append("delay", duration);
-    if (dialogueData?.voice?.url) {
-      formData.append("sample_url", dialogueData.voice.url);
-    }
+    // if (dialogueData?.voice?.url) {
+    //   formData.append("sample_url", dialogueData.voice.url);
+    // }
 
     try {
       const result = await genScriptVoice(formData);
@@ -1608,18 +1624,20 @@ const VoiceItemDialog = ({
         borderRadius: 2,
         backgroundColor: "#1B1A3C",
         mb: 2,
-      }}>
+      }}
+    >
       <Box
-        display='flex'
+        display="flex"
         alignItems={isMobile ? "start" : "center"}
-        justifyContent='space-between'
+        justifyContent="space-between"
         flexDirection={isMobile ? "column" : "row"}
         gap={2}
         p={2}
-        sx={{ cursor: "pointer" }}>
-        <Box display='flex' alignItems={isMobile ? "left" : "center"} gap={2}>
+        sx={{ cursor: "pointer" }}
+      >
+        <Box display="flex" alignItems={isMobile ? "left" : "center"} gap={2}>
           <Box>
-            <Typography variant='h6' fontWeight='bold'>
+            <Typography variant="h6" fontWeight="bold">
               {title}
             </Typography>
             <Typography my={2} sx={{ fontStyle: "italic" }}>
@@ -1628,20 +1646,22 @@ const VoiceItemDialog = ({
           </Box>
         </Box>
         <Box
-          display='flex'
-          alignItems='center'
+          display="flex"
+          alignItems="center"
           flexWrap={isMobile ? "wrap" : "nowrap"}
-          gap={3}>
+          gap={3}
+        >
           <Box sx={{ position: "relative", width: 250, height: 150 }}>
             {videoUrl && (
               <video
                 ref={videoRef}
-                width='250'
-                height='150'
+                width="250"
+                height="150"
                 style={{ borderRadius: "15px" }}
                 onClick={handleTogglePlay}
                 controls={isPlayingVideo}
-                onEnded={() => setIsPlayingVideo(false)}>
+                onEnded={() => setIsPlayingVideo(false)}
+              >
                 <source src={videoUrl} />
                 Trình duyệt của bạn không hỗ trợ video HTML5.
               </video>
@@ -1659,19 +1679,21 @@ const VoiceItemDialog = ({
                   alignItems: "center",
                   justifyContent: "center",
                   cursor: "pointer",
-                }}>
+                }}
+              >
                 <Box
-                  display='flex'
-                  justifyContent='center'
-                  alignItems='center'
-                  width='50px'
-                  height='50px'
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                  width="50px"
+                  height="50px"
                   sx={{
                     borderRadius: "50%",
                     border: "1px solid white",
                     background: "rgba(0,0,0,.5)",
-                  }}>
-                  <RiPlayFill size={40} color='white' />
+                  }}
+                >
+                  <RiPlayFill size={40} color="white" />
                 </Box>
               </Box>
             )}
@@ -1686,9 +1708,10 @@ const VoiceItemDialog = ({
                 alignItems: "center",
                 padding: "5px 8px",
                 gap: 1,
-              }}>
-              <img src={voice_high} alt='' />
-              <Typography color='rgba(139, 139, 168, 1)'>
+              }}
+            >
+              <img src={voice_high} alt="" />
+              <Typography color="rgba(139, 139, 168, 1)">
                 {dialogueData?.voice?.delay || 0}s
               </Typography>
             </Box>
@@ -1704,7 +1727,8 @@ const VoiceItemDialog = ({
                   alignItems: "center",
                   padding: "5px 8px",
                   width: "max-content",
-                }}>
+                }}
+              >
                 <Typography>
                   {
                     characters.find((item) => item.id === selectedCharacter)
@@ -1721,9 +1745,10 @@ const VoiceItemDialog = ({
               justifyContent: "center",
               alignItems: "center",
               padding: "5px 8px",
-            }}>
-            <img src={speed} alt='' />
-            <Typography color='rgba(139, 139, 168, 1)'>
+            }}
+          >
+            <img src={speed} alt="" />
+            <Typography color="rgba(139, 139, 168, 1)">
               {Math.floor(readingSpeed)}x
             </Typography>
           </Box>
@@ -1739,14 +1764,14 @@ const VoiceItemDialog = ({
 
       <Collapse in={open} sx={{ borderTop: "2px solid rgba(65, 65, 136, 1)" }}>
         <Box p={2}>
-          <Typography fontWeight='bold' mb={3}>
+          <Typography fontWeight="bold" mb={3}>
             Lời thoại
           </Typography>
           <TextField
             fullWidth
-            placeholder='Nhập lời thoại'
-            variant='outlined'
-            size='small'
+            placeholder="Nhập lời thoại"
+            variant="outlined"
+            size="small"
             value={narrationText}
             onChange={(e) => setNarrationText(e.target.value)}
             sx={{
@@ -1765,13 +1790,14 @@ const VoiceItemDialog = ({
           />
 
           <Box mt={3}>
-            <Typography fontWeight='bold' mb={3}>
+            <Typography fontWeight="bold" mb={3}>
               Cài đặt hệ thống và âm thanh
             </Typography>
             <Box
-              display='flex'
+              display="flex"
               gap={2}
-              sx={{ flexDirection: isMobile ? "column" : "row" }}>
+              sx={{ flexDirection: isMobile ? "column" : "row" }}
+            >
               <FormControl fullWidth>
                 <InputLabel sx={{ color: "white" }}>Mô hình</InputLabel>
                 <Select
@@ -1820,7 +1846,8 @@ const VoiceItemDialog = ({
                     },
                     ".MuiSelect-icon": { color: "#fff" },
                   }}
-                  label='Mô hình'>
+                  label="Mô hình"
+                >
                   {model.map((m) => (
                     <MenuItem key={m.id} value={m.id}>
                       {m.name}
@@ -1876,7 +1903,8 @@ const VoiceItemDialog = ({
                     },
                     ".MuiSelect-icon": { color: "#fff" },
                   }}
-                  label='Giọng đọc'>
+                  label="Giọng đọc"
+                >
                   {voices.length > 0 ? (
                     voices.map((voice) => (
                       <MenuItem key={voice.id} value={voice.id}>
@@ -1884,7 +1912,7 @@ const VoiceItemDialog = ({
                       </MenuItem>
                     ))
                   ) : (
-                    <MenuItem value='' disabled>
+                    <MenuItem value="" disabled>
                       No voices available
                     </MenuItem>
                   )}
@@ -1938,7 +1966,8 @@ const VoiceItemDialog = ({
                     },
                     ".MuiSelect-icon": { color: "#fff" },
                   }}
-                  label='Nhân vật'>
+                  label="Nhân vật"
+                >
                   {characters.length > 0 ? (
                     characters.map((char) => (
                       <MenuItem key={char.id} value={char.id}>
@@ -1946,7 +1975,7 @@ const VoiceItemDialog = ({
                       </MenuItem>
                     ))
                   ) : (
-                    <MenuItem value='' disabled>
+                    <MenuItem value="" disabled>
                       No characters available
                     </MenuItem>
                   )}
@@ -1955,10 +1984,10 @@ const VoiceItemDialog = ({
               <FormControl fullWidth>
                 <TextField
                   fullWidth
-                  placeholder='Thời lượng'
-                  label='Độ trễ (s)'
-                  variant='outlined'
-                  size='small'
+                  placeholder="Thời lượng"
+                  label="Độ trễ (s)"
+                  variant="outlined"
+                  size="small"
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
                   sx={{
@@ -1980,10 +2009,11 @@ const VoiceItemDialog = ({
             </Box>
             <Box
               mt={3}
-              display='flex'
+              display="flex"
               sx={{ flexDirection: isMobile ? "column" : "row" }}
-              justifyContent='space-between'
-              alignItems='center'>
+              justifyContent="space-between"
+              alignItems="center"
+            >
               <Box width={isMobile ? "100%" : "60%"}>
                 <Typography gutterBottom>Tốc độ đọc</Typography>
                 <Slider
@@ -1999,7 +2029,7 @@ const VoiceItemDialog = ({
                     { value: 2, label: "2.0" },
                     { value: 3, label: "3.0" },
                   ]}
-                  valueLabelDisplay='auto'
+                  valueLabelDisplay="auto"
                   sx={{
                     color: "#6b5bfc",
                     "& .MuiSlider-markLabel": { color: "#fff" },
@@ -2010,9 +2040,9 @@ const VoiceItemDialog = ({
                   }}
                 />
               </Box>
-              <Box textAlign='right' width={isMobile ? "100%" : "30%"}>
+              <Box textAlign="right" width={isMobile ? "100%" : "30%"}>
                 <Button
-                  variant='contained'
+                  variant="contained"
                   onClick={handleGenerateDialogue}
                   sx={{
                     background: "#6E00FF",
@@ -2027,10 +2057,11 @@ const VoiceItemDialog = ({
                     width: "100%",
                     opacity: loading ? 0.8 : 1,
                     pointerEvents: loading ? "none" : "auto",
-                  }}>
+                  }}
+                >
                   {loading ? (
-                    <Stack direction='row' alignItems='center' spacing={2}>
-                      <CircularProgress size={16} color='inherit' />
+                    <Stack direction="row" alignItems="center" spacing={2}>
+                      <CircularProgress size={16} color="inherit" />
                       <span>Tạo lời thoại...</span>
                     </Stack>
                   ) : (
@@ -2085,9 +2116,9 @@ const VoiceScene = ({ model, genScript, setLoading, id }) => {
         model={model}
       /> */}
 
-      <Box textAlign='center' mt={4}>
+      <Box textAlign="center" mt={4}>
         <Button
-          variant='contained'
+          variant="contained"
           onClick={async () => {
             setLoading(true);
             try {
@@ -2151,7 +2182,8 @@ const VoiceScene = ({ model, genScript, setLoading, id }) => {
             },
             height: 50,
             fontSize: isMobile ? "15px" : "18px",
-          }}>
+          }}
+        >
           Bước tiếp theo
         </Button>
       </Box>

@@ -372,7 +372,11 @@ const SceneCard = forwardRef((props, ref) => {
     if (sceneData && Object.keys(sceneData).length > 0 && sceneData.video.id) {
       setSelectedEffect(sceneData.video.effect);
     } else {
-      setSelectedEffect(effect && effect.length > 0 && effect[0].id);
+      setSelectedEffect(
+        effect &&
+          effect.length > 0 &&
+          effect.finf((item) => item.id == "none")?.id
+      );
     }
   }, [effect]);
   useEffect(() => {
@@ -1815,17 +1819,25 @@ function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
       </Box>
 
       <Box>
-        {values && values.length > 0 && (
-          <SceneCard
-            key={currentSceneIndex}
-            scene={values[currentSceneIndex].scene}
-            values={values}
-            setValues={setValues}
-            model={model}
-            px={px}
-            effect={effect}
-          />
-        )}
+        {values.map((_, index) => (
+          <Box
+            key={index}
+            sx={{
+              display: index === currentSceneIndex ? "block" : "none",
+            }}
+          >
+            <SceneCard
+              key={currentSceneIndex}
+              scene={values[currentSceneIndex].scene}
+              values={values}
+              setValues={setValues}
+              model={model}
+              px={px}
+              effect={effect}
+            />
+          </Box>
+        ))}
+
         <Box textAlign="center">
           <Box
             paddingBottom={4}

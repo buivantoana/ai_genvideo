@@ -113,7 +113,7 @@ const CreateImageView = ({
   };
   return (
     <Box
-      className='hidden-add-voice'
+      className="hidden-add-voice"
       sx={{
         bgcolor: "#0D0C2B",
         p: isMobile ? 1.5 : 6,
@@ -121,7 +121,8 @@ const CreateImageView = ({
         display: "flex",
         flexDirection: "column",
         gap: { xs: 2, md: 4 },
-      }}>
+      }}
+    >
       <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
       {/* <ResponsiveBox
@@ -129,7 +130,7 @@ const CreateImageView = ({
         onTabChange={(index) => setSelectedTab(index)}
       /> */}
       <Box display={"flex"} flexWrap={"wrap"} gap={isMobile ? 1 : 3}>
-        <FormControl variant='outlined' size='small'>
+        <FormControl variant="outlined" size="small">
           <Select
             value={model}
             onChange={handleChange}
@@ -181,20 +182,22 @@ const CreateImageView = ({
                   },
                 },
               },
-            }}>
+            }}
+          >
             {modelList.map((option) => (
               <MenuItem key={option.key} value={option.key}>
                 <Box
-                  display='flex'
-                  justifyContent='space-between'
+                  display="flex"
+                  justifyContent="space-between"
                   gap={3}
-                  width='100%'>
+                  width="100%"
+                >
                   {option.value}
-                  {model === option.key && <CheckIcon fontSize='small' />}
+                  {model === option.key && <CheckIcon fontSize="small" />}
                 </Box>
               </MenuItem>
             ))}
-            <MenuItem value='add_new'>Thêm mới</MenuItem>
+            <MenuItem value="add_new">Thêm mới</MenuItem>
           </Select>
 
           {/* Modal thêm model */}
@@ -208,13 +211,15 @@ const CreateImageView = ({
                 mx: "auto",
                 mt: "15%",
                 borderRadius: 2,
-              }}>
-              <Typography variant='h6' mb={2}>
+              }}
+            >
+              <Typography variant="h6" mb={2}>
                 Thêm mới model
               </Typography>
               <Box
                 display={isMobile ? "unset" : "flex"}
-                justifyContent={"space-between"}>
+                justifyContent={"space-between"}
+              >
                 <Box width={isMobile ? "100%" : "48%"}>
                   <Typography>Tên</Typography>
                   <TextField
@@ -223,8 +228,8 @@ const CreateImageView = ({
                       setNewModel((prev) => ({ ...prev, name: e.target.value }))
                     }
                     fullWidth
-                    variant='outlined'
-                    size='small'
+                    variant="outlined"
+                    size="small"
                     sx={{
                       backgroundColor: "#1A1836",
                       borderRadius: 2,
@@ -292,7 +297,8 @@ const CreateImageView = ({
                           },
                         },
                       },
-                    }}>
+                    }}
+                  >
                     {modelAdd.map((option) => (
                       <MenuItem key={option} value={option.key}>
                         {option.value}
@@ -308,8 +314,8 @@ const CreateImageView = ({
                   setNewModel((prev) => ({ ...prev, link: e.target.value }))
                 }
                 fullWidth
-                variant='outlined'
-                size='small'
+                variant="outlined"
+                size="small"
                 sx={{
                   backgroundColor: "#1A1836",
                   borderRadius: 2,
@@ -326,7 +332,7 @@ const CreateImageView = ({
               />
               <Box sx={{ textAlign: "center" }}>
                 <Button
-                  variant='contained'
+                  variant="contained"
                   sx={{
                     backgroundColor: "rgba(89, 50, 234, 1)",
                     borderRadius: 1,
@@ -334,7 +340,8 @@ const CreateImageView = ({
                     width: "max-content",
                     height: isMobile ? "40px" : "50px",
                   }}
-                  onClick={handleAddModel}>
+                  onClick={handleAddModel}
+                >
                   Thêm mới model
                 </Button>
               </Box>
@@ -447,9 +454,9 @@ const CreateImageView = ({
             ))}
           </Select>
         </FormControl> */}
-        <FormControl variant='outlined' size='small'>
+        <FormControl variant="outlined" size="small">
           <Select
-            defaultValue='1920x1080 (16:9)'
+            defaultValue="1920x1080 (16:9)"
             value={px}
             onChange={(e) => setPx(e.target.value)}
             sx={{
@@ -494,7 +501,8 @@ const CreateImageView = ({
                   },
                 },
               },
-            }}>
+            }}
+          >
             {modelOptions3.map((option) => (
               <MenuItem key={option} value={option}>
                 {option}
@@ -890,20 +898,22 @@ const SceneCard = forwardRef((props, ref) => {
       sx={{
         borderRadius: 2,
         mb: 4,
-      }}>
+      }}
+    >
       <Stack spacing={2}>
-        <Stack direction='row' gap={"30px"} alignItems='center'>
+        <Stack direction="row" gap={"30px"} alignItems="center">
           <Typography
-            variant='h6'
+            variant="h6"
             fontSize={{ xs: ".9rem", md: "1.25rem" }}
-            color='white'>
+            color="white"
+          >
             Phần lời kể:
           </Typography>
           {sceneData?.image?.imageUrls?.length > 0 && (
             <Button
               startIcon={loading ? <></> : <RiRefreshLine />}
               onClick={() => genImage()}
-              size='small'
+              size="small"
               sx={{
                 borderRadius: 1,
                 background: "rgba(89, 50, 234, 1)",
@@ -911,10 +921,11 @@ const SceneCard = forwardRef((props, ref) => {
                 opacity: loading ? 0.8 : 1,
                 pointerEvents: loading ? "none" : "unset",
               }}
-              variant='contained'>
+              variant="contained"
+            >
               {loading ? (
-                <Stack direction='row' alignItems='center' spacing={1}>
-                  <CircularProgress size={16} color='inherit' />
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <CircularProgress size={16} color="inherit" />
                   <span>Đang tạo ảnh...</span>
                 </Stack>
               ) : (
@@ -924,7 +935,7 @@ const SceneCard = forwardRef((props, ref) => {
           )}
         </Stack>
         <Typography mb={2}>Prompt:</Typography>
-        <Box position='relative'>
+        <Box position="relative">
           <TextField
             multiline
             fullWidth
@@ -932,7 +943,7 @@ const SceneCard = forwardRef((props, ref) => {
             maxRows={5}
             value={sceneData?.image?.prompt}
             onChange={(e) => handleChange("prompt", e.target.value)}
-            variant='outlined'
+            variant="outlined"
             sx={{
               "& .MuiOutlinedInput-notchedOutline": {
                 border: "2px solid",
@@ -953,12 +964,13 @@ const SceneCard = forwardRef((props, ref) => {
           <IconButton
             onClick={() => setIsEditing(!isEditing)}
             sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
-            size='small'>
-            <EditIcon fontSize='small' />
+            size="small"
+          >
+            <EditIcon fontSize="small" />
           </IconButton>
         </Box>
         <Typography mb={2}>Negative Prompt:</Typography>
-        <Box position='relative'>
+        <Box position="relative">
           <TextField
             multiline
             fullWidth
@@ -966,7 +978,7 @@ const SceneCard = forwardRef((props, ref) => {
             maxRows={5}
             value={sceneData?.image?.n_prompt}
             onChange={(e) => handleChange("n_prompt", e.target.value)}
-            variant='outlined'
+            variant="outlined"
             sx={{
               "& .MuiOutlinedInput-notchedOutline": {
                 border: "2px solid",
@@ -987,8 +999,9 @@ const SceneCard = forwardRef((props, ref) => {
           <IconButton
             onClick={() => setIsEditing(!isEditing)}
             sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
-            size='small'>
-            <EditIcon fontSize='small' />
+            size="small"
+          >
+            <EditIcon fontSize="small" />
           </IconButton>
         </Box>
 
@@ -1015,7 +1028,8 @@ const SceneCard = forwardRef((props, ref) => {
                 xs={5}
                 sx={{ mr: isMobile ? "0px" : "20px" }}
                 sm={4}
-                md={3}>
+                md={3}
+              >
                 <Card
                   sx={{
                     bgcolor: "#292a45",
@@ -1025,10 +1039,11 @@ const SceneCard = forwardRef((props, ref) => {
                     alignItems: "center",
                     justifyContent: "center",
                     padding: 0,
-                  }}>
+                  }}
+                >
                   <Button
                     onClick={() => genImage()}
-                    variant='contained'
+                    variant="contained"
                     sx={{
                       background: "rgba(89, 50, 234, 1)",
                       borderRadius: 1,
@@ -1037,10 +1052,11 @@ const SceneCard = forwardRef((props, ref) => {
                       height: 36,
                       opacity: loading ? 0.8 : 1,
                       pointerEvents: loading ? "none" : "unset",
-                    }}>
+                    }}
+                  >
                     {loading ? (
-                      <Stack direction='row' alignItems='center' spacing={1}>
-                        <CircularProgress size={16} color='inherit' />
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <CircularProgress size={16} color="inherit" />
                         <span>Đang tạo ảnh...</span>
                       </Stack>
                     ) : (
@@ -1063,11 +1079,12 @@ const SceneCard = forwardRef((props, ref) => {
                   cursor: "pointer",
                   opacity: loadingUpload ? 0.7 : 1,
                   pointerEvents: loadingUpload ? "none" : "auto",
-                }}>
+                }}
+              >
                 {loadingUpload ? (
-                  <Stack direction='row' alignItems='center' spacing={1}>
-                    <CircularProgress size={20} color='inherit' />
-                    <Typography color='white'>Đang tải ảnh...</Typography>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <CircularProgress size={20} color="inherit" />
+                    <Typography color="white">Đang tải ảnh...</Typography>
                   </Stack>
                 ) : (
                   <Box
@@ -1077,15 +1094,16 @@ const SceneCard = forwardRef((props, ref) => {
                       justifyContent: "center",
                       alignItems: "center",
                       gap: 0.5,
-                    }}>
-                    <UploadFileIcon sx={{ color: "white" }} fontSize='large' />
-                    <Typography color='white'>Tải ảnh của bạn lên</Typography>
+                    }}
+                  >
+                    <UploadFileIcon sx={{ color: "white" }} fontSize="large" />
+                    <Typography color="white">Tải ảnh của bạn lên</Typography>
                   </Box>
                 )}
                 <input
                   ref={fileInputRef}
-                  type='file'
-                  accept='image/*'
+                  type="file"
+                  accept="image/*"
                   hidden
                   onChange={handleFileChange}
                 />
@@ -1591,19 +1609,20 @@ const SceneCardDialogue = forwardRef((props, ref) => {
   return (
     <Box sx={{ borderRadius: 2, mb: 4 }}>
       <Stack spacing={2}>
-        <Stack direction='row' gap='30px' alignItems='center'>
+        <Stack direction="row" gap="30px" alignItems="center">
           <Typography
-            variant='h6'
+            variant="h6"
             fontSize={{ xs: ".8rem", md: "1.15rem" }}
             fontStyle={"italic"}
-            color='white'>
+            color="white"
+          >
             Lời thoại {index + 1}:
           </Typography>
           {dialogueItem?.image?.imageUrls?.length > 0 && (
             <Button
               startIcon={loading ? <></> : <RiRefreshLine />}
               onClick={() => genImage()}
-              size='small'
+              size="small"
               sx={{
                 borderRadius: 1,
                 background: "rgba(89, 50, 234, 1)",
@@ -1611,10 +1630,11 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                 opacity: loading ? 0.8 : 1,
                 pointerEvents: loading ? "none" : "unset",
               }}
-              variant='contained'>
+              variant="contained"
+            >
               {loading ? (
-                <Stack direction='row' alignItems='center' spacing={1}>
-                  <CircularProgress size={16} color='inherit' />
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <CircularProgress size={16} color="inherit" />
                   <span>Đang tạo ảnh...</span>
                 </Stack>
               ) : (
@@ -1625,7 +1645,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
         </Stack>
 
         <Typography mb={2}>Prompt:</Typography>
-        <Box position='relative'>
+        <Box position="relative">
           <TextField
             multiline
             fullWidth
@@ -1633,7 +1653,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
             maxRows={5}
             value={dialogueItem?.image?.prompt || ""}
             onChange={(e) => handleChange("prompt", e.target.value)}
-            variant='outlined'
+            variant="outlined"
             sx={{
               "& .MuiOutlinedInput-notchedOutline": {
                 border: "2px solid",
@@ -1654,13 +1674,14 @@ const SceneCardDialogue = forwardRef((props, ref) => {
           <IconButton
             onClick={() => setIsEditing(!isEditing)}
             sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
-            size='small'>
-            <EditIcon fontSize='small' />
+            size="small"
+          >
+            <EditIcon fontSize="small" />
           </IconButton>
         </Box>
 
         <Typography mb={2}>Negative Prompt:</Typography>
-        <Box position='relative'>
+        <Box position="relative">
           <TextField
             multiline
             fullWidth
@@ -1668,7 +1689,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
             maxRows={5}
             value={dialogueItem?.image?.n_prompt || ""}
             onChange={(e) => handleChange("n_prompt", e.target.value)}
-            variant='outlined'
+            variant="outlined"
             sx={{
               "& .MuiOutlinedInput-notchedOutline": {
                 border: "2px solid",
@@ -1689,8 +1710,9 @@ const SceneCardDialogue = forwardRef((props, ref) => {
           <IconButton
             onClick={() => setIsEditing(!isEditing)}
             sx={{ position: "absolute", top: 8, right: 8, color: "white" }}
-            size='small'>
-            <EditIcon fontSize='small' />
+            size="small"
+          >
+            <EditIcon fontSize="small" />
           </IconButton>
         </Box>
 
@@ -1713,7 +1735,8 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                 xs={5}
                 sx={{ mr: isMobile ? "0px" : "20px" }}
                 sm={4}
-                md={3}>
+                md={3}
+              >
                 <Card
                   sx={{
                     bgcolor: "#292a45",
@@ -1722,10 +1745,11 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                     alignItems: "center",
                     justifyContent: "center",
                     padding: 0,
-                  }}>
+                  }}
+                >
                   <Button
                     onClick={() => genImage()}
-                    variant='contained'
+                    variant="contained"
                     sx={{
                       background: "rgba(89, 50, 234, 1)",
                       borderRadius: 1,
@@ -1734,10 +1758,11 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                       height: 36,
                       opacity: loading ? 0.8 : 1,
                       pointerEvents: loading ? "none" : "unset",
-                    }}>
+                    }}
+                  >
                     {loading ? (
-                      <Stack direction='row' alignItems='center' spacing={1}>
-                        <CircularProgress size={16} color='inherit' />
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <CircularProgress size={16} color="inherit" />
                         <span>Đang tạo ảnh...</span>
                       </Stack>
                     ) : (
@@ -1760,11 +1785,12 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                   cursor: "pointer",
                   opacity: loadingUpload ? 0.7 : 1,
                   pointerEvents: loadingUpload ? "none" : "auto",
-                }}>
+                }}
+              >
                 {loadingUpload ? (
-                  <Stack direction='row' alignItems='center' spacing={1}>
-                    <CircularProgress size={20} color='inherit' />
-                    <Typography color='white'>Đang tải ảnh...</Typography>
+                  <Stack direction="row" alignItems="center" spacing={1}>
+                    <CircularProgress size={20} color="inherit" />
+                    <Typography color="white">Đang tải ảnh...</Typography>
                   </Stack>
                 ) : (
                   <Box
@@ -1774,15 +1800,16 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                       justifyContent: "center",
                       alignItems: "center",
                       gap: 0.5,
-                    }}>
-                    <UploadFileIcon sx={{ color: "white" }} fontSize='large' />
-                    <Typography color='white'>Tải ảnh của bạn lên</Typography>
+                    }}
+                  >
+                    <UploadFileIcon sx={{ color: "white" }} fontSize="large" />
+                    <Typography color="white">Tải ảnh của bạn lên</Typography>
                   </Box>
                 )}
                 <input
                   ref={fileInputRef}
-                  type='file'
-                  accept='image/*'
+                  type="file"
+                  accept="image/*"
                   hidden
                   onChange={handleFileChange}
                 />
@@ -2045,19 +2072,21 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
     <>
       <Box display={"flex"} alignItems={"center"} gap={"20px"}>
         <Typography
-          variant='h5'
+          variant="h5"
           fontSize={isMobile ? "1rem" : "1.5rem"}
-          fontWeight={"bold"}>
+          fontWeight={"bold"}
+        >
           Tạo ảnh
         </Typography>
         <Button
-          variant='contained'
+          variant="contained"
           onClick={handleGenerateAllImages}
           sx={{
             background: " linear-gradient(135deg, #FDD819 0%, #E80505 100%)",
             borderRadius: 1,
             fontSize: isMobile ? "0.675rem" : "0.875rem",
-          }}>
+          }}
+        >
           Tạo toàn bộ ảnh
         </Button>
       </Box>
@@ -2075,7 +2104,8 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
               alignItems: "start",
               cursor: "pointer",
               gap: 2,
-            }}>
+            }}
+          >
             <Typography
               fontWeight={index == currentSceneIndex ? "bold" : 500}
               fontSize={isMobile ? "15px" : "20px"}
@@ -2086,7 +2116,8 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                   index == currentSceneIndex
                     ? "white"
                     : "rgba(255, 255, 255, .6)",
-              }}>
+              }}
+            >
               Phân cảnh {index + 1}
               <Box
                 sx={{
@@ -2095,7 +2126,8 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                   width: "100%",
                   display: "flex",
                   justifyContent: "center",
-                }}>
+                }}
+              >
                 <Box
                   sx={{
                     width: "80%",
@@ -2104,7 +2136,8 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                       index == currentSceneIndex
                         ? "rgba(89, 50, 234, 1)"
                         : "unset",
-                  }}></Box>
+                  }}
+                ></Box>
               </Box>
             </Typography>
             {!(index == values.length - 1) && (
@@ -2114,19 +2147,25 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
         ))}
       </Box>
       <Box sx={{ minHeight: "100vh", pb: 3 }}>
-        {values && values.length > 0 && (
-          <SceneCard
-            key={currentSceneIndex}
-            scene={values[currentSceneIndex].scene}
-            values={values}
-            setValues={setValues}
-            model={model}
-            px={px}
-            ref={(el) => (sceneRefs.current[currentSceneIndex] = el)}
-          />
-        )}
+        {values.map((_, index) => (
+          <Box
+            key={index}
+            sx={{
+              display: index === currentSceneIndex ? "block" : "none",
+            }}
+          >
+            <SceneCard
+              scene={values[index].scene}
+              values={values}
+              setValues={setValues}
+              model={model}
+              px={px}
+              ref={(el) => (sceneRefs.current[index] = el)}
+            />
+          </Box>
+        ))}
 
-        <Box textAlign='center'>
+        <Box textAlign="center">
           {/* <Box
             sx={{
               display: "flex",
@@ -2162,30 +2201,40 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
               gap: 2,
               mt: 2,
               justifyContent: "center",
-            }}>
+            }}
+          >
             <Button
-              variant='contained'
+              variant="contained"
               onClick={async () => {
                 // Kiểm tra ảnh chính và ảnh trong dialogue
                 const hasMissingImage = values.some((item) => {
                   // Kiểm tra video chính
-                  const mainImageMissing = !item.image?.imageUrls || 
-                                         (typeof item.image.selected !== "number") || 
-                                         !item.image.imageUrls[item.image.selected];
-                
+                  const mainImageMissing =
+                    !item.image?.imageUrls ||
+                    typeof item.image.selected !== "number" ||
+                    !item.image.imageUrls[item.image.selected];
+
                   // Kiểm tra video trong dialogue (nếu có)
-                  const dialogueImageMissing = item.dialogue?.some((dialogueItem) => {
-                    return dialogueItem.image && 
-                           (!dialogueItem.image.imageUrls || 
-                            (typeof dialogueItem.image.selected !== "number") || 
-                            !dialogueItem.image.imageUrls[dialogueItem.image.selected]);
-                  });
-                
+                  const dialogueImageMissing = item.dialogue?.some(
+                    (dialogueItem) => {
+                      return (
+                        dialogueItem.image &&
+                        (!dialogueItem.image.imageUrls ||
+                          typeof dialogueItem.image.selected !== "number" ||
+                          !dialogueItem.image.imageUrls[
+                            dialogueItem.image.selected
+                          ])
+                      );
+                    }
+                  );
+
                   return mainImageMissing || dialogueImageMissing;
                 });
-                
+
                 if (hasMissingImage) {
-                  toast.warning("Bạn cần tạo ảnh cho mỗi phân cảnh và dialogue");
+                  toast.warning(
+                    "Bạn cần tạo ảnh cho mỗi phân cảnh và dialogue"
+                  );
                   return;
                 }
 
@@ -2317,12 +2366,13 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                 },
                 height: isMobile ? 40 : 50,
                 fontSize: isMobile ? "15px" : "18px",
-              }}>
+              }}
+            >
               Xác nhận ảnh
             </Button>
 
             <Button
-              variant='contained'
+              variant="contained"
               onClick={() => {
                 //  for (let i = 0; i < values.length; i++) {
                 //    const element = values[i];
@@ -2356,7 +2406,8 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                 height: isMobile ? 40 : 50,
                 fontSize: isMobile ? "15px" : "18px",
                 color: "black",
-              }}>
+              }}
+            >
               Tải hàng loạt (
               {values &&
                 values?.filter(
@@ -2405,9 +2456,10 @@ const ImageGridItem = ({
           position: "relative", // Added to position the icon relative to the Grid
         }}
         sm={4}
-        md={3}>
+        md={3}
+      >
         <CardMedia
-          component='img'
+          component="img"
           height={isMobile ? "150px" : "220px"}
           sx={{
             objectFit: "cover",
@@ -2415,7 +2467,7 @@ const ImageGridItem = ({
             border: selected ? "3px solid green" : "none",
           }}
           image={item}
-          alt='uploaded'
+          alt="uploaded"
         />
         <IconButton
           onClick={(e) => {
@@ -2431,23 +2483,25 @@ const ImageGridItem = ({
             "&:hover": {
               backgroundColor: "rgba(0, 0, 0, 0.7)",
             },
-          }}>
+          }}
+        >
           <ZoomOutMapIcon />
         </IconButton>
       </Grid>
       <Dialog
         open={open}
         onClose={handleClose}
-        maxWidth='lg'
+        maxWidth="lg"
         fullWidth
         sx={{
           "& .MuiDialog-paper": {
             backgroundColor: "transparent", // Transparent background for dialog
             boxShadow: "none",
           },
-        }}>
+        }}
+      >
         <CardMedia
-          component='img'
+          component="img"
           sx={{
             width: "100%",
             height: "90vh", // Full viewport height
@@ -2455,7 +2509,7 @@ const ImageGridItem = ({
             backgroundColor: "black", // Black background for better contrast
           }}
           image={item}
-          alt='uploaded full screen'
+          alt="uploaded full screen"
         />
         <IconButton
           onClick={handleClose}
@@ -2468,7 +2522,8 @@ const ImageGridItem = ({
             "&:hover": {
               backgroundColor: "rgba(0, 0, 0, 0.7)",
             },
-          }}>
+          }}
+        >
           <Close /> {/* You can replace with a CloseIcon if preferred */}
         </IconButton>
       </Dialog>
