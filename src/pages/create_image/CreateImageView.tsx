@@ -697,68 +697,70 @@ const SceneCard = forwardRef((props, ref) => {
     };
     if (image) {
       if (isUploadedImage(image)) {
-        const uploadResult = await upload({
-          file: sceneData.image.file,
-          folder: "images",
-        });
-
-        if (!uploadResult || !uploadResult.url) {
-          throw new Error("Failed to upload audio file");
-        }
-        let script: any = localStorage.getItem("gen_script");
-        if (script) {
-          script = JSON.parse(script);
-          script.script.scenes = values.map((item) => {
-            if (item.scene == scene) {
-              return {
-                ...item,
-                image: {
-                  ...item.image,
-                  ids: [...(item.image.ids || []), uploadResult.id],
-                  imageUrls: [
-                    ...(item.image.imageUrls || []),
-                    uploadResult.url,
-                  ].filter((item) => item != image),
-                  selected:
-                    (item.image.imageUrls?.length || 0) === 0
-                      ? 0
-                      : item.image.selected,
-                },
-              };
-            }
-            return item;
-          });
-          localStorage.setItem("gen_script", JSON.stringify(script));
-        }
-        setValues((prev) =>
-          prev.map((item) =>
-            item.scene === scene
-              ? {
-                  ...item,
-                  image: {
-                    ...item.image,
-                    ids: [...(item.image.ids || []), uploadResult.id],
-                    imageUrls: [
-                      ...(item.image.imageUrls || []),
-                      uploadResult.url,
-                    ].filter((item) => item != image),
-                    selected:
-                      (item.image.imageUrls?.length || 0) === 0
-                        ? 0
-                        : item.image.selected,
-                  },
-                }
-              : item
-          )
-        );
-        if (fileImage) {
-          setLoadingUpload(false);
-        } else {
-          setLoading(false);
-        }
-        return;
+        // const uploadResult = await upload({
+        //   file: sceneData.image.file,
+        //   folder: "images",
+        // });
+        formData.append("input_image_file", sceneData.image.file);
+        // if (!uploadResult || !uploadResult.url) {
+        //   throw new Error("Failed to upload audio file");
+        // }
+        // let script: any = localStorage.getItem("gen_script");
+        // if (script) {
+        //   script = JSON.parse(script);
+        //   script.script.scenes = values.map((item) => {
+        //     if (item.scene == scene) {
+        //       return {
+        //         ...item,
+        //         image: {
+        //           ...item.image,
+        //           ids: [...(item.image.ids || []), uploadResult.id],
+        //           imageUrls: [
+        //             ...(item.image.imageUrls || []),
+        //             uploadResult.url,
+        //           ].filter((item) => item != image),
+        //           selected:
+        //             (item.image.imageUrls?.length || 0) === 0
+        //               ? 0
+        //               : item.image.selected,
+        //         },
+        //       };
+        //     }
+        //     return item;
+        //   });
+        //   localStorage.setItem("gen_script", JSON.stringify(script));
+        // }
+        // setValues((prev) =>
+        //   prev.map((item) =>
+        //     item.scene === scene
+        //       ? {
+        //           ...item,
+        //           image: {
+        //             ...item.image,
+        //             ids: [...(item.image.ids || []), uploadResult.id],
+        //             imageUrls: [
+        //               ...(item.image.imageUrls || []),
+        //               uploadResult.url,
+        //             ].filter((item) => item != image),
+        //             selected:
+        //               (item.image.imageUrls?.length || 0) === 0
+        //                 ? 0
+        //                 : item.image.selected,
+        //           },
+        //         }
+        //       : item
+        //   )
+        // );
+        // if (fileImage) {
+        //   setLoadingUpload(false);
+        // } else {
+        //   setLoading(false);
+        // }
+        // return;
       } else {
-        formData.append("input_image_url", image);
+        if (typeof image == "string") {
+          formData.append("input_image_url", image);
+        }
       }
     }
     if (fileImage) {
@@ -1353,76 +1355,76 @@ const SceneCardDialogue = forwardRef((props, ref) => {
 
     if (image) {
       if (isUploadedImage(image)) {
-        const uploadResult = await upload({
-          file: dialogueItem.image.file,
-          folder: "images",
-        });
+        // const uploadResult = await upload({
+        //   file: dialogueItem.image.file,
+        //   folder: "images",
+        // });
+        formData.append("input_image_file", dialogueItem.image.file);
+        // if (!uploadResult || !uploadResult.url) {
+        //   throw new Error("Failed to upload audio file");
+        // }
 
-        if (!uploadResult || !uploadResult.url) {
-          throw new Error("Failed to upload audio file");
-        }
+        // setValues((prev) =>
+        //   prev.map((item) =>
+        //     item.scene === parentScene
+        //       ? {
+        //           ...item,
+        //           dialogue: item.dialogue.map((d, i) =>
+        //             i === index
+        //               ? {
+        //                   ...d,
+        //                   image: {
+        //                     ...d.image,
+        //                     ids: [...(d.image?.ids || []), uploadResult.id],
+        //                     imageUrls: [
+        //                       ...(d.image?.imageUrls || []),
+        //                       uploadResult.url,
+        //                     ].filter((item) => item != image),
+        //                     selected:
+        //                       (d.image?.imageUrls?.length || 0) === 0
+        //                         ? 0
+        //                         : d.image?.selected,
+        //                   },
+        //                 }
+        //               : d
+        //           ),
+        //         }
+        //       : item
+        //   )
+        // );
 
-        setValues((prev) =>
-          prev.map((item) =>
-            item.scene === parentScene
-              ? {
-                  ...item,
-                  dialogue: item.dialogue.map((d, i) =>
-                    i === index
-                      ? {
-                          ...d,
-                          image: {
-                            ...d.image,
-                            ids: [...(d.image?.ids || []), uploadResult.id],
-                            imageUrls: [
-                              ...(d.image?.imageUrls || []),
-                              uploadResult.url,
-                            ].filter((item) => item != image),
-                            selected:
-                              (d.image?.imageUrls?.length || 0) === 0
-                                ? 0
-                                : d.image?.selected,
-                          },
-                        }
-                      : d
-                  ),
-                }
-              : item
-          )
-        );
-
-        // Cập nhật localStorage
-        let script: any = localStorage.getItem("gen_script");
-        if (script) {
-          script = JSON.parse(script);
-          script.script.scenes = script.script.scenes.map((item) =>
-            item.scene === parentScene
-              ? {
-                  ...item,
-                  dialogue: item.dialogue.map((d, i) =>
-                    i === index
-                      ? {
-                          ...d,
-                          image: {
-                            ...d.image,
-                            ids: [...(d.image?.ids || []), uploadResult.id],
-                            imageUrls: [
-                              ...(d.image?.imageUrls || []),
-                              uploadResult.url,
-                            ].filter((item) => item != image),
-                            selected:
-                              (d.image?.imageUrls?.length || 0) === 0
-                                ? 0
-                                : d.image?.selected,
-                          },
-                        }
-                      : d
-                  ),
-                }
-              : item
-          );
-          localStorage.setItem("gen_script", JSON.stringify(script));
-        }
+        // // Cập nhật localStorage
+        // let script: any = localStorage.getItem("gen_script");
+        // if (script) {
+        //   script = JSON.parse(script);
+        //   script.script.scenes = script.script.scenes.map((item) =>
+        //     item.scene === parentScene
+        //       ? {
+        //           ...item,
+        //           dialogue: item.dialogue.map((d, i) =>
+        //             i === index
+        //               ? {
+        //                   ...d,
+        //                   image: {
+        //                     ...d.image,
+        //                     ids: [...(d.image?.ids || []), uploadResult.id],
+        //                     imageUrls: [
+        //                       ...(d.image?.imageUrls || []),
+        //                       uploadResult.url,
+        //                     ].filter((item) => item != image),
+        //                     selected:
+        //                       (d.image?.imageUrls?.length || 0) === 0
+        //                         ? 0
+        //                         : d.image?.selected,
+        //                   },
+        //                 }
+        //               : d
+        //           ),
+        //         }
+        //       : item
+        //   );
+        //   localStorage.setItem("gen_script", JSON.stringify(script));
+        // }
 
         if (fileImage) {
           setLoadingUpload(false);
@@ -1431,7 +1433,9 @@ const SceneCardDialogue = forwardRef((props, ref) => {
         }
         return;
       } else {
-        formData.append("input_image_url", image);
+        if (typeof image == "string") {
+          formData.append("input_image_url", image);
+        }
       }
     }
     if (fileImage) {

@@ -43,7 +43,7 @@ const SuccessView = ({ genScript, setLoading }) => {
 
   return (
     <Box
-      className='hidden-add-voice'
+      className="hidden-add-voice"
       sx={{
         bgcolor: "#0D0C2B",
         p: isMobile ? 1.5 : 6,
@@ -52,7 +52,8 @@ const SuccessView = ({ genScript, setLoading }) => {
         display: "flex",
         flexDirection: "column",
         gap: isMobile ? 2 : 4,
-      }}>
+      }}
+    >
       <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
       {/* <ResponsiveBox /> */}
@@ -104,22 +105,24 @@ const SideInfo = styled(Box)(({ theme }) => ({
 }));
 
 const MetaRow = ({ label, value }) => (
-  <Box display='flex' justifyContent='space-between' alignItems='start' mt={1}>
+  <Box display="flex" justifyContent="space-between" alignItems="start" mt={1}>
     <Box display={"flex"} gap={1}>
       <Box width={"max-content"}>
         <Typography
-          variant='body2'
-          sx={{ color: "#bbb", whiteSpace: "nowrap" }}>
+          variant="body2"
+          sx={{ color: "#bbb", whiteSpace: "nowrap" }}
+        >
           {label}{" "}
         </Typography>
       </Box>
       <Typography
-        variant='body2'
-        sx={{ color: "white", whiteSpace: "pre-line" }}>
+        variant="body2"
+        sx={{ color: "white", whiteSpace: "pre-line" }}
+      >
         {value}
       </Typography>
     </Box>
-    <Box display='flex' alignItems='center' gap={1}>
+    <Box display="flex" alignItems="center" gap={1}>
       <FileCopyIcon sx={{ fontSize: 16, color: "#888" }} />
     </Box>
   </Box>
@@ -137,11 +140,13 @@ function VideoProjectUI({ genScript, setLoading }) {
   const isMobile = useMediaQuery("(max-width:600px)");
   const videoRef = useRef(null);
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
+  const [linkDrive, setLinkDrive] = useState("");
   const [videoUrl, setVideoUrl] = useState(
     genScript?.output_video_url ? genScript?.output_video_url : ""
   );
   useEffect(() => {
     setVideoUrl(genScript?.output_video_url ? genScript?.output_video_url : "");
+    setLinkDrive(genScript?.drive_url ? genScript?.drive_url : "");
   }, [genScript]);
   const handleTogglePlay = () => {
     const video = videoRef.current;
@@ -158,17 +163,19 @@ function VideoProjectUI({ genScript, setLoading }) {
   return (
     <Box>
       <Typography
-        variant='h5'
+        variant="h5"
         fontSize={isMobile ? "1.2rem" : "1.5rem"}
         my={4}
         fontWeight={600}
-        gutterBottom>
+        gutterBottom
+      >
         Dự án: {genScript?.name}
       </Typography>
 
       <Box
         display={isMobile ? "block" : "flex"}
-        justifyContent={"space-between"}>
+        justifyContent={"space-between"}
+      >
         <Box
           sx={{
             margin: "0px 0 !important",
@@ -176,16 +183,18 @@ function VideoProjectUI({ genScript, setLoading }) {
             width: isMobile ? "100%" : "60%",
             borderRadius: 1,
             overflow: "hidden",
-          }}>
+          }}
+        >
           <Box sx={{ position: "relative", width: "100%" }}>
             {videoUrl && (
               <video
                 ref={videoRef}
-                width='100%'
+                width="100%"
                 style={{ borderRadius: "15px" }}
                 onClick={handleTogglePlay}
                 controls={isPlayingVideo}
-                onEnded={() => setIsPlayingVideo(false)}>
+                onEnded={() => setIsPlayingVideo(false)}
+              >
                 <source src={videoUrl} />
                 Trình duyệt của bạn không hỗ trợ video HTML5.
               </video>
@@ -203,19 +212,21 @@ function VideoProjectUI({ genScript, setLoading }) {
                   alignItems: "center",
                   justifyContent: "center",
                   cursor: "pointer",
-                }}>
+                }}
+              >
                 <Box
-                  display='flex'
-                  justifyContent='center'
-                  alignItems='center'
-                  width='50px'
-                  height='50px'
+                  display="flex"
+                  justifyContent="center"
+                  alignItems="center"
+                  width="50px"
+                  height="50px"
                   sx={{
                     borderRadius: "50%",
                     border: "1px solid white",
                     background: "rgba(0,0,0,.5)",
-                  }}>
-                  <RiPlayFill size={40} color='white' />
+                  }}
+                >
+                  <RiPlayFill size={40} color="white" />
                 </Box>
               </Box>
             )}
@@ -224,7 +235,7 @@ function VideoProjectUI({ genScript, setLoading }) {
 
         <SideInfo sx={{ width: isMobile ? "90%" : "30%" }}>
           <Box display={"flex"} flexDirection={"column"} gap={2}>
-            <Typography variant='h6' fontWeight={600}>
+            <Typography variant="h6" fontWeight={600}>
               Tiêu đề: {genScript?.name}
             </Typography>
             <MetaRow
@@ -250,38 +261,63 @@ function VideoProjectUI({ genScript, setLoading }) {
 
       <Box
         mt={4}
-        display='flex'
+        display="flex"
         flexDirection={isMobile ? "column" : "row"}
-        gap={2}>
+        gap={2}
+      >
         <ActionButton
-          variant='contained'
+          variant="contained"
           fullWidth={!isMobile}
-          sx={{ backgroundColor: "#6C63FF", height: { xs: 40, md: 50 } }}>
+          sx={{ backgroundColor: "#6C63FF", height: { xs: 40, md: 50 } }}
+        >
           Tải video xuống
         </ActionButton>
-        <ActionButton
-          onClick={async () => {
-            setLoading(true);
-            try {
-              let formdata = new FormData();
-              formdata.append("url", genScript.output_video_url);
-              let result = await uploadDrive(formdata);
-              console.log("result", result);
-              toast.success("Upload success");
-            } catch (error) {
-              console.log(error);
-            }
-            setLoading(false);
-          }}
-          variant='contained'
-          fullWidth={!isMobile}
-          sx={{
-            backgroundColor: "#fff",
-            color: "#5932EA",
-            height: { xs: 40, md: 50 },
-          }}>
-          Upload lên Driver
-        </ActionButton>
+        {linkDrive ? (
+          <ActionButton
+            onClick={async () => {
+              window.open(linkDrive, "_blank", "noopener,noreferrer");
+            }}
+            variant="contained"
+            fullWidth={!isMobile}
+            sx={{
+              backgroundColor: "#fff",
+              color: "#5932EA",
+              height: { xs: 40, md: 50 },
+            }}
+          >
+            Get link Driver
+          </ActionButton>
+        ) : (
+          <ActionButton
+            onClick={async () => {
+              setLoading(true);
+              try {
+                // let formdata = new FormData();
+                // formdata.append("url", genScript.output_video_url);
+                let result = await uploadDrive(genScript.id);
+                if (result && result.drive_url) {
+                  setLinkDrive(result.drive_url);
+                  localStorage.setItem("gen_script", JSON.stringify(result));
+                  toast.success("Upload success");
+                } else {
+                  toast.success("Upload error");
+                }
+              } catch (error) {
+                console.log(error);
+              }
+              setLoading(false);
+            }}
+            variant="contained"
+            fullWidth={!isMobile}
+            sx={{
+              backgroundColor: "#fff",
+              color: "#5932EA",
+              height: { xs: 40, md: 50 },
+            }}
+          >
+            Upload lên Driver
+          </ActionButton>
+        )}
       </Box>
     </Box>
   );

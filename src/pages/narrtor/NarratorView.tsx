@@ -535,6 +535,7 @@ const VoiceItem = ({
   );
   const [selectedVoice, setSelectedVoice] = useState(""); // Voice for "Lời thoại"
   const [videoUrl, setVideoUrl] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
 
   const [narrationText, setNarrationText] = useState(text); // Narration text input
   const [intervalId, setIntervalId] = useState(null);
@@ -783,6 +784,7 @@ const VoiceItem = ({
   useEffect(() => {
     const currentScene = values?.find((item) => item.scene === scene);
     setVideoUrl(currentScene?.video ? currentScene?.video?.url : "");
+    setImageUrl(currentScene?.video ? currentScene?.image?.url : "");
   }, [values, scene]);
 
   const handleTogglePlay = () => {
@@ -894,50 +896,62 @@ const VoiceItem = ({
             gap={3}
           >
             <Box sx={{ position: "relative", width: 250, height: 150 }}>
-              {videoUrl && (
-                <video
-                  ref={videoRef}
-                  width="250"
-                  height="150"
-                  style={{ borderRadius: "15px" }}
-                  onClick={handleTogglePlay}
-                  controls={isPlayingVideo} // 👈 Chỉ hiện controls khi đang phát
-                  onEnded={() => setIsPlayingVideo(false)} // Khi phát xong thì tắt controls
-                >
-                  <source src={videoUrl} />
-                  Trình duyệt của bạn không hỗ trợ video HTML5.
-                </video>
-              )}
-
-              {!isPlayingVideo && (
-                <Box
-                  onClick={handleTogglePlay}
-                  sx={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    cursor: "pointer",
-                  }}
-                >
-                  <Box
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                    width="50px"
-                    height="50px"
-                    sx={{
-                      borderRadius: "50%",
-                      border: "1px solid white",
-                      background: "rgba(0,0,0,.5)",
-                    }}
+              {videoUrl ? (
+                <>
+                  <video
+                    ref={videoRef}
+                    width="250"
+                    height="150"
+                    style={{ borderRadius: "15px" }}
+                    onClick={handleTogglePlay}
+                    controls={isPlayingVideo} // 👈 Chỉ hiện controls khi đang phát
+                    onEnded={() => setIsPlayingVideo(false)} // Khi phát xong thì tắt controls
                   >
-                    <RiPlayFill size={40} color="white" />
-                  </Box>
+                    <source src={videoUrl} />
+                    Trình duyệt của bạn không hỗ trợ video HTML5.
+                  </video>
+
+                  {!isPlayingVideo && (
+                    <Box
+                      onClick={handleTogglePlay}
+                      sx={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                      }}
+                    >
+                      <Box
+                        display="flex"
+                        justifyContent="center"
+                        alignItems="center"
+                        width="50px"
+                        height="50px"
+                        sx={{
+                          borderRadius: "50%",
+                          border: "1px solid white",
+                          background: "rgba(0,0,0,.5)",
+                        }}
+                      >
+                        <RiPlayFill size={40} color="white" />
+                      </Box>
+                    </Box>
+                  )}
+                </>
+              ) : (
+                <Box>
+                  <img
+                    src={imageUrl}
+                    width="250"
+                    height="150"
+                    style={{ borderRadius: "15px" }}
+                    alt=""
+                  />
                 </Box>
               )}
             </Box>
@@ -1402,7 +1416,7 @@ const VoiceItemDialog = ({
   const [currentAudio, setCurrentAudio] = useState(null);
   const [currentTime, setCurrentTime] = useState(0);
   const [loading, setLoading] = useState(false);
-
+  const [imageUrl, setImageUrl] = useState(dialogueData?.image?.url || "");
   const selectedModelData = model.find((m) => m.id === selectedModel);
   const voices = Array.isArray(selectedModelData?.voices)
     ? selectedModelData.voices.flat()
@@ -1422,6 +1436,8 @@ const VoiceItemDialog = ({
     }
     setNarrationText(dialogueData?.talk || text);
     setVideoUrl(dialogueData?.video?.url || "");
+    setImageUrl(dialogueData?.image?.url || "");
+
     setSelectedCharacter(dialogueData?.charactor || "");
   }, [dialogueData, text, currentScene, model]);
 
@@ -1652,49 +1668,62 @@ const VoiceItemDialog = ({
           gap={3}
         >
           <Box sx={{ position: "relative", width: 250, height: 150 }}>
-            {videoUrl && (
-              <video
-                ref={videoRef}
-                width="250"
-                height="150"
-                style={{ borderRadius: "15px" }}
-                onClick={handleTogglePlay}
-                controls={isPlayingVideo}
-                onEnded={() => setIsPlayingVideo(false)}
-              >
-                <source src={videoUrl} />
-                Trình duyệt của bạn không hỗ trợ video HTML5.
-              </video>
-            )}
-            {!isPlayingVideo && (
-              <Box
-                onClick={handleTogglePlay}
-                sx={{
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "100%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  cursor: "pointer",
-                }}
-              >
-                <Box
-                  display="flex"
-                  justifyContent="center"
-                  alignItems="center"
-                  width="50px"
-                  height="50px"
-                  sx={{
-                    borderRadius: "50%",
-                    border: "1px solid white",
-                    background: "rgba(0,0,0,.5)",
-                  }}
+            {videoUrl ? (
+              <>
+                <video
+                  ref={videoRef}
+                  width="250"
+                  height="150"
+                  style={{ borderRadius: "15px" }}
+                  onClick={handleTogglePlay}
+                  controls={isPlayingVideo}
+                  onEnded={() => setIsPlayingVideo(false)}
                 >
-                  <RiPlayFill size={40} color="white" />
-                </Box>
+                  <source src={videoUrl} />
+                  Trình duyệt của bạn không hỗ trợ video HTML5.
+                </video>
+
+                {!isPlayingVideo && (
+                  <Box
+                    onClick={handleTogglePlay}
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <Box
+                      display="flex"
+                      justifyContent="center"
+                      alignItems="center"
+                      width="50px"
+                      height="50px"
+                      sx={{
+                        borderRadius: "50%",
+                        border: "1px solid white",
+                        background: "rgba(0,0,0,.5)",
+                      }}
+                    >
+                      <RiPlayFill size={40} color="white" />
+                    </Box>
+                  </Box>
+                )}
+              </>
+            ) : (
+              <Box>
+                <img
+                  src={imageUrl}
+                  width="250"
+                  height="150"
+                  style={{ borderRadius: "15px" }}
+                  alt=""
+                />
               </Box>
             )}
           </Box>

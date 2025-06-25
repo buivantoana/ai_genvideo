@@ -233,7 +233,10 @@ export async function genScriptVoiceStatus(id: any) {
     }
   }
 }
-export async function genBackgroundMusic(body: any) {
+export async function genBackgroundMusic(
+  body: any,
+  options?: { signal?: AbortSignal }
+) {
   try {
     let token = localStorage.getItem("token");
     const response = await api.post(`/audio/generate`, body, {
@@ -241,6 +244,7 @@ export async function genBackgroundMusic(body: any) {
         "Content-Type": "multipart/form-data",
         Authorization: `Bearer ${token}`,
       },
+      signal: options?.signal,
     });
     return response.data;
   } catch (error: any) {
@@ -259,13 +263,17 @@ export async function genBackgroundMusic(body: any) {
     }
   }
 }
-export async function genMusicStatus(id: any) {
+export async function genMusicStatus(
+  id: any,
+  options?: { signal?: AbortSignal }
+) {
   try {
     let token = localStorage.getItem("token");
     const response = await api.get(`/audio/status/${id}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },
+      signal: options?.signal,
     });
     return response.data;
   } catch (error: any) {
@@ -567,15 +575,19 @@ export async function addFont(body) {
     }
   }
 }
-export async function uploadDrive(body) {
+export async function uploadDrive(id) {
   try {
     let token = localStorage.getItem("token");
-    const response = await api.post(`/drive/upload`, body, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await api.post(
+      `/project/upload_drive/${id}`,
+      {},
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
     return response.data;
   } catch (error: any) {
     if (error.response) {
