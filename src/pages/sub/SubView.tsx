@@ -500,7 +500,7 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
                   position = "middle";
                 }
                 if (active == 3) {
-                  position = "middle";
+                  position = "midtop";
                 }
                 if (active == 4) {
                   position = "top";
