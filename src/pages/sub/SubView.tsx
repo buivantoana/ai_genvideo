@@ -133,7 +133,7 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
       if (genScript?.script?.subtitles.position == "middle") {
         position = 2;
       }
-      if (genScript?.script?.subtitles.position == "middle") {
+      if (genScript?.script?.subtitles.position == "midtop") {
         position = 3;
       }
       if (genScript?.script?.subtitles.position == "top") {
