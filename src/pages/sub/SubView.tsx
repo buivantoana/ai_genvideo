@@ -46,7 +46,7 @@ const SubView = ({ model, genScript, setLoading, id }) => {
 
   return (
     <Box
-      className="hidden-add-voice"
+      className='hidden-add-voice'
       sx={{
         bgcolor: "#0D0C2B",
         p: isMobile ? 1.5 : 6,
@@ -55,8 +55,7 @@ const SubView = ({ model, genScript, setLoading, id }) => {
         display: "flex",
         flexDirection: "column",
         gap: isMobile ? 2 : 4,
-      }}
-    >
+      }}>
       <StepComponent steps={dynamicSteps} />
       {/* Toggle Tabs */}
       {/* <ResponsiveBox /> */}
@@ -270,17 +269,15 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
       sx={{
         py: { xs: 2, md: 5 },
         color: "white",
-      }}
-    >
+      }}>
       <Stack direction={isMobile ? "column" : "row"} spacing={4}>
         {/* Left Side */}
         <Box flex={1}>
           <Typography
-            variant="h5"
+            variant='h5'
             fontSize={isMobile ? "1.2rem" : "1.5rem"}
             fontWeight={"bold"}
-            mb={2}
-          >
+            mb={2}>
             Dự án: {genScript?.name}
           </Typography>
           <Box
@@ -290,23 +287,21 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
               width: "100%",
               borderRadius: 1,
               overflow: "hidden",
-            }}
-          >
+            }}>
             <Box sx={{ position: "absolute", bottom: 15, right: 15 }}>
-              <img src={download} alt="" />
+              <img src={download} alt='' />
             </Box>
             <Box sx={{ position: "relative", width: "100%" }}>
               {videoUrl && (
                 <video
                   ref={videoRef}
-                  width="100%"
+                  width='100%'
                   style={{ borderRadius: "15px" }}
                   onClick={handleTogglePlay}
                   controls={isPlayingVideo}
                   onEnded={() => setIsPlayingVideo(false)}
                   onLoadedMetadata={(e) => setDuration(e.target.duration)}
-                  onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}
-                >
+                  onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}>
                   <source src={videoUrl} />
                   Trình duyệt của bạn không hỗ trợ video HTML5.
                 </video>
@@ -324,21 +319,19 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
                     alignItems: "center",
                     justifyContent: "center",
                     cursor: "pointer",
-                  }}
-                >
+                  }}>
                   <Box
-                    display="flex"
-                    justifyContent="center"
-                    alignItems="center"
-                    width="50px"
-                    height="50px"
+                    display='flex'
+                    justifyContent='center'
+                    alignItems='center'
+                    width='50px'
+                    height='50px'
                     sx={{
                       borderRadius: "50%",
                       border: "1px solid white",
                       background: "rgba(0,0,0,.5)",
-                    }}
-                  >
-                    <RiPlayFill size={40} color="white" />
+                    }}>
+                    <RiPlayFill size={40} color='white' />
                   </Box>
                 </Box>
               )}
@@ -346,10 +339,9 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
           </Box>
 
           <Typography
-            variant="h6"
+            variant='h6'
             fontSize={isMobile ? "1rem" : "1.25rem"}
-            mb={1}
-          >
+            mb={1}>
             Độ dài video tổng
           </Typography>
 
@@ -363,9 +355,8 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
                 p: 1,
                 borderRadius: 1,
                 bgcolor: "rgba(29, 29, 65, 1)", // 👈 Cho vào sx
-              }}
-            >
-              <Typography variant="body2">{formatTime(currentTime)}</Typography>
+              }}>
+              <Typography variant='body2'>{formatTime(currentTime)}</Typography>
 
               <Box
                 sx={{
@@ -374,8 +365,7 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
                   bgcolor: "rgba(217, 217, 217, 1)",
                   position: "relative",
                   width: "80%",
-                }}
-              >
+                }}>
                 <Box
                   sx={{
                     width: `${(currentTime / duration) * 100 || 0}%`,
@@ -387,7 +377,7 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
                 />
               </Box>
 
-              <Typography variant="body2">{formatTime(duration)}</Typography>
+              <Typography variant='body2'>{formatTime(duration)}</Typography>
             </Box>
             {/* {showMusicUI &&<>{!on ? (
               <><AudioPanel setOn={setOn} /></>
@@ -420,12 +410,10 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
               textAlign: "center",
               cursor: "pointer",
               bgcolor: "rgba(89, 50, 234, 0.3)",
-            }}
-          >
+            }}>
             <Button
               startIcon={<AddIcon />}
-              sx={{ color: "white", fontSize: isMobile ? "15px" : "20px" }}
-            >
+              sx={{ color: "white", fontSize: isMobile ? "15px" : "20px" }}>
               Thêm nhạc nền
             </Button>
           </Box>
@@ -452,7 +440,7 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
         </Box>
       </Stack>
 
-      <Box mt={isMobile ? 2 : 6} textAlign="center">
+      <Box mt={isMobile ? 2 : 6} textAlign='center'>
         <Button
           onClick={async () => {
             setLoading(true);
@@ -536,7 +524,7 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
             }
             setLoading(false);
           }}
-          variant="contained"
+          variant='contained'
           sx={{
             bgcolor: "#6b5bfc",
             color: "#fff",
@@ -546,8 +534,7 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
             py: 1.5,
             width: isMobile ? "100%" : "30%",
             height: isMobile ? 40 : 50,
-          }}
-        >
+          }}>
           Bước tiếp theo
         </Button>
       </Box>
@@ -699,16 +686,15 @@ const Settings = ({
         minHeight: isMobile ? "max-content" : "100vh",
         color: "white",
         px: isMobile ? 2 : 4,
-      }}
-    >
+      }}>
       <Box sx={{}}>
         <Stack spacing={3}>
           {/* Toggle Sub Display Styles */}
           <Box>
-            <Typography variant="body1" mb={1}>
+            <Typography variant='body1' mb={1}>
               Chọn hiển thị phụ đề
             </Typography>
-            <Stack direction="row" spacing={2}>
+            <Stack direction='row' spacing={2}>
               {[0, 1, 2, 3, 4].map((i, index) => {
                 if (index == 0) {
                   return (
@@ -725,9 +711,8 @@ const Settings = ({
                         alignItems: "center",
                         justifyContent: "center",
                         position: "relative",
-                      }}
-                    >
-                      <img src={iconNoSub} alt="" />
+                      }}>
+                      <img src={iconNoSub} alt='' />
                     </Box>
                   );
                 }
@@ -745,8 +730,7 @@ const Settings = ({
                       alignItems: "center",
                       justifyContent: "center",
                       position: "relative",
-                    }}
-                  >
+                    }}>
                     <Box
                       sx={{
                         width: "80%",
@@ -772,16 +756,14 @@ const Settings = ({
             sx={{
               opacity: active == 0 ? ".5" : "1",
               pointerEvents: active == 0 ? "none" : "unset",
-            }}
-          >
+            }}>
             <Box
               display={"flex"}
               justifyContent={"space-between"}
-              alignItems={isMobile ? "center" : "end"}
-            >
+              alignItems={isMobile ? "center" : "end"}>
               <RadioControl
-                label="Kiểu chữ"
-                defaultValue="normal"
+                label='Kiểu chữ'
+                defaultValue='normal'
                 onChange={(val) => setTextTransform(val)}
                 options={[
                   ["normal", "Chữ thường"],
@@ -791,12 +773,11 @@ const Settings = ({
               <Box
                 display={"flex"}
                 flexDirection={isMobile ? "column" : "row"}
-                gap={isMobile ? 0.5 : 2}
-              >
+                gap={isMobile ? 0.5 : 2}>
                 <FormControl sx={{ mb: "14px" }}>
                   <InputLabel sx={{ color: "white" }}>Font chữ</InputLabel>
                   <Select
-                    label="Font chữ"
+                    label='Font chữ'
                     value={fontFamily}
                     onChange={(e) => {
                       const selected = e.target.value;
@@ -847,27 +828,25 @@ const Settings = ({
                       },
                       height: isMobile ? "38px" : "50px",
                       width: "150px",
-                    }}
-                  >
+                    }}>
                     {font &&
                       font.map((item) => {
                         return (
                           <MenuItem value={item}>
                             <Box
-                              display="flex"
-                              justifyContent="space-between"
+                              display='flex'
+                              justifyContent='space-between'
                               gap={3}
-                              width="100%"
-                            >
+                              width='100%'>
                               {item}
                               {item === fontFamily && (
-                                <CheckIcon fontSize="small" />
+                                <CheckIcon fontSize='small' />
                               )}
                             </Box>
                           </MenuItem>
                         );
                       })}
-                    <MenuItem value="add_new">Thêm mới</MenuItem>
+                    <MenuItem value='add_new'>Thêm mới</MenuItem>
                   </Select>
                 </FormControl>
                 <Modal open={openModal} onClose={() => setOpenModal(false)}>
@@ -880,9 +859,8 @@ const Settings = ({
                       mx: "auto",
                       mt: "15%",
                       borderRadius: 2,
-                    }}
-                  >
-                    <Typography variant="h6" mb={2}>
+                    }}>
+                    <Typography variant='h6' mb={2}>
                       Thêm mới Font
                     </Typography>
 
@@ -892,21 +870,20 @@ const Settings = ({
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
-                      }}
-                    >
+                      }}>
                       <input
-                        type="file"
-                        accept=".ttf,.otf"
+                        type='file'
+                        accept='.ttf,.otf'
                         onChange={handleFileChange}
                         style={{
                           display: "none",
                         }}
-                        id="upload-font"
+                        id='upload-font'
                       />
-                      <label htmlFor="upload-font">
+                      <label htmlFor='upload-font'>
                         <Button
-                          variant="contained"
-                          component="span"
+                          variant='contained'
+                          component='span'
                           sx={{
                             backgroundColor: "rgba(89, 50, 234, 1)",
                             borderRadius: 1,
@@ -918,22 +895,20 @@ const Settings = ({
                             "&:hover": {
                               backgroundColor: "rgba(89, 50, 234, 0.8)",
                             },
-                          }}
-                        >
+                          }}>
                           Chọn tệp Font
                         </Button>
                       </label>
                       {selectedFile && (
                         <Typography
-                          variant="body2"
+                          variant='body2'
                           mt={1}
-                          sx={{ color: "#a0a0a0" }}
-                        >
+                          sx={{ color: "#a0a0a0" }}>
                           Đã chọn: {selectedFile.name}
                         </Typography>
                       )}
                       <Button
-                        variant="contained"
+                        variant='contained'
                         sx={{
                           backgroundColor: "rgba(89, 50, 234, 1)",
                           borderRadius: 1,
@@ -944,8 +919,7 @@ const Settings = ({
                           opacity: !selectedFile ? ".8" : "unset",
                           pointerEvents: !selectedFile ? "none" : "unset",
                         }}
-                        onClick={handleAddFont}
-                      >
+                        onClick={handleAddFont}>
                         {loading ? "Đang tải..." : "Thêm mới Font"}
                       </Button>
                     </Box>
@@ -954,12 +928,12 @@ const Settings = ({
                 <FormControl sx={{ mb: "14px" }}>
                   <TextField
                     fullWidth
-                    type="number"
+                    type='number'
                     value={fontSize}
                     onChange={(e) => setFontSize(e.target.value)}
-                    label="Font size"
-                    variant="outlined"
-                    size="small"
+                    label='Font size'
+                    variant='outlined'
+                    size='small'
                     sx={{
                       backgroundColor: "#1A1836",
                       borderRadius: 2,
@@ -992,7 +966,7 @@ const Settings = ({
 
             {/* Subtitle style selections */}
             <Box>
-              <Typography variant="body1" gutterBottom>
+              <Typography variant='body1' gutterBottom>
                 Chọn kiểu phụ đề
               </Typography>
               <Box
@@ -1004,9 +978,8 @@ const Settings = ({
                   color: "#f0c36d",
                   mb: 2,
                   my: 2,
-                }}
-              >
-                <Typography variant="body2">
+                }}>
+                <Typography variant='body2'>
                   {" "}
                   Khi chọn các hiệu ứng không phải mặc định, hệ thống sẽ cần
                   thêm thời gian để xử lý
@@ -1020,8 +993,7 @@ const Settings = ({
                   flexDirection={"column"}
                   justifyContent={"center"}
                   alignItems={"center"}
-                  gap={"10px"}
-                >
+                  gap={"10px"}>
                   <Box
                     width={"100%"}
                     height={108}
@@ -1035,9 +1007,8 @@ const Settings = ({
                           : "1px solid rgba(5, 193, 104, 1)",
                       borderRadius: 1,
                     }}
-                    alignItems={"center"}
-                  >
-                    <img src={image1} alt="" />
+                    alignItems={"center"}>
+                    <img src={image1} alt='' />
                   </Box>
                   <Typography>Mặc định</Typography>
                 </Box>
@@ -1048,8 +1019,7 @@ const Settings = ({
                   flexDirection={"column"}
                   justifyContent={"center"}
                   alignItems={"center"}
-                  gap={"10px"}
-                >
+                  gap={"10px"}>
                   <Box
                     width={"100%"}
                     height={108}
@@ -1062,9 +1032,8 @@ const Settings = ({
                           : "1px solid rgba(5, 193, 104, 1)",
                       borderRadius: 1,
                     }}
-                    alignItems={"center"}
-                  >
-                    <img src={image2} alt="" />
+                    alignItems={"center"}>
+                    <img src={image2} alt='' />
                   </Box>
                   <Typography>Karaoke</Typography>
                 </Box>
@@ -1073,15 +1042,14 @@ const Settings = ({
 
             {/* Color selection */}
             <Box>
-              <Typography variant="body1" my={2} gutterBottom>
+              <Typography variant='body1' my={2} gutterBottom>
                 Chọn màu
               </Typography>
               <Box
                 display={"flex"}
                 gap={1}
                 height={38}
-                justifyContent={"space-between"}
-              >
+                justifyContent={"space-between"}>
                 {colorOptions1.map(([bg, fg], i) => {
                   const isActive =
                     selectedColor[0] === bg && selectedColor[1] === fg;
@@ -1102,8 +1070,7 @@ const Settings = ({
                         px: 1,
                         backgroundColor: "#1b1c34",
                         cursor: "pointer",
-                      }}
-                    >
+                      }}>
                       <Box
                         sx={{
                           width: 26,
@@ -1133,8 +1100,7 @@ const Settings = ({
                 gap={1}
                 my={2}
                 height={38}
-                justifyContent={"space-between"}
-              >
+                justifyContent={"space-between"}>
                 {colorOptions2.map(([bg, fg], i) => {
                   const isActive =
                     selectedColor[0] === bg && selectedColor[1] === fg;
@@ -1155,8 +1121,7 @@ const Settings = ({
                         px: 1,
                         backgroundColor: "#1b1c34",
                         cursor: "pointer",
-                      }}
-                    >
+                      }}>
                       <Box
                         sx={{
                           width: 26,
@@ -1197,8 +1162,7 @@ const Settings = ({
                     "&:hover": {
                       bgcolor: "#3a3c5f",
                     },
-                  }}
-                >
+                  }}>
                   Tuỳ chỉnh
                 </Box>
               </Box>
@@ -1228,28 +1192,25 @@ const Settings = ({
                   boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.5)",
                   height: "max-content",
                 },
-              }}
-            >
+              }}>
               {/* Base color picker */}
               <Box mb={3}>
                 <Typography
-                  variant="body1"
+                  variant='body1'
                   mb={1}
-                  fontWeight="medium"
-                  sx={{ color: "white" }}
-                >
+                  fontWeight='medium'
+                  sx={{ color: "white" }}>
                   Màu Base
                 </Typography>
-                <Box display="flex" alignItems="center" gap={2}>
+                <Box display='flex' alignItems='center' gap={2}>
                   <Box
                     overflow={"hidden"}
                     width={30}
                     sx={{ position: "relative" }}
                     height={30}
-                    borderRadius={"50%"}
-                  >
+                    borderRadius={"50%"}>
                     <input
-                      type="color"
+                      type='color'
                       value={selectedColor[0]}
                       onChange={(e) =>
                         handleColorChange("base", e.target.value)
@@ -1271,13 +1232,11 @@ const Settings = ({
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                    }}
-                  >
+                    }}>
                     <Typography
-                      variant="body1"
-                      fontWeight="medium"
-                      sx={{ color: "white" }}
-                    >
+                      variant='body1'
+                      fontWeight='medium'
+                      sx={{ color: "white" }}>
                       {selectedColor[0]}
                     </Typography>
                   </Box>
@@ -1287,23 +1246,21 @@ const Settings = ({
               {/* Highlight color picker */}
               <Box mb={3}>
                 <Typography
-                  variant="body1"
+                  variant='body1'
                   mb={1}
-                  fontWeight="medium"
-                  sx={{ color: "white" }}
-                >
+                  fontWeight='medium'
+                  sx={{ color: "white" }}>
                   Màu Highlight
                 </Typography>
-                <Box display="flex" alignItems="center" gap={2}>
+                <Box display='flex' alignItems='center' gap={2}>
                   <Box
                     overflow={"hidden"}
                     width={30}
                     sx={{ position: "relative" }}
                     height={30}
-                    borderRadius={"50%"}
-                  >
+                    borderRadius={"50%"}>
                     <input
-                      type="color"
+                      type='color'
                       value={selectedColor[1]}
                       onChange={(e) =>
                         handleColorChange("highlight", e.target.value)
@@ -1325,13 +1282,11 @@ const Settings = ({
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                    }}
-                  >
+                    }}>
                     <Typography
-                      variant="body1"
-                      fontWeight="medium"
-                      sx={{ color: "white" }}
-                    >
+                      variant='body1'
+                      fontWeight='medium'
+                      sx={{ color: "white" }}>
                       {selectedColor[1]}
                     </Typography>
                   </Box>
@@ -1363,9 +1318,8 @@ const AudioPanel = ({ setOn }) => {
   return (
     <Box>
       <Typography
-        variant="h6"
-        sx={{ my: 3, fontSize: isMobile ? "1rem" : "1.25rem" }}
-      >
+        variant='h6'
+        sx={{ my: 3, fontSize: isMobile ? "1rem" : "1.25rem" }}>
         Nhạc nền số 1
       </Typography>
       <Box
@@ -1376,29 +1330,26 @@ const AudioPanel = ({ setOn }) => {
           borderRadius: 2,
           p: 1,
           justifyContent: "space-between",
-        }}
-      >
+        }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <IconButton
-            size="small"
+            size='small'
             sx={{
               color: "white",
               background: "rgba(89, 50, 234, 1)",
               width: 24,
               height: 24,
-            }}
-          >
-            <PlayArrow fontSize="13" />
+            }}>
+            <PlayArrow fontSize='13' />
           </IconButton>
           <Box display={"flex"} flexDirection={"column"} gap={"10px"}>
             <Box
               width={100}
-              sx={{ display: "flex", justifyContent: "space-between" }}
-            >
-              <Typography fontSize={10} color="rgba(130, 130, 130, 1)">
+              sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Typography fontSize={10} color='rgba(130, 130, 130, 1)'>
                 00:00
               </Typography>
-              <Typography fontSize={10} color="rgba(130, 130, 130, 1)">
+              <Typography fontSize={10} color='rgba(130, 130, 130, 1)'>
                 00:30
               </Typography>
             </Box>
@@ -1410,8 +1361,7 @@ const AudioPanel = ({ setOn }) => {
 
                 borderRadius: 2,
                 position: "relative",
-              }}
-            >
+              }}>
               <Box
                 sx={{
                   position: "absolute",
@@ -1427,17 +1377,16 @@ const AudioPanel = ({ setOn }) => {
           </Box>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <IconButton size="small" sx={{ color: "white" }}>
+          <IconButton size='small' sx={{ color: "white" }}>
             <VolumeUp />
           </IconButton>
-          <IconButton size="small" sx={{ color: "white" }}>
+          <IconButton size='small' sx={{ color: "white" }}>
             <Delete />
           </IconButton>
           <IconButton
             onClick={() => setOn(true)}
-            size="small"
-            sx={{ color: "white" }}
-          >
+            size='small'
+            sx={{ color: "white" }}>
             <ExpandMore />
           </IconButton>
         </Box>
@@ -1456,14 +1405,13 @@ const RadioControl = ({
   const isMobile = useMediaQuery("(max-width:768px)");
   return (
     <Box width={isMobile ? "50%" : "unset"}>
-      <FormLabel component="legend" sx={{ mb: 1, color: "white" }}>
+      <FormLabel component='legend' sx={{ mb: 1, color: "white" }}>
         {label}
       </FormLabel>
       <RadioGroup
         row
         defaultValue={defaultValue}
-        sx={{ flexDirection: isMobile ? "column" : "row" }}
-      >
+        sx={{ flexDirection: isMobile ? "column" : "row" }}>
         {options.map(([value, label]) => (
           <FormControlLabel
             key={value}
@@ -1601,7 +1549,7 @@ function MusicPromptUI({
 
       // Tạo audio mới
       audioRef.current = new Audio(musicData.url);
-      audioRef.current.volume = 0.8; // Volume mặc định
+      audioRef.current.volume = volume; // Sử dụng volume hiện tại
 
       // Xử lý khi audio kết thúc
       audioRef.current.addEventListener("ended", () => {
@@ -1813,7 +1761,19 @@ function MusicPromptUI({
       }
     };
   }, [abortController]);
-
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+  useEffect(() => {
+    if (musicData.volume !== undefined) {
+      setVolume(musicData.volume);
+      if (audioRef.current) {
+        audioRef.current.volume = musicData.volume;
+      }
+    }
+  }, [musicData.volume]);
   return (
     <Box
       sx={{
@@ -1823,15 +1783,13 @@ function MusicPromptUI({
         position: "relative",
         border: isActive ? "2px solid #6C63FF" : "1px solid #444",
         mb: 2,
-      }}
-    >
+      }}>
       <Box
         onClick={() => onSetActive(musicData.index)}
-        sx={{ cursor: "pointer" }}
-      >
+        sx={{ cursor: "pointer" }}>
         {!musicData.url && (
-          <Box display="flex" justifyContent="center">
-            <Box width="max-content">
+          <Box display='flex' justifyContent='center'>
+            <Box width='max-content'>
               <TabGroup>
                 <TabButton active={tab === 0} onClick={() => setTab(0)}>
                   Prompt
@@ -1847,44 +1805,43 @@ function MusicPromptUI({
         {tab == 1 && (
           <Box
             mt={2}
-            display="flex"
-            flexDirection="column"
-            alignItems="center"
-            justifyContent="center"
+            display='flex'
+            flexDirection='column'
+            alignItems='center'
+            justifyContent='center'
             p={2}
-            border="1px dashed #444"
+            border='1px dashed #444'
             borderRadius={2}
             onClick={triggerFileInput}
-            sx={{ cursor: "pointer" }}
-          >
+            sx={{ cursor: "pointer" }}>
             <input
-              type="file"
+              type='file'
               ref={fileInputRef}
               onChange={handleFileUpload}
-              accept="audio/*"
+              accept='audio/*'
               style={{ display: "none" }}
             />
             {isUploading ? (
               <>
                 <CircularProgress
-                  variant="determinate"
+                  variant='determinate'
                   value={uploadProgress}
                 />
-                <Typography mt={1} variant="body2" color="gray">
+                <Typography mt={1} variant='body2' color='gray'>
                   Đang tải lên... {uploadProgress}%
                 </Typography>
               </>
             ) : (
               <>
                 <CloudUpload sx={{ fontSize: 40, color: "#888" }} />
-                <Typography mt={1} variant="body2" color="gray">
+                <Typography mt={1} variant='body2' color='gray'>
                   Kéo và thả hoặc bấm để tải tệp lên
                 </Typography>
-                <Typography variant="caption" color="gray" mt={1}>
+                <Typography variant='caption' color='gray' mt={1}>
                   Hỗ trợ: MP3, WAV, AAC (tối đa 50MB)
                 </Typography>
                 <Button
-                  variant="contained"
+                  variant='contained'
                   sx={{
                     mt: 2,
                     backgroundColor: "#6C63FF",
@@ -1893,8 +1850,7 @@ function MusicPromptUI({
                   onClick={(e) => {
                     e.stopPropagation();
                     triggerFileInput();
-                  }}
-                >
+                  }}>
                   Chọn tệp
                 </Button>
               </>
@@ -1904,7 +1860,7 @@ function MusicPromptUI({
 
         <Box sx={{ display: "flex", alignItems: "center", gap: 5 }}>
           <IconButton
-            size="small"
+            size='small'
             onClick={(e) => {
               e.stopPropagation();
               togglePlay();
@@ -1915,12 +1871,11 @@ function MusicPromptUI({
               width: 24,
               height: 24,
               ml: 2,
-            }}
-          >
-            {isPlaying ? <Pause fontSize="13" /> : <PlayArrow fontSize="13" />}
+            }}>
+            {isPlaying ? <Pause fontSize='13' /> : <PlayArrow fontSize='13' />}
           </IconButton>
 
-          <Box display="flex" flexDirection="column" gap="10px" flexGrow={1}>
+          <Box display='flex' flexDirection='column' gap='10px' flexGrow={1}>
             <Box sx={{ width: "100%", p: 1, mt: 2.7 }}>
               {isMobile ? (
                 <MobileSlider
@@ -1946,11 +1901,11 @@ function MusicPromptUI({
                 />
               )}
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="caption">
+                <Typography variant='caption'>
                   Start:{" "}
                   {formatTime(Math.min(timeline.start_time, videoDuration))}
                 </Typography>
-                <Typography variant="caption">
+                <Typography variant='caption'>
                   End: {formatTime(Math.min(timeline.end_time, videoDuration))}
                 </Typography>
               </Box>
@@ -1959,13 +1914,12 @@ function MusicPromptUI({
 
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <IconButton
-              size="small"
+              size='small'
               onClick={(e) => {
                 e.stopPropagation();
                 // handleToggleVolume();
               }}
-              sx={{ color: "white" }}
-            >
+              sx={{ color: "white" }}>
               <VolumeControl
                 volume={volume}
                 onUpdateMusic={onUpdateMusic}
@@ -1975,7 +1929,7 @@ function MusicPromptUI({
             </IconButton>
             {musicData.url && (
               <IconButton
-                size="small"
+                size='small'
                 onClick={(e) => {
                   e.stopPropagation();
                   if (abortController) {
@@ -1983,8 +1937,7 @@ function MusicPromptUI({
                   }
                   onDeleteMusic(musicData.index);
                 }}
-                sx={{ color: "white" }}
-              >
+                sx={{ color: "white" }}>
                 <Delete />
               </IconButton>
             )}
@@ -1996,10 +1949,9 @@ function MusicPromptUI({
             {tab !== 1 && (
               <>
                 <FormControl
-                  variant="outlined"
-                  size="small"
-                  sx={{ borderRadius: 2, width: "100%", mt: 2 }}
-                >
+                  variant='outlined'
+                  size='small'
+                  sx={{ borderRadius: 2, width: "100%", mt: 2 }}>
                   <Select
                     value={selectedModel}
                     onChange={(e) => setSelectedModel(e.target.value)}
@@ -2043,8 +1995,7 @@ function MusicPromptUI({
                         padding: "0 14px",
                       },
                       ".MuiSelect-icon": { color: "#fff" },
-                    }}
-                  >
+                    }}>
                     {model.map((m) => (
                       <MenuItem key={m.id} value={m.id}>
                         {m.name}
@@ -2054,14 +2005,14 @@ function MusicPromptUI({
                 </FormControl>
 
                 <TextField
-                  placeholder="Hãy viết mô tả Prompt của bài nhạc"
+                  placeholder='Hãy viết mô tả Prompt của bài nhạc'
                   value={musicPrompt}
                   onChange={(e) => setMusicPrompt(e.target.value)}
-                  variant="outlined"
+                  variant='outlined'
                   multiline
                   rows={3}
                   fullWidth
-                  margin="normal"
+                  margin='normal'
                   sx={{
                     borderRadius: "8px",
                     color: "white",
@@ -2073,20 +2024,19 @@ function MusicPromptUI({
                   }}
                 />
                 <Typography
-                  variant="h6"
+                  variant='h6'
                   fontSize={isMobile ? "1rem" : "1.25rem"}
-                  fontWeight="500"
-                  my={1}
-                >
+                  fontWeight='500'
+                  my={1}>
                   Nhập số giây
                 </Typography>
                 <TextField
-                  placeholder="Nhập số giây"
-                  variant="outlined"
+                  placeholder='Nhập số giây'
+                  variant='outlined'
                   value={duration}
                   onChange={(e) => setDuration(e.target.value)}
                   fullWidth
-                  margin="normal"
+                  margin='normal'
                   sx={{
                     borderRadius: "8px",
                     color: "white",
@@ -2100,9 +2050,9 @@ function MusicPromptUI({
               </>
             )}
 
-            <Box display="flex" justifyContent="end" gap={2} mt={3}>
+            <Box display='flex' justifyContent='end' gap={2} mt={3}>
               <Button
-                variant="contained"
+                variant='contained'
                 onClick={handleGenerateMusic}
                 sx={{
                   backgroundColor: "#6C63FF",
@@ -2110,25 +2060,23 @@ function MusicPromptUI({
                   px: 4,
                   opacity: loading ? 0.7 : 1,
                   pointerEvents: loading ? "none" : "unset",
-                }}
-              >
+                }}>
                 {loading ? (
                   <>
-                    <CircularProgress size={15} color="inherit" /> đang tạo...
+                    <CircularProgress size={15} color='inherit' /> đang tạo...
                   </>
                 ) : (
                   "Tạo nhạc nền"
                 )}
               </Button>
               <Button
-                variant="contained"
+                variant='contained'
                 onClick={() => onDeleteMusic(musicData.index)}
                 sx={{
                   backgroundColor: "#2d2d5a",
                   borderRadius: "12px",
                   px: 4,
-                }}
-              >
+                }}>
                 Xóa
               </Button>
             </Box>
@@ -2148,14 +2096,12 @@ function AddMusicPromptUI({ setOn }) {
         p: 3,
         borderRadius: 2,
         position: "relative",
-      }}
-    >
+      }}>
       <Box sx={{ position: "absolute", top: "30px", right: "30px" }}>
         <IconButton
-          size="small"
+          size='small'
           onClick={() => setOn(false)}
-          sx={{ color: "white" }}
-        >
+          sx={{ color: "white" }}>
           <ExpandLessIcon />
         </IconButton>
       </Box>
@@ -2175,12 +2121,11 @@ function AddMusicPromptUI({ setOn }) {
       {tab === 0 && (
         <>
           <FormControl
-            variant="outlined"
-            size="small"
-            sx={{ borderRadius: 2, width: "100%" }}
-          >
+            variant='outlined'
+            size='small'
+            sx={{ borderRadius: 2, width: "100%" }}>
             <Select
-              defaultValue="Thuyết minh"
+              defaultValue='Thuyết minh'
               IconComponent={ArrowDropDownIcon}
               MenuProps={{
                 PaperProps: {
@@ -2222,8 +2167,7 @@ function AddMusicPromptUI({ setOn }) {
                   padding: "0 14px",
                 },
                 ".MuiSelect-icon": { color: "#fff" },
-              }}
-            >
+              }}>
               {styleOptions.map((style) => (
                 <MenuItem key={style} value={style}>
                   {style}
@@ -2242,29 +2186,26 @@ function AddMusicPromptUI({ setOn }) {
               justifyContent: "space-between",
               my: 2,
               border: "1px solid rgba(89, 50, 234, 1)",
-            }}
-          >
+            }}>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <IconButton
-                size="small"
+                size='small'
                 sx={{
                   color: "white",
                   background: "rgba(89, 50, 234, 1)",
                   width: 24,
                   height: 24,
-                }}
-              >
-                <PlayArrow fontSize="13" />
+                }}>
+                <PlayArrow fontSize='13' />
               </IconButton>
               <Box display={"flex"} flexDirection={"column"} gap={"10px"}>
                 <Box
                   width={100}
-                  sx={{ display: "flex", justifyContent: "space-between" }}
-                >
-                  <Typography fontSize={10} color="rgba(130, 130, 130, 1)">
+                  sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography fontSize={10} color='rgba(130, 130, 130, 1)'>
                     00:00
                   </Typography>
-                  <Typography fontSize={10} color="rgba(130, 130, 130, 1)">
+                  <Typography fontSize={10} color='rgba(130, 130, 130, 1)'>
                     00:30
                   </Typography>
                 </Box>
@@ -2276,8 +2217,7 @@ function AddMusicPromptUI({ setOn }) {
 
                     borderRadius: 2,
                     position: "relative",
-                  }}
-                >
+                  }}>
                   <Box
                     sx={{
                       position: "absolute",
@@ -2293,19 +2233,19 @@ function AddMusicPromptUI({ setOn }) {
               </Box>
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <IconButton size="small" sx={{ color: "white" }}>
+              <IconButton size='small' sx={{ color: "white" }}>
                 <VolumeUp />
               </IconButton>
             </Box>
           </Box>
 
           <TextField
-            placeholder="Hãy viết mô tả Prompt của bài nhạc"
-            variant="outlined"
+            placeholder='Hãy viết mô tả Prompt của bài nhạc'
+            variant='outlined'
             multiline
             rows={3}
             fullWidth
-            margin="normal"
+            margin='normal'
             sx={{
               borderRadius: "8px",
               color: "white",
@@ -2316,14 +2256,14 @@ function AddMusicPromptUI({ setOn }) {
               },
             }}
           />
-          <Typography variant="h6" fontWeight={"500"} my={1}>
+          <Typography variant='h6' fontWeight={"500"} my={1}>
             Nhập số giây
           </Typography>
           <TextField
-            placeholder="Nhập số giây"
-            variant="outlined"
+            placeholder='Nhập số giây'
+            variant='outlined'
             fullWidth
-            margin="normal"
+            margin='normal'
             sx={{
               borderRadius: "8px",
               color: "white",
@@ -2340,38 +2280,34 @@ function AddMusicPromptUI({ setOn }) {
       {tab === 1 && (
         <Box
           mt={2}
-          display="flex"
-          flexDirection="column"
-          alignItems="center"
-          justifyContent="center"
+          display='flex'
+          flexDirection='column'
+          alignItems='center'
+          justifyContent='center'
           p={2}
-          border="1px dashed #444"
-          borderRadius={2}
-        >
+          border='1px dashed #444'
+          borderRadius={2}>
           <CloudUpload sx={{ fontSize: 40, color: "#888" }} />
-          <Typography mt={1} variant="body2" color="gray">
+          <Typography mt={1} variant='body2' color='gray'>
             Kéo và thả hoặc bấm để tải tệp lên
           </Typography>
           <Button
-            variant="contained"
-            sx={{ mt: 2, backgroundColor: "#6C63FF", borderRadius: "12px" }}
-          >
+            variant='contained'
+            sx={{ mt: 2, backgroundColor: "#6C63FF", borderRadius: "12px" }}>
             Chọn tệp
           </Button>
         </Box>
       )}
 
-      <Box display="flex" justifyContent="end" gap={3} mt={2}>
+      <Box display='flex' justifyContent='end' gap={3} mt={2}>
         <Button
-          variant="contained"
-          sx={{ backgroundColor: "#6C63FF", borderRadius: "12px", px: 4 }}
-        >
+          variant='contained'
+          sx={{ backgroundColor: "#6C63FF", borderRadius: "12px", px: 4 }}>
           Tạo nhạc nền
         </Button>
         <Button
-          variant="contained"
-          sx={{ backgroundColor: "#2d2d5a", borderRadius: "12px", px: 4 }}
-        >
+          variant='contained'
+          sx={{ backgroundColor: "#2d2d5a", borderRadius: "12px", px: 4 }}>
           Xóa
         </Button>
       </Box>
@@ -2506,9 +2442,9 @@ const CustomSlider = ({
   }, [dragging, onMouseMove, onMouseUp]);
 
   return (
-    <div className="slider-container" ref={sliderRef}>
+    <div className='slider-container' ref={sliderRef}>
       <div
-        className="slider-range"
+        className='slider-range'
         style={{
           left: `${toPercent(timeline.start_time)}%`,
           width: `${toPercent(timeline.end_time - timeline.start_time)}%`,
@@ -2518,14 +2454,13 @@ const CustomSlider = ({
           //     ? "#ff6b6b"
           //     : "#4a90e2",
         }}
-        onMouseDown={(e) => onMouseDown(e, "block")}
-      >
+        onMouseDown={(e) => onMouseDown(e, "block")}>
         <div
-          className="slider-handle left"
+          className='slider-handle left'
           onMouseDown={(e) => onMouseDown(e, "left")}
         />
         <div
-          className="slider-handle right"
+          className='slider-handle right'
           onMouseDown={(e) => onMouseDown(e, "right")}
         />
       </div>
@@ -2656,19 +2591,18 @@ const MobileSlider = ({
   }, [dragging, handleMove, handleEnd]);
 
   return (
-    <div className="slider-container" ref={sliderRef}>
+    <div className='slider-container' ref={sliderRef}>
       <div
-        className="slider-range"
+        className='slider-range'
         style={{
           left: `${toPercent(timeline.start_time)}%`,
           width: `${toPercent(timeline.end_time - timeline.start_time)}%`,
           transition: dragging ? "none" : "left 0.1s, width 0.1s",
         }}
         onMouseDown={(e) => handleStart(e.clientX, "block")}
-        onTouchStart={(e) => handleStart(e.touches[0].clientX, "block")}
-      >
+        onTouchStart={(e) => handleStart(e.touches[0].clientX, "block")}>
         <div
-          className="slider-handle left"
+          className='slider-handle left'
           onMouseDown={(e) => {
             e.stopPropagation();
             handleStart(e.clientX, "left");
@@ -2679,7 +2613,7 @@ const MobileSlider = ({
           }}
         />
         <div
-          className="slider-handle right"
+          className='slider-handle right'
           onMouseDown={(e) => {
             e.stopPropagation();
             handleStart(e.clientX, "right");
@@ -2698,14 +2632,16 @@ function VolumeControl({ volume, setVolume, onUpdateMusic, musicData }) {
   const [isHovered, setIsHovered] = useState(false);
   const volumeRef = useRef<HTMLDivElement>(null);
 
-  const handleVolumeChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newVolume = parseFloat(e.target.value);
-    let update = {
+  const handleVolumeChange = (event, newValue) => {
+    const newVolume = newValue;
+    setVolume(newVolume);
+
+    // Cập nhật volume trong musicData
+    const updatedMusic = {
       ...musicData,
       volume: Number(newVolume.toFixed(1)),
     };
-    onUpdateMusic(update);
-    setVolume(newVolume);
+    onUpdateMusic(updatedMusic);
   };
 
   return (
@@ -2718,9 +2654,8 @@ function VolumeControl({ volume, setVolume, onUpdateMusic, musicData }) {
       }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
-      ref={volumeRef}
-    >
-      <IconButton size="small" sx={{ color: "white" }}>
+      ref={volumeRef}>
+      <IconButton size='small' sx={{ color: "white" }}>
         {volume === 0 ? (
           <VolumeOff />
         ) : volume < 1 ? (
@@ -2742,15 +2677,14 @@ function VolumeControl({ volume, setVolume, onUpdateMusic, musicData }) {
             padding: "8px 8px",
             background: "rgba(255,255,255,.8)",
             zIndex: 10,
-          }}
-        >
+          }}>
           <Slider
             min={0}
-            max={2}
+            max={1}
             step={0.1}
             value={volume}
             onChange={handleVolumeChange}
-            orientation="vertical" // Thay đổi thành dọc
+            orientation='vertical' // Thay đổi thành dọc
             sx={{
               color: "#6C63FF",
               height: "100px", // Chiều cao slider

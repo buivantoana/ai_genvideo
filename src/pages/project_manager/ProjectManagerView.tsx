@@ -333,14 +333,12 @@ import {
 
 const options = ["Voice", "Video", "Lorem"];
 
-function RolePermissionSelect() {
-  const [selected, setSelected] = useState(["Voice", "Video"]);
-
+function RolePermissionSelect({ selectedFunctions = [], onChange, functions }) {
   const handleChange = (event) => {
     const {
       target: { value },
     } = event;
-    setSelected(typeof value === "string" ? value.split(",") : value);
+    onChange(typeof value === "string" ? value.split(",") : value);
   };
 
   return (
@@ -348,10 +346,14 @@ function RolePermissionSelect() {
       <InputLabel sx={{ color: "#fff" }}>Phân quyền</InputLabel>
       <Select
         multiple
-        value={selected}
+        value={selectedFunctions}
         onChange={handleChange}
         input={<OutlinedInput label='Phân quyền' />}
-        renderValue={(selected) => selected.join(", ")}
+        renderValue={(selected) =>
+          selected
+            .map((code) => functions.find((f) => f.code === code)?.name || code)
+            .join(", ")
+        }
         MenuProps={{
           PaperProps: {
             sx: {
@@ -385,10 +387,10 @@ function RolePermissionSelect() {
           },
           ".MuiSelect-icon": { color: "#fff" },
         }}>
-        {options.map((name) => (
-          <MenuItem key={name} value={name}>
+        {functions.map((func) => (
+          <MenuItem key={func.code} value={func.code}>
             <Checkbox
-              checked={selected.indexOf(name) > -1}
+              checked={selectedFunctions.indexOf(func.code) > -1}
               sx={{
                 color: "#888",
                 "&.Mui-checked": {
@@ -396,7 +398,7 @@ function RolePermissionSelect() {
                 },
               }}
             />
-            <ListItemText primary={name} />
+            <ListItemText primary={func.name} />
           </MenuItem>
         ))}
       </Select>
@@ -417,6 +419,7 @@ function AccountManager({
   const [openAdd, setOpenAdd] = React.useState(false);
   const [openDelete, setOpenDelete] = React.useState(false);
   const [idUser, setIdUser] = useState(null);
+  const [users, setUsers] = useState(member);
   const handleDeleteUser = (id) => {
     setOpenDelete(true);
     setIdUser(id);
@@ -472,6 +475,13 @@ function AccountManager({
 
   const handleExpand = (id) => {
     setExpanded(expanded === id ? null : id);
+  };
+  const handleFunctionChange = (userId, newFunctions) => {
+    setUsers(
+      users.map((user) =>
+        user.username === userId ? { ...user, functions: newFunctions } : user
+      )
+    );
   };
 
   return (
@@ -583,7 +593,13 @@ function AccountManager({
                   gap={isMobile ? 1 : 0}
                   alignItems={"end"}>
                   <Box width={isMobile ? "100%" : "47%"}>
-                    <RolePermissionSelect />
+                    <RolePermissionSelect
+                      selectedFunctions={user.functions}
+                      functions={functions}
+                      onChange={(newFunctions) =>
+                        handleFunctionChange(user.username, newFunctions)
+                      }
+                    />
                   </Box>
                   <Box width={isMobile ? "100%" : "47%"} textAlign={"end"}>
                     <Button

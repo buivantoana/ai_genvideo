@@ -144,19 +144,29 @@ const PromptEditorUI = ({
       setLoading(true);
       const cleanedData = removeNullKeys(script?.script?.scenes);
       try {
-        let result = await updateProject(id, {
-          current_step: "gen_script",
-          script: { ...script.script, scenes: cleanedData },
-        });
+        let userRaw = localStorage.getItem("user");
+        let user = userRaw ? JSON.parse(userRaw) : null;
 
-        if (result && result.name) {
-          localStorage.setItem("gen_script", JSON.stringify(result));
-          console.log("update");
-          setTimeout(() => {
-            navigate(`/create-image?id=${id}`);
-          }, 500);
+        let role = script?.members
+          .find((item) => item.username == user?.username)
+          ?.functions?.every((item) => item == "gen_script");
+
+        if (role) {
+          let result = await updateProject(id, {
+            current_step: "gen_script",
+            script: { ...script.script, scenes: cleanedData },
+          });
+
+          if (result && result.name) {
+            localStorage.setItem("gen_script", JSON.stringify(result));
+            setTimeout(() => {
+              navigate(`/create-image?id=${id}`);
+            }, 500);
+          } else {
+            toast.warning(result.detail);
+          }
         } else {
-          toast.warning(result.detail);
+          navigate(`/create-image?id=${id}`);
         }
       } catch (error) {
         console.log(error);

@@ -73,6 +73,8 @@ const AccountView = ({ setLoading, users, getAllUser }: any) => {
           handleDeleteUser={handleDeleteUser}
           users={users}
           setAction={setAction}
+          setLoading={setLoading}
+          getAllUser={getAllUser}
         />
       )}
       <DeleteAccountModal
@@ -127,13 +129,93 @@ const Field = styled(TextField)({
   },
 });
 
-function AccountManager({ setAction, users, handleDeleteUser }) {
+function AccountManager({
+  setAction,
+  users,
+  handleDeleteUser,
+  getAllUser,
+  setLoading,
+}) {
   const [expanded, setExpanded] = useState(null);
-
+  const [editData, setEditData] = useState({});
   const isMobile = useMediaQuery("(max-width:600px)");
   const navigate = useNavigate();
+
   const handleExpand = (id) => {
     setExpanded(expanded === id ? null : id);
+    // Reset edit data khi mở expand
+    if (expanded !== id) {
+      const user = users.find((u) => u.id === id);
+      setEditData({
+        [id]: {
+          email: user.email,
+          role: user.role,
+          password: "",
+          confirmPassword: "",
+        },
+      });
+    }
+  };
+
+  const handleInputChange = (userId, field, value) => {
+    setEditData((prev) => ({
+      ...prev,
+      [userId]: {
+        ...prev[userId],
+        [field]: value,
+      },
+    }));
+  };
+
+  const update = async (user) => {
+    const userData = editData[user.id] || {};
+    const { email, role, password, confirmPassword } = userData;
+
+    // Kiểm tra mật khẩu
+    if (password || confirmPassword) {
+      if (password !== confirmPassword) {
+        alert("Mật khẩu và xác nhận mật khẩu không khớp");
+        return;
+      }
+    }
+
+    // Tạo object body chỉ chứa các trường có giá trị thay đổi
+    const updateData = {};
+
+    if (email && email !== user.email) {
+      updateData.email = email;
+    }
+
+    if (role && role !== user.role) {
+      updateData.role = role;
+    }
+
+    if (password) {
+      updateData.new_password = password;
+    }
+
+    // Nếu không có gì thay đổi
+    if (Object.keys(updateData).length === 0) {
+      alert("Không có thông tin nào được thay đổi");
+      return;
+    }
+    setLoading(true);
+    try {
+      const response = await updateUser({
+        ...updateData,
+        username: user.username,
+      });
+      if (response && response.message) {
+        toast.success(response.message);
+        getAllUser();
+      }
+
+      // setExpanded(null); // Đóng collapse
+    } catch (error) {
+      console.error("Lỗi khi cập nhật:", error);
+      alert("Có lỗi xảy ra khi cập nhật");
+    }
+    setLoading(false);
   };
 
   return (
@@ -244,11 +326,11 @@ function AccountManager({ setAction, users, handleDeleteUser }) {
                   alignItems: "center",
                   justifyContent: "end",
                 }}>
-                <RiDeleteBin5Line
+                {/* <RiDeleteBin5Line
                   onClick={() => handleDeleteUser(user)}
                   size={20}
                   color='rgba(115, 115, 151, 1)'
-                />
+                /> */}
                 <IconButton sx={{}} onClick={() => handleExpand(user.id)}>
                   <ExpandMore sx={{ color: "#fff" }} />
                 </IconButton>
@@ -267,85 +349,43 @@ function AccountManager({ setAction, users, handleDeleteUser }) {
                       Địa chỉ email
                     </Typography>
                     <Field
+                      value={editData[user.id]?.email || user.email}
+                      onChange={(e) =>
+                        handleInputChange(user.id, "email", e.target.value)
+                      }
                       sx={{
                         "& .MuiInputBase-root": {
                           height: { xs: "35px", md: "45px" },
                         },
                       }}
                       fullWidth
-                      placeholder='Example123'
+                      placeholder='Nhập email mới'
                     />
                   </Box>
-                  <Box width={isMobile ? "49%" : "47%"}>
-                    <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
-                      Mật khẩu cũ
-                    </Typography>
-                    <Field
-                      sx={{
-                        "& .MuiInputBase-root": {
-                          height: { xs: "35px", md: "45px" },
-                        },
-                      }}
-                      fullWidth
-                      placeholder='Ít nhất 8 ký tự'
-                    />
-                  </Box>
-                </Box>
-                <Box display={"flex"} justifyContent={"space-between"}>
-                  <Box width={isMobile ? "49%" : "47%"}>
-                    <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
-                      Mật khẩu mới
-                    </Typography>
-                    <Field
-                      sx={{
-                        "& .MuiInputBase-root": {
-                          height: { xs: "35px", md: "45px" },
-                        },
-                      }}
-                      fullWidth
-                      placeholder='Example123'
-                    />
-                  </Box>
-                  <Box width={isMobile ? "49%" : "47%"}>
-                    <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
-                      Xác nhận lại mật khẩu
-                    </Typography>
-                    <Field
-                      sx={{
-                        "& .MuiInputBase-root": {
-                          height: { xs: "35px", md: "45px" },
-                        },
-                      }}
-                      fullWidth
-                      placeholder='Example123'
-                    />
-                  </Box>
-                </Box>
-                <Box
-                  display={"flex"}
-                  justifyContent={"space-between"}
-                  alignItems={"end"}>
                   <Box width={isMobile ? "49%" : "47%"}>
                     <Typography fontSize={isMobile ? ".7rem" : "1rem"} mb={1}>
                       Vai trò
                     </Typography>
                     <Select
+                      value={editData[user.id]?.role || user.role}
+                      onChange={(e) =>
+                        handleInputChange(user.id, "role", e.target.value)
+                      }
                       fullWidth
-                      defaultValue={user.role}
                       MenuProps={{
                         PaperProps: {
                           sx: {
-                            backgroundColor: "#2A274B", // nền của dropdown list
+                            backgroundColor: "#2A274B",
                             color: "#fff",
                             borderRadius: 2,
                             mt: 1,
                             "& .MuiMenuItem-root": {
                               "&:hover": {
-                                backgroundColor: "#3A375F", // màu hover
+                                backgroundColor: "#3A375F",
                                 borderRadius: 1,
                               },
                               "&.Mui-selected": {
-                                backgroundColor: "#4B3A79", // màu selected
+                                backgroundColor: "#4B3A79",
                                 borderRadius: 1,
                               },
                             },
@@ -359,22 +399,74 @@ function AccountManager({ setAction, users, handleDeleteUser }) {
                         borderRadius: "8px",
                         "& .MuiOutlinedInput-notchedOutline": {
                           border: "2px solid",
-                          borderColor: "#414188", // 👈 Viền mặc định
+                          borderColor: "#414188",
                         },
                         "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
                           border: "2px solid",
-                          borderColor: "#414188", // 👈 Viền khi focus
+                          borderColor: "#414188",
                         },
                         ".MuiSelect-icon": { color: "#fff" },
                       }}>
-                      <MenuItem value='Admin'>Admin</MenuItem>
-                      <MenuItem value='Editor'>Editor</MenuItem>
-                      <MenuItem value='Viewer'>Viewer</MenuItem>
+                      <MenuItem value='admin'>Admin</MenuItem>
+                      <MenuItem value='editor'>Editor</MenuItem>
+                      {/* <MenuItem value='viewer'>Viewer</MenuItem> */}
                     </Select>
                   </Box>
-                  <Box width={"47%"} textAlign={"end"}>
+                </Box>
+                <Box display={"flex"} justifyContent={"space-between"}>
+                  <Box width={isMobile ? "49%" : "47%"}>
+                    <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
+                      Mật khẩu mới
+                    </Typography>
+                    <Field
+                      type='password'
+                      value={editData[user.id]?.password || ""}
+                      onChange={(e) =>
+                        handleInputChange(user.id, "password", e.target.value)
+                      }
+                      sx={{
+                        "& .MuiInputBase-root": {
+                          height: { xs: "35px", md: "45px" },
+                        },
+                      }}
+                      fullWidth
+                      placeholder='Nhập mật khẩu mới'
+                    />
+                  </Box>
+                  <Box width={isMobile ? "49%" : "47%"}>
+                    <Typography mb={1} fontSize={isMobile ? ".7rem" : "1rem"}>
+                      Xác nhận lại mật khẩu
+                    </Typography>
+                    <Field
+                      type='password'
+                      value={editData[user.id]?.confirmPassword || ""}
+                      onChange={(e) =>
+                        handleInputChange(
+                          user.id,
+                          "confirmPassword",
+                          e.target.value
+                        )
+                      }
+                      sx={{
+                        "& .MuiInputBase-root": {
+                          height: { xs: "35px", md: "45px" },
+                        },
+                      }}
+                      fullWidth
+                      placeholder='Xác nhận mật khẩu'
+                    />
+                  </Box>
+                </Box>
+                <Box
+                  display={"flex"}
+                  justifyContent={"center"}
+                  sx={{ width: "100%" }}
+                  alignItems={"end"}
+                  mt={2}>
+                  <Box>
                     <Button
                       variant='contained'
+                      onClick={() => update(user)}
                       sx={{
                         backgroundColor: "rgba(89, 50, 234, 1)",
                         borderRadius: "12px",
@@ -680,7 +772,7 @@ function ResetPassword({ setAction }) {
               "& .MuiInputBase-root": { height: { xs: "35px", md: "45px" } },
             }}
             fullWidth
-            placeholder='Example123'
+            placeholder='Nhập mật khẩu cũ'
           />
         </Box>
 
@@ -742,7 +834,12 @@ import {
   DialogActions,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import { deleteUser, Register, resetPassword } from "../../service/auth";
+import {
+  deleteUser,
+  Register,
+  resetPassword,
+  updateUser,
+} from "../../service/auth";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 

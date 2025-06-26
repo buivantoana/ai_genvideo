@@ -62,7 +62,9 @@ const CreateImageView = ({
       ? Number(localStorage.getItem("model_image"))
       : modelList[0]?.key
   );
-  const [px, setPx] = useState("1920x1080 (16:9)");
+  const [px, setPx] = useState(
+    localStorage.getItem("px") ? localStorage.getItem("px") : "1920x1080 (16:9)"
+  );
   const [openModal, setOpenModal] = useState(false);
   const [newModel, setNewModel] = useState({
     name: "",
@@ -461,7 +463,10 @@ const CreateImageView = ({
           <Select
             defaultValue='1920x1080 (16:9)'
             value={px}
-            onChange={(e) => setPx(e.target.value)}
+            onChange={(e) => {
+              localStorage.setItem("px", e.target.value);
+              setPx(e.target.value);
+            }}
             sx={{
               background: "transparent",
               color: "#fff",
@@ -2199,160 +2204,173 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
             <Button
               variant='contained'
               onClick={async () => {
-                // Kiểm tra ảnh chính và ảnh trong dialogue
-                const hasMissingImage = values.some((item) => {
-                  // Kiểm tra video chính
-                  const mainImageMissing =
-                    !item.image?.imageUrls ||
-                    typeof item.image.selected !== "number" ||
-                    !item.image.imageUrls[item.image.selected];
+                let userRaw = localStorage.getItem("user");
+                let user = userRaw ? JSON.parse(userRaw) : null;
 
-                  // Kiểm tra video trong dialogue (nếu có)
-                  const dialogueImageMissing = item.dialogue?.some(
-                    (dialogueItem) => {
-                      return (
-                        dialogueItem.image &&
-                        (!dialogueItem.image.imageUrls ||
-                          typeof dialogueItem.image.selected !== "number" ||
-                          !dialogueItem.image.imageUrls[
-                            dialogueItem.image.selected
-                          ])
-                      );
-                    }
-                  );
+                let role = genScript?.members
+                  .find((item) => item.username == user?.username)
+                  ?.functions?.every((item) => item == "gen_image");
 
-                  return mainImageMissing || dialogueImageMissing;
-                });
+                if (role) {
+                  const hasMissingImage = values.some((item) => {
+                    // Kiểm tra video chính
+                    const mainImageMissing =
+                      !item.image?.imageUrls ||
+                      typeof item.image.selected !== "number" ||
+                      !item.image.imageUrls[item.image.selected];
 
-                if (hasMissingImage) {
-                  toast.warning(
-                    "Bạn cần tạo ảnh cho mỗi phân cảnh và dialogue"
-                  );
-                  return;
-                }
-
-                try {
-                  setLoading(true);
-                  if (!id) {
-                    throw new Error("ID dự án không tồn tại");
-                  }
-
-                  const isUploadedImage = (url) => {
-                    return typeof url === "string" && url.startsWith("blob:");
-                  };
-
-                  // Hàm xử lý upload ảnh
-                  const handleImageUpload = async (
-                    imageData,
-                    width,
-                    height
-                  ) => {
-                    if (
-                      isUploadedImage(imageData.imageUrls[imageData.selected])
-                    ) {
-                      console.log("tooooooooooooooo");
-                      const uploadResult = await upload({
-                        file: imageData.file,
-                        folder: "images",
-                      });
-
-                      if (!uploadResult || !uploadResult.url) {
-                        throw new Error("Failed to upload audio file");
+                    // Kiểm tra video trong dialogue (nếu có)
+                    const dialogueImageMissing = item.dialogue?.some(
+                      (dialogueItem) => {
+                        return (
+                          dialogueItem.image &&
+                          (!dialogueItem.image.imageUrls ||
+                            typeof dialogueItem.image.selected !== "number" ||
+                            !dialogueItem.image.imageUrls[
+                              dialogueItem.image.selected
+                            ])
+                        );
                       }
-                      console.log("teeeeeeeeeeee", {
-                        id: uploadResult.id,
-                        url: uploadResult.url,
-                        n_prompt: imageData.n_prompt,
-                        prompt: imageData.prompt,
-                      });
-                      return {
-                        id: uploadResult.id,
-                        url: uploadResult.url,
-                        n_prompt: imageData.n_prompt,
-                        prompt: imageData.prompt,
-                      };
-                    }
-                    console.log("tooooooooooooooossss", imageData);
-                    return {
-                      id: imageData.ids[imageData.selected],
-                      n_prompt: imageData.n_prompt,
-                      prompt: imageData.prompt,
-                      url: imageData.imageUrls[imageData.selected],
-                    };
-                  };
+                    );
 
-                  const [width, height] = px
-                    .split(" ")[0]
-                    .split("x")
-                    .map(Number);
-
-                  // Chờ tất cả Promise từ map hoàn thành
-                  const updatedValues = await Promise.all(
-                    values.map(async (item) => {
-                      // Xử lý ảnh chính
-                      const updatedImage = await handleImageUpload(
-                        item.image,
-                        width,
-                        height
-                      );
-
-                      // Xử lý ảnh trong dialogue
-                      const updatedDialogue = await Promise.all(
-                        (item.dialogue || []).map(async (dlg) => {
-                          if (dlg.image) {
-                            const dialogueImage = await handleImageUpload(
-                              dlg.image,
-                              width,
-                              height
-                            );
-                            return {
-                              ...dlg,
-                              image: dialogueImage,
-                            };
-                          }
-                          return dlg;
-                        })
-                      );
-
-                      // Xử lý video
-                      const updatedVideo = Object.fromEntries(
-                        Object.entries(item.video || {}).filter(
-                          ([_, value]) => value !== null
-                        )
-                      );
-
-                      return {
-                        ...item,
-                        image: updatedImage,
-                        video: updatedVideo,
-                        dialogue: updatedDialogue,
-                      };
-                    })
-                  );
-
-                  const result = await updateProject(id, {
-                    current_step: "gen_image",
-                    script: {
-                      ...genScript.script,
-                      scenes: updatedValues,
-                    },
+                    return mainImageMissing || dialogueImageMissing;
                   });
 
-                  if (result && result.name) {
-                    localStorage.setItem("gen_script", JSON.stringify(result));
-                    setTimeout(() => {
-                      navigate(`/create-video?id=${id}`);
-                    }, 500);
-                  } else {
-                    throw new Error("Cập nhật dự án thất bại");
+                  if (hasMissingImage) {
+                    toast.warning(
+                      "Bạn cần tạo ảnh cho mỗi phân cảnh và dialogue"
+                    );
+                    return;
                   }
-                } catch (error) {
-                  console.error("Lỗi:", error);
-                  toast.error(
-                    error.message || "Có lỗi xảy ra khi xác nhận ảnh"
-                  );
-                } finally {
-                  setLoading(false);
+
+                  try {
+                    setLoading(true);
+                    if (!id) {
+                      throw new Error("ID dự án không tồn tại");
+                    }
+
+                    const isUploadedImage = (url) => {
+                      return typeof url === "string" && url.startsWith("blob:");
+                    };
+
+                    // Hàm xử lý upload ảnh
+                    const handleImageUpload = async (
+                      imageData,
+                      width,
+                      height
+                    ) => {
+                      if (
+                        isUploadedImage(imageData.imageUrls[imageData.selected])
+                      ) {
+                        console.log("tooooooooooooooo");
+                        const uploadResult = await upload({
+                          file: imageData.file,
+                          folder: "images",
+                        });
+
+                        if (!uploadResult || !uploadResult.url) {
+                          throw new Error("Failed to upload audio file");
+                        }
+                        console.log("teeeeeeeeeeee", {
+                          id: uploadResult.id,
+                          url: uploadResult.url,
+                          n_prompt: imageData.n_prompt,
+                          prompt: imageData.prompt,
+                        });
+                        return {
+                          id: uploadResult.id,
+                          url: uploadResult.url,
+                          n_prompt: imageData.n_prompt,
+                          prompt: imageData.prompt,
+                        };
+                      }
+                      console.log("tooooooooooooooossss", imageData);
+                      return {
+                        id: imageData.ids[imageData.selected],
+                        n_prompt: imageData.n_prompt,
+                        prompt: imageData.prompt,
+                        url: imageData.imageUrls[imageData.selected],
+                      };
+                    };
+
+                    const [width, height] = px
+                      .split(" ")[0]
+                      .split("x")
+                      .map(Number);
+
+                    // Chờ tất cả Promise từ map hoàn thành
+                    const updatedValues = await Promise.all(
+                      values.map(async (item) => {
+                        // Xử lý ảnh chính
+                        const updatedImage = await handleImageUpload(
+                          item.image,
+                          width,
+                          height
+                        );
+
+                        // Xử lý ảnh trong dialogue
+                        const updatedDialogue = await Promise.all(
+                          (item.dialogue || []).map(async (dlg) => {
+                            if (dlg.image) {
+                              const dialogueImage = await handleImageUpload(
+                                dlg.image,
+                                width,
+                                height
+                              );
+                              return {
+                                ...dlg,
+                                image: dialogueImage,
+                              };
+                            }
+                            return dlg;
+                          })
+                        );
+
+                        // Xử lý video
+                        const updatedVideo = Object.fromEntries(
+                          Object.entries(item.video || {}).filter(
+                            ([_, value]) => value !== null
+                          )
+                        );
+
+                        return {
+                          ...item,
+                          image: updatedImage,
+                          video: updatedVideo,
+                          dialogue: updatedDialogue,
+                        };
+                      })
+                    );
+
+                    const result = await updateProject(id, {
+                      current_step: "gen_image",
+                      script: {
+                        ...genScript.script,
+                        scenes: updatedValues,
+                      },
+                    });
+
+                    if (result && result.name) {
+                      localStorage.setItem(
+                        "gen_script",
+                        JSON.stringify(result)
+                      );
+                      setTimeout(() => {
+                        navigate(`/create-video?id=${id}`);
+                      }, 500);
+                    } else {
+                      throw new Error("Cập nhật dự án thất bại");
+                    }
+                  } catch (error) {
+                    console.error("Lỗi:", error);
+                    toast.error(
+                      error.message || "Có lỗi xảy ra khi xác nhận ảnh"
+                    );
+                  } finally {
+                    setLoading(false);
+                  }
+                } else {
+                  navigate(`/create-video?id=${id}`);
                 }
               }}
               sx={{

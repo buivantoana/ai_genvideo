@@ -54,7 +54,9 @@ const CreateVideoView = ({
       ? localStorage.getItem("model_video")
       : "framepack"
   );
-  const [px, setPx] = useState("1920x1080 (16:9)");
+  const [px, setPx] = useState(
+    localStorage.getItem("px") ? localStorage.getItem("px") : "1920x1080 (16:9)"
+  );
   useEffect(() => {
     if (genScript) {
       setSelectedTab(genScript?.video_type == "video2video" ? 1 : 0);
@@ -139,7 +141,10 @@ const CreateVideoView = ({
         <FormControl variant='outlined' size='small'>
           <Select
             value={px}
-            onChange={(e) => setPx(e.target.value)}
+            onChange={(e) => {
+              localStorage.setItem("px", e.target.value);
+              setPx(e.target.value);
+            }}
             sx={{
               background: "transparent",
               color: "#fff",
@@ -360,7 +365,7 @@ import { toast } from "react-toastify";
 // };
 let durationData = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 const SceneCard = forwardRef((props, ref) => {
-  const { scene, values, setValues, model, px, effect }: any = props;
+  const { scene, values, setValues, model, px, effect, genScript }: any = props;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const [isEditing, setIsEditing] = useState(false);
@@ -373,7 +378,7 @@ const SceneCard = forwardRef((props, ref) => {
   const [duration, setDuration] = useState(1);
   const sceneData = values.find((v) => v.scene === scene);
   useEffect(() => {
-    if (sceneData && Object.keys(sceneData).length > 0 && sceneData.video.id) {
+    if (sceneData && Object.keys(sceneData).length > 0) {
       setSelectedEffect(sceneData.video.effect || "none");
     } else {
       setSelectedEffect(
@@ -384,8 +389,8 @@ const SceneCard = forwardRef((props, ref) => {
     }
   }, [effect]);
   useEffect(() => {
-    if (sceneData && Object.keys(sceneData).length > 0 && sceneData.video.id) {
-      setDuration(sceneData.video.duration);
+    if (sceneData && Object.keys(sceneData).length > 0) {
+      setDuration(sceneData.video.duration || 1);
     } else {
       setDuration(1);
     }
@@ -741,13 +746,17 @@ const SceneCard = forwardRef((props, ref) => {
                 md={6}>
                 <Card
                   sx={{
-                    bgcolor: "#292a45",
+                    background:
+                      genScript?.video_type == "image2image"
+                        ? `url('${sceneData?.image?.url}')`
+                        : "#292a45",
                     height: isMobile ? 150 : 250,
-
+                    backgroundSize: "100%",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     padding: 0,
+                    backgroundRepeat: "no-repeat",
                   }}>
                   <Button
                     onClick={() => genImage()}
@@ -991,6 +1000,7 @@ const SceneCard = forwardRef((props, ref) => {
               model={model}
               px={px}
               effect={effect}
+              genScript={genScript}
             />
           ))}
       </Stack>
@@ -1007,6 +1017,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
     index,
     parentScene,
     effect,
+    genScript,
   }: any = props;
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -1022,23 +1033,15 @@ const SceneCardDialogue = forwardRef((props, ref) => {
   // Lấy dialogue item dựa vào index
   const dialogueItem = parentSceneData?.dialogue?.[index] || {};
   useEffect(() => {
-    if (
-      dialogueItem &&
-      Object.keys(dialogueItem).length > 0 &&
-      dialogueItem.video.id
-    ) {
-      setDuration(dialogueItem.video.duration);
+    if (dialogueItem && Object.keys(dialogueItem).length > 0) {
+      setDuration(dialogueItem.video.duration || 1);
     } else {
       setDuration(1);
     }
   }, []);
 
   useEffect(() => {
-    if (
-      dialogueItem &&
-      Object.keys(dialogueItem).length > 0 &&
-      dialogueItem.video.id
-    ) {
+    if (dialogueItem && Object.keys(dialogueItem).length > 0) {
       setSelectedEffect(dialogueItem.video.effect || "none");
     } else {
       setSelectedEffect(
@@ -1474,13 +1477,17 @@ const SceneCardDialogue = forwardRef((props, ref) => {
                 md={6}>
                 <Card
                   sx={{
-                    bgcolor: "#292a45",
+                    background:
+                      genScript.video_type == "image2image"
+                        ? `url('${dialogueItem?.image?.url}')`
+                        : "#292a45",
                     height: isMobile ? 150 : 250,
-
+                    backgroundSize: "100%",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                     padding: 0,
+                    backgroundRepeat: "no-repeat",
                   }}>
                   <Button
                     onClick={() => genImage()}
@@ -1800,20 +1807,21 @@ function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
       </Box>
 
       <Box>
-        {values.map((_, index) => (
+        {values.map((scene, index) => (
           <Box
-            key={index}
+            key={scene.scene}
             sx={{
               display: index === currentSceneIndex ? "block" : "none",
             }}>
             <SceneCard
-              key={currentSceneIndex}
+              key={scene.scene}
               scene={values[currentSceneIndex].scene}
               values={values}
               setValues={setValues}
               model={model}
               px={px}
               effect={effect}
+              genScript={genScript}
             />
           </Box>
         ))}
@@ -1831,86 +1839,100 @@ function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
             <Button
               variant='contained'
               onClick={async () => {
-                try {
-                  // const hasMissingVideos = values.some((item) => {
-                  //   // Kiểm tra video chính
-                  //   const mainImageMissing =
-                  //     !item.video?.imageUrls ||
-                  //     typeof item.video.selected !== "number" ||
-                  //     !item.video.imageUrls[item.video.selected];
+                // const hasMissingVideos = values.some((item) => {
+                //   // Kiểm tra video chính
+                //   const mainImageMissing =
+                //     !item.video?.imageUrls ||
+                //     typeof item.video.selected !== "number" ||
+                //     !item.video.imageUrls[item.video.selected];
 
-                  //   // Kiểm tra video trong dialogue (nếu có)
-                  //   const dialogueVideosMissing = item.dialogue?.some(
-                  //     (dialogueItem) => {
-                  //       return (
-                  //         dialogueItem.video &&
-                  //         (!dialogueItem.video.imageUrls ||
-                  //           typeof dialogueItem.video.selected !== "number" ||
-                  //           !dialogueItem.video.imageUrls[
-                  //             dialogueItem.video.selected
-                  //           ])
-                  //       );
-                  //     }
-                  //   );
+                //   // Kiểm tra video trong dialogue (nếu có)
+                //   const dialogueVideosMissing = item.dialogue?.some(
+                //     (dialogueItem) => {
+                //       return (
+                //         dialogueItem.video &&
+                //         (!dialogueItem.video.imageUrls ||
+                //           typeof dialogueItem.video.selected !== "number" ||
+                //           !dialogueItem.video.imageUrls[
+                //             dialogueItem.video.selected
+                //           ])
+                //       );
+                //     }
+                //   );
 
-                  //   return mainImageMissing || dialogueVideosMissing;
-                  // });
+                //   return mainImageMissing || dialogueVideosMissing;
+                // });
 
-                  // if (hasMissingVideos) {
-                  //   toast.warning(
-                  //     "Bạn cần tạo Video cho mỗi phân cảnh và dialogue"
-                  //   );
-                  //   return;
-                  // }
-                  setLoading(true);
-                  const result = await updateProject(id, {
-                    current_step: "gen_video",
-                    script: {
-                      ...genScript.script,
-                      scenes: values.map((item) => {
-                        const dialogue =
-                          item.dialogue?.length > 0
-                            ? item.dialogue.map((ix) => {
-                                const selected = ix.video?.selected ?? 0;
-                                return {
-                                  ...ix,
-                                  video: {
-                                    ...ix.video,
-                                    id: ix.video?.ids?.[selected] ?? null,
-                                    url:
-                                      ix.video?.imageUrls?.[selected] ?? null,
-                                  },
-                                };
-                              })
-                            : [];
+                // if (hasMissingVideos) {
+                //   toast.warning(
+                //     "Bạn cần tạo Video cho mỗi phân cảnh và dialogue"
+                //   );
+                //   return;
+                // }
+                let userRaw = localStorage.getItem("user");
+                let user = userRaw ? JSON.parse(userRaw) : null;
 
-                        const selected = item.video?.selected ?? 0;
+                let role = genScript?.members
+                  .find((item) => item.username == user?.username)
+                  ?.functions?.every((item) => item == "gen_video");
 
-                        return {
-                          ...item,
-                          dialogue,
-                          video: {
-                            ...item.video,
-                            id: item.video?.ids?.[selected] ?? null,
-                            url: item.video?.imageUrls?.[selected] ?? null,
-                          },
-                        };
-                      }),
-                    },
-                  });
+                if (role) {
+                  try {
+                    setLoading(true);
+                    const result = await updateProject(id, {
+                      current_step: "gen_video",
+                      script: {
+                        ...genScript.script,
+                        scenes: values.map((item) => {
+                          const dialogue =
+                            item.dialogue?.length > 0
+                              ? item.dialogue.map((ix) => {
+                                  const selected = ix.video?.selected ?? 0;
+                                  return {
+                                    ...ix,
+                                    video: {
+                                      ...ix.video,
+                                      id: ix.video?.ids?.[selected] ?? null,
+                                      url:
+                                        ix.video?.imageUrls?.[selected] ?? null,
+                                    },
+                                  };
+                                })
+                              : [];
 
-                  if (result && result.name) {
-                    localStorage.setItem("gen_script", JSON.stringify(result));
-                    setTimeout(() => {
-                      navigate(`/narrator?id=${id}`);
-                    }, 500);
-                  } else {
-                    throw new Error("Cập nhật dự án thất bại");
+                          const selected = item.video?.selected ?? 0;
+
+                          return {
+                            ...item,
+                            dialogue,
+                            video: {
+                              ...item.video,
+                              id: item.video?.ids?.[selected] ?? null,
+                              url: item.video?.imageUrls?.[selected] ?? null,
+                            },
+                          };
+                        }),
+                      },
+                    });
+
+                    if (result && result.name) {
+                      localStorage.setItem(
+                        "gen_script",
+                        JSON.stringify(result)
+                      );
+                      setTimeout(() => {
+                        navigate(`/narrator?id=${id}`);
+                      }, 500);
+                    } else {
+                      throw new Error("Cập nhật dự án thất bại");
+                    }
+                  } catch (error) {
+                    console.log(error);
                   }
-                } catch (error) {
-                  console.log(error);
+                  setLoading(false);
+                } else {
+                  navigate(`/narrator?id=${id}`);
                 }
-                setLoading(false);
               }}
               sx={{
                 background: "#6E00FF",

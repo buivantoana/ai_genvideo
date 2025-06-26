@@ -47,6 +47,7 @@ const IdeaView = ({ setLoading, modelList }: any) => {
   const [projectName, setProjectName] = useState("");
   const [prompt, setPrompt] = useState("");
   const [sceneCount, setSceneCount] = useState("");
+  const [time, setTime] = useState("");
   const [style, setStyle] = useState("narration");
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
@@ -56,6 +57,7 @@ const IdeaView = ({ setLoading, modelList }: any) => {
   const [selectedTab, setSelectedTab]: any = useState(0);
   const [initialData, setInitialData] = useState<any>(null); // Lưu dữ liệu ban đầu
   const [hasChanges, setHasChanges] = useState(false);
+  const [members, setMembers] = useState([]);
   useEffect(() => {
     let data_update: any = localStorage.getItem("gen_script");
     if (data_update) {
@@ -67,6 +69,8 @@ const IdeaView = ({ setLoading, modelList }: any) => {
         setPrompt(data_update.prompt);
         setSceneCount(data_update.scene_count);
         setSelectedTab(data_update.video_type == "video2video" ? 1 : 0);
+        setTime(data_update.time);
+        setMembers(data_update.members);
         setInitialData({
           llm_model: data_update.llm_model,
           name: data_update.name.trim(),
@@ -119,6 +123,7 @@ const IdeaView = ({ setLoading, modelList }: any) => {
       sceneCount: sceneCount,
       style: style,
       selectedTab,
+      time: Number(time),
     };
 
     // Validate required
@@ -152,6 +157,7 @@ const IdeaView = ({ setLoading, modelList }: any) => {
           navigate(`/script?id=${id}`);
           return;
         }
+
         result = await updateProject(id, {
           name: projectName.trim(),
           video_type: selectedTab == 0 ? "image2image" : "video2video",
@@ -419,13 +425,44 @@ const IdeaView = ({ setLoading, modelList }: any) => {
             sx={{ fontSize: isMobile ? "1rem" : "1.25rem" }}
             mb={1}
             fontWeight={"600"}>
-            Nhập số phân cảnh cần biên kịch
+            Nhập số phân cảnh
           </Typography>
           <TextField
             type='number'
             value={sceneCount}
             onChange={(e) => setSceneCount(e.target.value)}
             placeholder='Nhập số cảnh'
+            variant='outlined'
+            size='small'
+            sx={{
+              backgroundColor: "#1A1836",
+              borderRadius: 2,
+              input: { color: "white" },
+              "& .MuiOutlinedInput-root": {
+                height: isMobile ? "40px" : "50px", // 👈 Đặt ở đây mới ăn
+                alignItems: "center", // Canh giữa input text
+              },
+              "& .MuiOutlinedInput-notchedOutline": {
+                border: "2px solid",
+                borderColor: "#414188",
+              },
+              width: "100%",
+            }}
+          />
+        </Box>
+        <Box sx={{ flex: 1 }}>
+          <Typography
+            variant='h6'
+            sx={{ fontSize: isMobile ? "1rem" : "1.25rem" }}
+            mb={1}
+            fontWeight={"600"}>
+            Nhập thời lượng (phút)
+          </Typography>
+          <TextField
+            type='number'
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            placeholder='Nhập thời lượng'
             variant='outlined'
             size='small'
             sx={{

@@ -97,15 +97,6 @@ export default function LoginView({
             onChange={(e) => setPassword(e.target.value)}
           />
 
-          <Box textAlign='right' mt={1} mb={3}>
-            <Link
-              href='#'
-              underline='hover'
-              sx={{ fontSize: "0.875rem", color: "#aaa" }}>
-              Quên mật khẩu
-            </Link>
-          </Box>
-
           <Button
             fullWidth
             variant='contained'
@@ -118,6 +109,7 @@ export default function LoginView({
               fontWeight: "600",
               fontSize: "1rem",
               height: "55px",
+              mt: 3,
             }}>
             Đăng nhập
           </Button>

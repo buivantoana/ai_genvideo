@@ -30,7 +30,10 @@ const LoginController = (props: Props) => {
       if (Object.keys(result).length > 0 && result.access_token) {
         localStorage.setItem("token", result.access_token);
         localStorage.setItem("refresh_token", result.refresh_token);
-        localStorage.setItem("user", JSON.stringify(result));
+        localStorage.setItem(
+          "user",
+          JSON.stringify({ result, username: email })
+        );
 
         toast.success("Đăng nhập thành công");
         setTimeout(() => {

@@ -496,7 +496,7 @@ import {
 } from "../../service/project";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import { RiPlayFill } from "react-icons/ri";
+import { RiPauseFill, RiPlayFill } from "react-icons/ri";
 
 const VoiceItem = ({
   title,
@@ -543,6 +543,7 @@ const VoiceItem = ({
     null
   );
   const [currentTime, setCurrentTime] = useState(0);
+  const [pausedTime, setPausedTime] = useState(0);
   const selectedModelData = model.find((m) => m.id === selectedModel);
   const voices = Array.isArray(selectedModelData?.voices)
     ? selectedModelData.voices.length > 0 &&
@@ -593,6 +594,8 @@ const VoiceItem = ({
     if (!voiceData?.url) return;
 
     if (isPlaying && currentAudio) {
+      // Khi pause, lưu lại thời gian hiện tại
+      setPausedTime(currentAudio.currentTime);
       currentAudio.pause();
       setIsPlaying(false);
       return;
@@ -604,14 +607,19 @@ const VoiceItem = ({
 
     const audio = new Audio(voiceData.url);
 
+    // Nếu có thời gian pause, set currentTime trước khi play
+    if (pausedTime > 0) {
+      audio.currentTime = pausedTime;
+    }
+
     audio.onplay = () => setIsPlaying(true);
     audio.onpause = () => setIsPlaying(false);
     audio.onended = () => {
       setIsPlaying(false);
-      setCurrentTime(0); // Reset khi kết thúc
+      setCurrentTime(0);
+      setPausedTime(0); // Reset khi kết thúc
     };
 
-    // Thêm sự kiện cập nhật thời gian
     audio.ontimeupdate = () => {
       setCurrentTime(audio.currentTime);
     };
@@ -938,7 +946,7 @@ const VoiceItem = ({
                   )}
                 </>
               ) : (
-                <Box>
+                <Box sx={{ position: "relative", width: 250, height: 150 }}>
                   {imageUrl && (
                     <img
                       src={imageUrl}
@@ -947,6 +955,39 @@ const VoiceItem = ({
                       style={{ borderRadius: "15px" }}
                       alt=''
                     />
+                  )}
+                  {values.find((item) => item.scene === scene)?.voice?.url && (
+                    <Box
+                      onClick={handlePlayAudio}
+                      sx={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        cursor: "pointer",
+                      }}>
+                      <Box
+                        display='flex'
+                        justifyContent='center'
+                        alignItems='center'
+                        width='50px'
+                        height='50px'
+                        sx={{
+                          borderRadius: "50%",
+                          border: "1px solid white",
+                          background: "rgba(0,0,0,.5)",
+                        }}>
+                        {isPlaying ? (
+                          <RiPauseFill size={40} color='white' />
+                        ) : (
+                          <RiPlayFill size={40} color='white' />
+                        )}
+                      </Box>
+                    </Box>
                   )}
                 </Box>
               )}
@@ -1429,10 +1470,13 @@ const VoiceItemDialog = ({
   }, [dialogueData, text, currentScene, model]);
 
   // Phát audio
+  const [pausedTime, setPausedTime] = useState(0);
+
   const handlePlayAudio = () => {
     if (!dialogueData?.voice?.url) return;
 
     if (isPlaying && currentAudio) {
+      setPausedTime(currentAudio.currentTime);
       currentAudio.pause();
       setIsPlaying(false);
       return;
@@ -1443,12 +1487,19 @@ const VoiceItemDialog = ({
     }
 
     const audio = new Audio(dialogueData.voice.url);
+
+    if (pausedTime > 0) {
+      audio.currentTime = pausedTime;
+    }
+
     audio.onplay = () => setIsPlaying(true);
     audio.onpause = () => setIsPlaying(false);
     audio.onended = () => {
       setIsPlaying(false);
       setCurrentTime(0);
+      setPausedTime(0);
     };
+
     audio.ontimeupdate = () => setCurrentTime(audio.currentTime);
 
     audio
@@ -1697,7 +1748,7 @@ const VoiceItemDialog = ({
                 )}
               </>
             ) : (
-              <Box>
+              <Box sx={{ position: "relative", width: 250, height: 150 }}>
                 {imageUrl && (
                   <img
                     src={imageUrl}
@@ -1706,6 +1757,39 @@ const VoiceItemDialog = ({
                     style={{ borderRadius: "15px" }}
                     alt=''
                   />
+                )}
+                {dialogueData?.voice?.url && (
+                  <Box
+                    onClick={handlePlayAudio} // Sử dụng handlePlayAudio thay vì handleTogglePlay
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                    }}>
+                    <Box
+                      display='flex'
+                      justifyContent='center'
+                      alignItems='center'
+                      width='50px'
+                      height='50px'
+                      sx={{
+                        borderRadius: "50%",
+                        border: "1px solid white",
+                        background: "rgba(0,0,0,.5)",
+                      }}>
+                      {isPlaying ? (
+                        <RiPauseFill size={40} color='white' />
+                      ) : (
+                        <RiPlayFill size={40} color='white' />
+                      )}
+                    </Box>
+                  </Box>
                 )}
               </Box>
             )}
