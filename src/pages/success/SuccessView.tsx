@@ -40,7 +40,17 @@ const dynamicSteps = [
 const SuccessView = ({ genScript, setLoading }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-
+  const [role,setRole] = useState([])
+  useEffect(()=>{
+    let userRaw = localStorage.getItem("user");
+    let user = userRaw ? JSON.parse(userRaw) : null;
+    let role = genScript?.members
+      .find((item) => item.username == user?.username)
+      ?.functions
+      if(role && role.length>0){
+        setRole(role)
+      }
+  },[genScript])
   return (
     <Box
       className="hidden-add-voice"
@@ -54,7 +64,7 @@ const SuccessView = ({ genScript, setLoading }) => {
         gap: isMobile ? 2 : 4,
       }}
     >
-      <StepComponent steps={dynamicSteps} />
+      <StepComponent steps={dynamicSteps} userPermissions={role} />
       {/* Toggle Tabs */}
       {/* <ResponsiveBox /> */}
       <VideoProjectUI genScript={genScript} setLoading={setLoading} />

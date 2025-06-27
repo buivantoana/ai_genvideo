@@ -37,6 +37,17 @@ const ScriptView = ({
   const [selectedTab, setSelectedTab]: any = useState(
     script && script.video_type == "video2video" ? 1 : 0
   );
+  const [role,setRole] = useState([])
+  useEffect(()=>{
+    let userRaw = localStorage.getItem("user");
+    let user = userRaw ? JSON.parse(userRaw) : null;
+    let role = script?.members
+      .find((item) => item.username == user?.username)
+      ?.functions
+      if(role && role.length>0){
+        setRole(role)
+      }
+  },[script])
   return (
     <Box
       className='hidden-add-voice'
@@ -49,7 +60,7 @@ const ScriptView = ({
         flexDirection: "column",
         gap: isMobile ? 2 : 4,
       }}>
-      <StepComponent steps={dynamicSteps} />
+      <StepComponent steps={dynamicSteps}  userPermissions={role} />
       {/* Toggle Tabs */}
       {/* <ResponsiveBox
         selectedTab={selectedTab}
@@ -140,41 +151,89 @@ const PromptEditorUI = ({
   const handleCreate = async () => {
     const hasChanged = !isEqualScenes(scenes, initialScenes);
     console.log("Người dùng đã chỉnh sửa?", hasChanged);
+    
     if (hasChanged) {
       setLoading(true);
       const cleanedData = removeNullKeys(script?.script?.scenes);
+      
       try {
-        let userRaw = localStorage.getItem("user");
-        let user = userRaw ? JSON.parse(userRaw) : null;
-
-        let role = script?.members
-          .find((item) => item.username == user?.username)
-          ?.functions?.every((item) => item == "gen_script");
-
-        if (role) {
-          let result = await updateProject(id, {
-            current_step: "gen_script",
-            script: { ...script.script, scenes: cleanedData },
-          });
-
-          if (result && result.name) {
-            localStorage.setItem("gen_script", JSON.stringify(result));
-            setTimeout(() => {
-              navigate(`/create-image?id=${id}`);
-            }, 500);
-          } else {
-            toast.warning(result.detail);
-          }
-        } else {
-          navigate(`/create-image?id=${id}`);
+        // Lấy thông tin user từ localStorage
+        const userRaw = localStorage.getItem("user");
+        const user = userRaw ? JSON.parse(userRaw) : null;
+  
+        // Kiểm tra quyền của user trong dự án
+        const userRole = script?.members.find(
+          (item) => item.username === user?.username
+        )?.functions || [];
+        // Thứ tự các bước workflow
+        const workflowSteps = [
+          "gen_script",
+          "gen_image",
+          "gen_video",
+          "gen_voice",
+          "gen_audio_sub",
+          "complete"
+        ];
+  
+        
+        if (!userRole.includes("gen_script")) {
+          toast.error("Bạn không có quyền chỉnh sửa kịch bản");
+          setLoading(false);
+          return;
         }
+  
+        // 2. Cập nhật dữ liệu nếu có thay đổi
+        const updateData = {
+          current_step: "gen_script",
+          script: { ...script.script, scenes: cleanedData },
+        };
+  
+        const result = await updateProject(id, updateData);
+  
+        if (!result || !result.name) {
+          toast.warning(result?.detail || "Cập nhật thất bại");
+          setLoading(false);
+          return;
+        }
+  
+        localStorage.setItem("gen_script", JSON.stringify(result));
+  
+        // 3. Kiểm tra quyền trước khi chuyển trang
+        const nextStep = "gen_image";
+        const hasNextStepPermission = userRole.includes(nextStep);
+        const isNextStepInOrder = 
+          workflowSteps.indexOf(nextStep) > workflowSteps.indexOf("gen_script");
+  
+        if (hasNextStepPermission && isNextStepInOrder) {
+          setTimeout(() => {
+            navigate(`/create-image?id=${id}`);
+          }, 500);
+        } else {
+          toast.success("Cập nhật thành công");
+          // Hoặc điều hướng về trang hiện tại nếu không có quyền
+          // navigate(`/script?id=${id}`);
+        }
+  
       } catch (error) {
-        console.log(error);
+        console.error("Lỗi khi cập nhật:", error);
+        toast.error("Đã xảy ra lỗi khi xử lý");
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     } else {
-      console.log("no update");
-      navigate(`/create-image?id=${id}`);
+      console.log("Không có thay đổi");
+      // Kiểm tra quyền trước khi chuyển trang khi không có thay đổi
+      const userRaw = localStorage.getItem("user");
+      const user = userRaw ? JSON.parse(userRaw) : null;
+      const userRole = script?.members.find(
+        (item) => item.username === user?.username
+      )?.functions || [];
+  
+      if (userRole.includes("gen_image")) {
+        navigate(`/create-image?id=${id}`);
+      } else {
+        toast.warning("Bạn không có quyền truy cập bước tiếp theo");
+      }
     }
   };
   console.log(modelList, "aaa");

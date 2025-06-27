@@ -32,15 +32,7 @@ const styleOptions = [
   { value: "Kể chuyện", key: "narration" },
 ];
 
-const dynamicSteps = [
-  { label: "Ý tưởng", status: "active" },
-  { label: "Tạo kịch bản", status: "pending" },
-  { label: "Tạo ảnh", status: "pending" },
-  { label: "Tạo Video", status: "pending" },
-  { label: "Tạo Voice", status: "pending" },
-  { label: "Nhạc nền và sub", status: "pending" },
-  { label: "Hoàn thành ", status: "pending" },
-];
+
 const IdeaView = ({ setLoading, modelList }: any) => {
   const [genPromptAi, setGenPromptAi] = useState(false);
   const [model, setModel] = useState("openai");
@@ -57,6 +49,16 @@ const IdeaView = ({ setLoading, modelList }: any) => {
   const [selectedTab, setSelectedTab]: any = useState(0);
   const [initialData, setInitialData] = useState<any>(null); // Lưu dữ liệu ban đầu
   const [hasChanges, setHasChanges] = useState(false);
+  const [role,setRole] = useState([])
+  const [dynamicSteps, setDynamicSteps] = useState([
+    { label: "Ý tưởng", status: "active" },
+    { label: "Tạo kịch bản", status: "pending" },
+    { label: "Tạo ảnh", status: "pending" },
+    { label: "Tạo Video", status: "pending" },
+    { label: "Tạo Voice", status: "pending" },
+    { label: "Nhạc nền và sub", status: "pending" },
+    { label: "Hoàn thành ", status: "pending" },
+  ]);
   const [members, setMembers] = useState([]);
   useEffect(() => {
     let data_update: any = localStorage.getItem("gen_script");
@@ -82,6 +84,16 @@ const IdeaView = ({ setLoading, modelList }: any) => {
               ? "video2video"
               : "image2image",
         });
+        let userRaw = localStorage.getItem("user");
+                let user = userRaw ? JSON.parse(userRaw) : null;
+                let role = data_update?.members
+                  .find((item) => item.username == user?.username)
+                  ?.functions
+                  if(role && role.length>0){
+                    setRole(role)
+                  }
+        
+                  
       }
     }
   }, [id]);
@@ -218,7 +230,7 @@ const IdeaView = ({ setLoading, modelList }: any) => {
         flexDirection: "column",
         gap: isMobile ? 2 : 4,
       }}>
-      <StepComponent steps={dynamicSteps} />
+      <StepComponent steps={dynamicSteps} userPermissions={role} />
       <ResponsiveBox
         selectedTab={selectedTab}
         onTabChange={(index) => setSelectedTab(index)}

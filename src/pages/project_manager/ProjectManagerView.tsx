@@ -206,28 +206,62 @@ const ProjectCard = ({
             }}
             onClick={() => {
               localStorage.setItem("gen_script", JSON.stringify(project));
-              if (project?.current_step == "gen_script") {
-                navigate(`/create-image?id=${project.id}`);
+              let userPermissions =[]
+              let userRaw = localStorage.getItem("user");
+              let user = userRaw ? JSON.parse(userRaw) : null;
+              let role = project?.members
+                .find((item) => item.username == user?.username)
+                ?.functions
+              if (role && role.length > 0) {
+                userPermissions = role 
               }
-              if (project?.current_step == "gen_image") {
-                navigate(`/create-video?id=${project.id}`);
-              }
-              if (project?.current_step == "gen_video") {
-                navigate(`/narrator?id=${project.id}`);
-              }
-              if (project?.current_step == "gen_voice") {
-                navigate(`/sub?id=${project.id}`);
-              }
-              if (project?.current_step == "complete") {
+              console.log("userPermissions",userPermissions)
+              // Thứ tự các bước và route tương ứng
+              const stepConfig = [
+                { step: "gen_script", route: "/script", permission: "gen_script" },
+                { step: "gen_image", route: "/create-image", permission: "gen_image" },
+                { step: "gen_video", route: "/create-video", permission: "gen_video" },
+                { step: "gen_voice", route: "/narrator", permission: "gen_voice" },
+                { step: "gen_audio_sub", route: "/sub", permission: "gen_audio_sub" },
+                { step: "complete", route: "/success", permission: "complete" }
+              ];
+
+              // Xác định bước hiện tại của dự án
+              const currentStep = project?.current_step || "gen_script";
+
+              // Tìm index của bước hiện tại
+              const currentStepIndex = stepConfig.findIndex(item => item.step === currentStep);
+
+              // Nếu dự án đã hoàn thành (complete)
+              if (currentStep === "complete") {
+                // Kiểm tra từng bước từ cao xuống thấp để tìm quyền
+                for (let i = stepConfig.length - 2; i >= 0; i--) {
+                  if (userPermissions.includes(stepConfig[i].permission)) {
+                    navigate(`${stepConfig[i].route}?id=${project.id}`);
+                    return;
+                  }
+                }
+
                 navigate(`/success?id=${project.id}`);
+                return;
               }
-              if (project?.current_step == "gen_audio_sub") {
-                navigate(`/success?id=${project.id}`);
+
+              let targetStep = null;
+              for (let i = currentStepIndex; i >= 0; i--) {
+                if (userPermissions.includes(stepConfig[i].permission)) {
+                  targetStep = stepConfig[i];
+                  break;
+                }
               }
-              if (!project?.current_step) {
+
+              console.log("targetStep", targetStep)
+              if (targetStep) {
+                navigate(`${targetStep.route}?id=${project.id}`);
+              } else {
                 navigate(`/script?id=${project.id}`);
               }
-            }}>
+            }}
+          >
             Chi tiết dự án
           </Button>
         </Box>

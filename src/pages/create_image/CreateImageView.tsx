@@ -71,8 +71,18 @@ const CreateImageView = ({
     type: "",
     link: "",
   });
-  console.log("modelList[0]?.key ", modelList[0]?.key);
-  console.log("modelList ", modelList);
+
+  const [role,setRole] = useState([])
+  useEffect(()=>{
+    let userRaw = localStorage.getItem("user");
+    let user = userRaw ? JSON.parse(userRaw) : null;
+    let role = genScript?.members
+      .find((item) => item.username == user?.username)
+      ?.functions
+      if(role && role.length>0){
+        setRole(role)
+      }
+  },[genScript])
   const handleChange = (e) => {
     const selected = e.target.value;
     if (selected === "add_new") {
@@ -134,7 +144,7 @@ const CreateImageView = ({
         flexDirection: "column",
         gap: { xs: 2, md: 4 },
       }}>
-      <StepComponent steps={dynamicSteps} />
+      <StepComponent steps={dynamicSteps} userPermissions={role} />
       {/* Toggle Tabs */}
       {/* <ResponsiveBox
         selectedTab={selectedTab}
