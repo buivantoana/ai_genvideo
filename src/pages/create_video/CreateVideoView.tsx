@@ -394,7 +394,7 @@ const SceneCard = forwardRef((props, ref) => {
     } else {
       setDuration(1);
     }
-  }, []);
+  }, [sceneData]);
   const handleChange = (field, value) => {
     setValues((prev) =>
       prev.map((item) =>
@@ -1038,7 +1038,7 @@ const SceneCardDialogue = forwardRef((props, ref) => {
     } else {
       setDuration(1);
     }
-  }, []);
+  }, [dialogueItem]);
 
   useEffect(() => {
     if (dialogueItem && Object.keys(dialogueItem).length > 0) {
