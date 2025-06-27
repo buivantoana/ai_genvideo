@@ -131,6 +131,10 @@ const IdeaView = ({ setLoading, modelList }: any) => {
       toast.warning("Vui lòng nhập tên dự án");
       return;
     }
+    if (!values.time) {
+      toast.warning("Vui lòng nhập thời gian");
+      return;
+    }
 
     if (!values.prompt) {
       toast.warning("Vui lòng nhập nội dung/prompt");
