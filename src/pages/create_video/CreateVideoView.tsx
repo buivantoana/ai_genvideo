@@ -1869,14 +1869,14 @@ function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
                 //   );
                 //   return;
                 // }
-                let userRaw = localStorage.getItem("user");
-                let user = userRaw ? JSON.parse(userRaw) : null;
+                // let userRaw = localStorage.getItem("user");
+                // let user = userRaw ? JSON.parse(userRaw) : null;
 
-                let role = genScript?.members
-                  .find((item) => item.username == user?.username)
-                  ?.functions?.every((item) => item == "gen_video");
+                // let role = genScript?.members
+                //   .find((item) => item.username == user?.username)
+                //   ?.functions?.every((item) => item == "gen_video");
 
-                if (role) {
+                // if (role) {
                   try {
                     setLoading(true);
                     const result = await updateProject(id, {
@@ -1930,9 +1930,9 @@ function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
                     console.log(error);
                   }
                   setLoading(false);
-                } else {
-                  navigate(`/narrator?id=${id}`);
-                }
+                // } else {
+                //   navigate(`/narrator?id=${id}`);
+                // }
               }}
               sx={{
                 background: "#6E00FF",
