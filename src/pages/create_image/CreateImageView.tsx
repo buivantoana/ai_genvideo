@@ -2204,14 +2204,14 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
             <Button
               variant='contained'
               onClick={async () => {
-                let userRaw = localStorage.getItem("user");
-                let user = userRaw ? JSON.parse(userRaw) : null;
+                // let userRaw = localStorage.getItem("user");
+                // let user = userRaw ? JSON.parse(userRaw) : null;
 
-                let role = genScript?.members
-                  .find((item) => item.username == user?.username)
-                  ?.functions?.every((item) => item == "gen_image");
+                // let role = genScript?.members
+                //   .find((item) => item.username == user?.username)
+                //   ?.functions?.every((item) => item == "gen_image");
 
-                if (role) {
+                // if (role) {
                   const hasMissingImage = values.some((item) => {
                     // Kiểm tra video chính
                     const mainImageMissing =
@@ -2369,9 +2369,9 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                   } finally {
                     setLoading(false);
                   }
-                } else {
-                  navigate(`/create-video?id=${id}`);
-                }
+                // } else {
+                //   navigate(`/create-video?id=${id}`);
+                // }
               }}
               sx={{
                 background: "#6E00FF",
