@@ -165,6 +165,7 @@ const IdeaView = ({ setLoading, modelList }: any) => {
           prompt: prompt.trim(),
           style_type: style,
           scene_count: sceneCount,
+          time: Number(time),
         });
       } else {
         result = await createProject({
@@ -174,6 +175,7 @@ const IdeaView = ({ setLoading, modelList }: any) => {
           prompt: prompt.trim(),
           style_type: style,
           scene_count: sceneCount.trim(),
+          time: Number(time),
         });
       }
 
