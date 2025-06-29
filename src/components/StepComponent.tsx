@@ -2,41 +2,97 @@ import React from "react";
 import { Box, Typography } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 
-const linkStep = [
-  "",
-  "script",
-  "create-image",
-  "create-video",
-  "narrator",
-  "sub",
-  "success",
-];
+// Mapping giữa label và route tương ứng
+const stepRouteMap = {
+  "Ý tưởng": "", // Nếu dùng route /idea thì đổi thành "idea"
+  gen_script: "script",
+  gen_image: "create-image",
+  gen_video: "create-video",
+  gen_voice: "narrator",
+  gen_audio_sub: "sub",
+  complete: "success",
+};
 
 // Mapping giữa label và permission tương ứng
 const stepPermissionMap = {
+  "Ý tưởng": "idea",
   "Tạo kịch bản": "gen_script",
   "Tạo ảnh": "gen_image",
   "Tạo Video": "gen_video",
   "Tạo Voice": "gen_voice",
   "Nhạc nền và sub": "gen_audio_sub",
-  "Hoàn thành": "complete"
+  "Hoàn thành": "complete",
 };
 
-const StepComponent = ({ steps = [], userPermissions = [] }) => {
+// Thứ tự workflow không bao gồm "Ý tưởng"
+const workflowSteps = [
+  "gen_script",
+  "gen_image",
+  "gen_video",
+  "gen_voice",
+  "gen_audio_sub",
+  "complete",
+];
+
+const StepComponent = ({ steps = [] }) => {
   const location = useLocation();
   const query = new URLSearchParams(location.search);
   const id = query.get("id");
   const navigate = useNavigate();
 
-  // Lọc các step dựa trên quyền của user
-  const filteredSteps = steps.filter(step => {
-    // Luôn hiển thị step "Ý tưởng"
-    if (step.label === "Ý tưởng") return true;
-    
-    // Kiểm tra quyền cho các step khác
-    const requiredPermission = stepPermissionMap[step.label];
-    return userPermissions.includes(requiredPermission);
+  const genScriptData = JSON.parse(localStorage.getItem("gen_script") || "{}");
+  const currentStep = genScriptData?.current_step || "gen_script";
+  const userPermissions = genScriptData?.members?.[0]?.functions || [];
+
+  const currentStepIndex = workflowSteps.indexOf(currentStep);
+
+  // Gán trạng thái cho từng bước
+  const processedSteps = steps.map((step, index) => {
+    const stepPermission = stepPermissionMap[step.label];
+
+    // Luôn xử lý đặc biệt cho "Ý tưởng"
+    if (step.label === "Ý tưởng") {
+      return {
+        ...step,
+        status: "completed",
+        permission: stepPermission,
+        route: stepRouteMap[step.label],
+      };
+    }
+
+    const stepIndex = workflowSteps.indexOf(stepPermission);
+    let status = "pending";
+
+    if (stepIndex < currentStepIndex) status = "completed";
+    else if (stepIndex === currentStepIndex) status = "active";
+
+    return {
+      ...step,
+      status,
+      permission: stepPermission,
+      route: stepRouteMap[stepPermission],
+    };
   });
+
+  // Lọc step theo quyền nhưng giữ "Ý tưởng"
+  const filteredSteps = processedSteps.filter((step) => {
+    if (step.label === "Ý tưởng") return true;
+    return userPermissions.includes(step.permission);
+  });
+
+  const handleStepClick = (step) => {
+    if (typeof step.route === "undefined" || id === null) return;
+
+    if (step.label === "Ý tưởng") {
+      navigate(`/${step.route}?id=${id}`);
+      return;
+    }
+
+    const clickedStepIndex = workflowSteps.indexOf(step.permission);
+    if (clickedStepIndex <= currentStepIndex) {
+      navigate(`/${step.route}?id=${id}`);
+    }
+  };
 
   return (
     <Box
@@ -52,23 +108,16 @@ const StepComponent = ({ steps = [], userPermissions = [] }) => {
         {filteredSteps.map((step, index) => (
           <Box key={index} display='flex' alignItems='flex-start'>
             <Box
-              onClick={
-                step.status === "completed"
-                  ? () => {
-                      // Tìm index thực tế trong mảng steps ban đầu để lấy link chính xác
-                      const originalIndex = steps.findIndex(s => s.label === step.label);
-                      if (originalIndex >= 0) {
-                        navigate(`/${linkStep[originalIndex]}?id=${id}`);
-                      }
-                    }
-                  : undefined
-              }
+              onClick={() => handleStepClick(step)}
               sx={{
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 gap: { xs: "4px", md: "6px" },
-                cursor: step.status === "completed" ? "pointer" : "default",
+                cursor:
+                  step.status !== "pending" || step.label === "Ý tưởng"
+                    ? "pointer"
+                    : "default",
               }}>
               <Box
                 sx={{
@@ -115,7 +164,6 @@ const StepComponent = ({ steps = [], userPermissions = [] }) => {
               </Typography>
             </Box>
 
-            {/* Line - chỉ hiển thị nếu không phải là step cuối cùng */}
             {index < filteredSteps.length - 1 && (
               <Box
                 sx={{

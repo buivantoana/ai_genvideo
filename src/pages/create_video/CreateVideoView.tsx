@@ -49,17 +49,17 @@ const CreateVideoView = ({
   const [selectedTab, setSelectedTab]: any = useState(
     genScript && genScript.video_type == "video2video" ? 1 : 0
   );
-  const [role,setRole] = useState([])
-  useEffect(()=>{
+  const [role, setRole] = useState([]);
+  useEffect(() => {
     let userRaw = localStorage.getItem("user");
     let user = userRaw ? JSON.parse(userRaw) : null;
-    let role = genScript?.members
-      .find((item) => item.username == user?.username)
-      ?.functions
-      if(role && role.length>0){
-        setRole(role)
-      }
-  },[genScript])
+    let role = genScript?.members.find(
+      (item) => item.username == user?.username
+    )?.functions;
+    if (role && role.length > 0) {
+      setRole(role);
+    }
+  }, [genScript]);
   const [model, setModel] = useState(
     localStorage.getItem("model_video")
       ? localStorage.getItem("model_video")
@@ -73,6 +73,9 @@ const CreateVideoView = ({
       setSelectedTab(genScript?.video_type == "video2video" ? 1 : 0);
     }
   }, [genScript]);
+  const handleCreateAll = (func) => {
+    func();
+  };
   return (
     <Box
       className='hidden-add-voice'
@@ -1762,8 +1765,228 @@ function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
       setValues(scenesData);
     }
   }, [genScript]);
+  const handleGenerateAllVideos = async () => {
+    setLoading(true);
+    try {
+      let completedScenes = 0;
+
+      // Tạo một bản sao của values để làm việc
+      const updatedValues = [...values];
+
+      for (let i = 0; i < updatedValues.length; i++) {
+        const sceneData = updatedValues[i];
+
+        // Xử lý ảnh chính của scene
+        if (sceneData.video && !sceneData.video.imageUrls) {
+          console.log(`Bắt đầu tạo ảnh chính cho phân cảnh ${sceneData.scene}`);
+          try {
+            const [width, height] = px.split(" ")[0].split("x").map(Number);
+            let formData = new FormData();
+            formData.append("width", width);
+            formData.append("height", height);
+            formData.append("prompt", sceneData.video.prompt);
+            formData.append("n_prompt", sceneData.video.n_prompt);
+            formData.append("model", model);
+            formData.append("duration", sceneData.video.duration);
+            const result = await genScriptVideo(formData);
+
+            if (result && result.code === 2) {
+              const pollResult = await new Promise((resolve, reject) => {
+                const poll = setInterval(async () => {
+                  try {
+                    const status = await genScriptVideoStatus(result.id);
+                    if (status?.code === 0 && status?.video_url) {
+                      sceneData.video.ids = [
+                        ...(sceneData.video.ids || []),
+                        result.id,
+                      ];
+                      sceneData.video.imageUrls = [
+                        ...(sceneData.video.imageUrls || []),
+                        status.video_url,
+                      ];
+                      sceneData.video.selected =
+                        (sceneData.video.imageUrls?.length || 0) === 0
+                          ? 0
+                          : sceneData.video.selected;
+                      clearInterval(poll);
+                      resolve(status);
+                    }
+                    if (status?.code === 99) {
+                      clearInterval(poll);
+                      toast.error("Video chính bị lỗi xử lý");
+                      reject(new Error("Video chính bị lỗi xử lý (code 99)"));
+                    }
+                  } catch (error) {
+                    clearInterval(poll);
+                    reject(error);
+                  }
+                }, 2000);
+
+                setTimeout(() => {
+                  clearInterval(poll);
+                  reject(new Error("Hết thời gian chờ trạng thái ảnh"));
+                }, 60000);
+              });
+            } else if (result.code === 0) {
+              const newImageUrl = result?.video_url || "";
+              sceneData.video.ids = [...(sceneData.video.ids || []), result.id];
+              sceneData.video.imageUrls = [
+                ...(sceneData.video.imageUrls || []),
+                newImageUrl,
+              ];
+              sceneData.video.selected =
+                (sceneData.video.imageUrls?.length || 0) === 0
+                  ? 0
+                  : sceneData.video.selected;
+            }
+
+            console.log(
+              `Hoàn tất tạo ảnh chính cho phân cảnh ${sceneData.scene}`
+            );
+            completedScenes++;
+          } catch (error) {
+            console.error(
+              `Lỗi khi tạo ảnh chính cho phân cảnh ${sceneData.scene}:`,
+              error
+            );
+          }
+        }
+
+        // Xử lý ảnh trong dialogue nếu có
+        if (sceneData.dialogue && sceneData.dialogue.length > 0) {
+          for (let j = 0; j < sceneData.dialogue.length; j++) {
+            const dialogueItem = sceneData.dialogue[j];
+
+            if (dialogueItem.video && !dialogueItem.video.imageUrls) {
+              console.log(
+                `Bắt đầu tạo ảnh dialogue ${j + 1} cho phân cảnh ${
+                  sceneData.scene
+                }`
+              );
+              try {
+                const [width, height] = px.split(" ")[0].split("x").map(Number);
+                let formData = new FormData();
+                formData.append("width", width);
+                formData.append("height", height);
+                formData.append("prompt", dialogueItem.video.prompt);
+                formData.append("n_prompt", dialogueItem.video.n_prompt);
+                formData.append("model", model);
+                formData.append("duration", dialogueItem.video.duration);
+                const result = await genScriptVideo(formData);
+
+                if (result && result.code === 2) {
+                  const pollResult = await new Promise((resolve, reject) => {
+                    const poll = setInterval(async () => {
+                      try {
+                        const status = await genScriptVideoStatus(result.id);
+                        if (status?.code === 0 && status?.video_url) {
+                          dialogueItem.video.ids = [
+                            ...(dialogueItem?.video?.ids || []),
+                            result.id,
+                          ];
+                          dialogueItem.video.imageUrls = [
+                            ...(dialogueItem?.video?.imageUrls || []),
+                            status.video_url,
+                          ];
+                          dialogueItem.video.selected =
+                            dialogueItem.video.imageUrls.length - 1;
+                          clearInterval(poll);
+                          resolve(status);
+                        }
+                        if (status?.code == 99) {
+                          clearInterval(poll);
+                          toast.error(`Video dialogue ${j + 1} bị lỗi xử lý`);
+                          reject(
+                            new Error("Video dialogue bị lỗi xử lý (code 99)")
+                          );
+                        }
+                      } catch (error) {
+                        clearInterval(poll);
+                        reject(error);
+                      }
+                    }, 2000);
+
+                    setTimeout(() => {
+                      clearInterval(poll);
+                      reject(new Error("Hết thời gian chờ trạng thái ảnh"));
+                    }, 60000);
+                  });
+                } else if (result.code === 0) {
+                  const newImageUrl = result?.video_url || "";
+                  dialogueItem.video.ids = [
+                    ...(dialogueItem.video.ids || []),
+                    result.id,
+                  ];
+                  dialogueItem.video.imageUrls = [
+                    ...(dialogueItem.video.imageUrls || []),
+                    newImageUrl,
+                  ];
+                  dialogueItem.video.selected =
+                    dialogueItem.video.imageUrls.length - 1;
+                }
+
+                console.log(
+                  `Hoàn tất tạo ảnh dialogue ${j + 1} cho phân cảnh ${
+                    sceneData.scene
+                  }`
+                );
+                completedScenes++;
+              } catch (error) {
+                console.error(
+                  `Lỗi khi tạo ảnh dialogue ${j + 1} cho phân cảnh ${
+                    sceneData.scene
+                  }:`,
+                  error
+                );
+              }
+            }
+          }
+        }
+      }
+
+      // Cập nhật state với dữ liệu mới
+      setValues(updatedValues);
+
+      // Lưu vào localStorage theo đúng cấu trúc
+      localStorage.setItem(
+        "gen_script",
+        JSON.stringify({
+          ...genScript,
+          script: {
+            ...genScript.script,
+            scenes: updatedValues,
+          },
+        })
+      );
+
+      setTimeout(() => {
+        setLoading(false);
+      }, 1500);
+    } catch (error) {
+      setLoading(false);
+      console.error("Lỗi chung khi tạo toàn bộ ảnh:", error);
+    }
+  };
   return (
     <Box sx={{ minHeight: "100vh", pb: 3 }}>
+      <Box display={"flex"} mb={4} alignItems={"center"} gap={"20px"}>
+        <Typography
+          variant='h5'
+          fontSize={isMobile ? "1rem" : "1.5rem"}
+          fontWeight={"bold"}>
+          Tạo video
+        </Typography>
+        <Button
+          variant='contained'
+          onClick={handleGenerateAllVideos}
+          sx={{
+            background: " linear-gradient(135deg, #FDD819 0%, #E80505 100%)",
+            borderRadius: 1,
+            fontSize: isMobile ? "0.675rem" : "0.875rem",
+          }}>
+          Tạo toàn bộ video
+        </Button>
+      </Box>
       <Box sx={{ display: "flex", gap: 1, mt: 1, mb: 3, overflowX: "auto" }}>
         {values.map((scene, index) => (
           <Box
@@ -1850,100 +2073,107 @@ function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
             <Button
               variant='contained'
               onClick={async () => {
-                // const hasMissingVideos = values.some((item) => {
-                //   // Kiểm tra video chính
-                //   const mainImageMissing =
-                //     !item.video?.imageUrls ||
-                //     typeof item.video.selected !== "number" ||
-                //     !item.video.imageUrls[item.video.selected];
+                // Lấy thông tin user từ localStorage
+                const userRaw = localStorage.getItem("user");
+                const user = userRaw ? JSON.parse(userRaw) : null;
 
-                //   // Kiểm tra video trong dialogue (nếu có)
-                //   const dialogueVideosMissing = item.dialogue?.some(
-                //     (dialogueItem) => {
-                //       return (
-                //         dialogueItem.video &&
-                //         (!dialogueItem.video.imageUrls ||
-                //           typeof dialogueItem.video.selected !== "number" ||
-                //           !dialogueItem.video.imageUrls[
-                //             dialogueItem.video.selected
-                //           ])
-                //       );
-                //     }
-                //   );
+                // Kiểm tra quyền của user trong dự án
+                const userRole =
+                  genScript?.members.find(
+                    (item) => item.username === user?.username
+                  )?.functions || [];
 
-                //   return mainImageMissing || dialogueVideosMissing;
-                // });
+                // Thứ tự các bước workflow
+                const workflowSteps = [
+                  "gen_script",
+                  "gen_image",
+                  "gen_video",
+                  "gen_voice",
+                  "gen_audio_sub",
+                  "complete",
+                ];
 
-                // if (hasMissingVideos) {
-                //   toast.warning(
-                //     "Bạn cần tạo Video cho mỗi phân cảnh và dialogue"
-                //   );
-                //   return;
-                // }
-                // let userRaw = localStorage.getItem("user");
-                // let user = userRaw ? JSON.parse(userRaw) : null;
+                // 1. Kiểm tra quyền gen_video
+                if (!userRole.includes("gen_video")) {
+                  toast.error("Bạn không có quyền chỉnh sửa video");
+                  return;
+                }
 
-                // let role = genScript?.members
-                //   .find((item) => item.username == user?.username)
-                //   ?.functions?.every((item) => item == "gen_video");
+                try {
+                  setLoading(true);
 
-                // if (role) {
-                  try {
-                    setLoading(true);
-                    const result = await updateProject(id, {
-                      current_step: "gen_video",
-                      script: {
-                        ...genScript.script,
-                        scenes: values.map((item) => {
-                          const dialogue =
-                            item.dialogue?.length > 0
-                              ? item.dialogue.map((ix) => {
-                                  const selected = ix.video?.selected ?? 0;
-                                  return {
-                                    ...ix,
-                                    video: {
-                                      ...ix.video,
-                                      id: ix.video?.ids?.[selected] ?? null,
-                                      url:
-                                        ix.video?.imageUrls?.[selected] ?? null,
-                                    },
-                                  };
-                                })
-                              : [];
+                  // 2. Cập nhật dữ liệu
+                  const result = await updateProject(id, {
+                    current_step: "gen_video",
+                    script: {
+                      ...genScript.script,
+                      scenes: values.map((item) => {
+                        const dialogue =
+                          item.dialogue?.length > 0
+                            ? item.dialogue.map((ix) => {
+                                const selected = ix.video?.selected ?? 0;
+                                return {
+                                  ...ix,
+                                  video: {
+                                    ...ix.video,
+                                    id: ix.video?.ids?.[selected] ?? null,
+                                    url:
+                                      ix.video?.imageUrls?.[selected] ?? null,
+                                  },
+                                };
+                              })
+                            : [];
 
-                          const selected = item.video?.selected ?? 0;
+                        const selected = item.video?.selected ?? 0;
 
-                          return {
-                            ...item,
-                            dialogue,
-                            video: {
-                              ...item.video,
-                              id: item.video?.ids?.[selected] ?? null,
-                              url: item.video?.imageUrls?.[selected] ?? null,
-                            },
-                          };
-                        }),
-                      },
-                    });
+                        return {
+                          ...item,
+                          dialogue,
+                          video: {
+                            ...item.video,
+                            id: item.video?.ids?.[selected] ?? null,
+                            url: item.video?.imageUrls?.[selected] ?? null,
+                          },
+                        };
+                      }),
+                    },
+                  });
 
-                    if (result && result.name) {
-                      localStorage.setItem(
-                        "gen_script",
-                        JSON.stringify(result)
-                      );
+                  if (result && result.name) {
+                    localStorage.setItem(
+                      "gen_script",
+                      JSON.stringify({
+                        ...JSON.parse(localStorage.getItem("gen_script")),
+                        script: result.script,
+                      })
+                    );
+
+                    // 3. Kiểm tra quyền trước khi chuyển trang
+                    const nextStep = "gen_voice";
+                    const hasNextStepPermission = userRole.includes(nextStep);
+                    const isNextStepInOrder =
+                      workflowSteps.indexOf(nextStep) >
+                      workflowSteps.indexOf("gen_video");
+
+                    if (hasNextStepPermission && isNextStepInOrder) {
                       setTimeout(() => {
                         navigate(`/narrator?id=${id}`);
                       }, 500);
                     } else {
-                      throw new Error("Cập nhật dự án thất bại");
+                      toast.success("Cập nhật video thành công");
+                      // Giữ nguyên trang nếu không có quyền
                     }
-                  } catch (error) {
-                    console.log(error);
+                  } else {
+                    throw new Error("Cập nhật dự án thất bại");
                   }
+                } catch (error) {
+                  console.log(error);
+                  toast.error(
+                    error.message || "Có lỗi xảy ra khi xác nhận video"
+                  );
+                } finally {
                   setLoading(false);
-                // } else {
-                //   navigate(`/narrator?id=${id}`);
-                // }
+                }
               }}
               sx={{
                 background: "#6E00FF",

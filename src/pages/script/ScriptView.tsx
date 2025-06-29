@@ -37,17 +37,17 @@ const ScriptView = ({
   const [selectedTab, setSelectedTab]: any = useState(
     script && script.video_type == "video2video" ? 1 : 0
   );
-  const [role,setRole] = useState([])
-  useEffect(()=>{
+  const [role, setRole] = useState([]);
+  useEffect(() => {
     let userRaw = localStorage.getItem("user");
     let user = userRaw ? JSON.parse(userRaw) : null;
-    let role = script?.members
-      .find((item) => item.username == user?.username)
-      ?.functions
-      if(role && role.length>0){
-        setRole(role)
-      }
-  },[script])
+    let role = script?.members.find(
+      (item) => item.username == user?.username
+    )?.functions;
+    if (role && role.length > 0) {
+      setRole(role);
+    }
+  }, [script]);
   return (
     <Box
       className='hidden-add-voice'
@@ -60,7 +60,7 @@ const ScriptView = ({
         flexDirection: "column",
         gap: isMobile ? 2 : 4,
       }}>
-      <StepComponent steps={dynamicSteps}  userPermissions={role} />
+      <StepComponent steps={dynamicSteps} userPermissions={role} />
       {/* Toggle Tabs */}
       {/* <ResponsiveBox
         selectedTab={selectedTab}
@@ -151,20 +151,20 @@ const PromptEditorUI = ({
   const handleCreate = async () => {
     const hasChanged = !isEqualScenes(scenes, initialScenes);
     console.log("Người dùng đã chỉnh sửa?", hasChanged);
-    
+
     if (hasChanged) {
       setLoading(true);
       const cleanedData = removeNullKeys(script?.script?.scenes);
-      
+
       try {
         // Lấy thông tin user từ localStorage
         const userRaw = localStorage.getItem("user");
         const user = userRaw ? JSON.parse(userRaw) : null;
-  
+
         // Kiểm tra quyền của user trong dự án
-        const userRole = script?.members.find(
-          (item) => item.username === user?.username
-        )?.functions || [];
+        const userRole =
+          script?.members.find((item) => item.username === user?.username)
+            ?.functions || [];
         // Thứ tự các bước workflow
         const workflowSteps = [
           "gen_script",
@@ -172,38 +172,43 @@ const PromptEditorUI = ({
           "gen_video",
           "gen_voice",
           "gen_audio_sub",
-          "complete"
+          "complete",
         ];
-  
-        
+
         if (!userRole.includes("gen_script")) {
           toast.error("Bạn không có quyền chỉnh sửa kịch bản");
           setLoading(false);
           return;
         }
-  
+
         // 2. Cập nhật dữ liệu nếu có thay đổi
         const updateData = {
           current_step: "gen_script",
           script: { ...script.script, scenes: cleanedData },
         };
-  
+
         const result = await updateProject(id, updateData);
-  
+
         if (!result || !result.name) {
           toast.warning(result?.detail || "Cập nhật thất bại");
           setLoading(false);
           return;
         }
-  
-        localStorage.setItem("gen_script", JSON.stringify(result));
-  
+
+        localStorage.setItem(
+          "gen_script",
+          JSON.stringify({
+            ...JSON.parse(localStorage.getItem("gen_script")),
+            script: result.script,
+          })
+        );
+
         // 3. Kiểm tra quyền trước khi chuyển trang
         const nextStep = "gen_image";
         const hasNextStepPermission = userRole.includes(nextStep);
-        const isNextStepInOrder = 
+        const isNextStepInOrder =
           workflowSteps.indexOf(nextStep) > workflowSteps.indexOf("gen_script");
-  
+
         if (hasNextStepPermission && isNextStepInOrder) {
           setTimeout(() => {
             navigate(`/create-image?id=${id}`);
@@ -213,7 +218,6 @@ const PromptEditorUI = ({
           // Hoặc điều hướng về trang hiện tại nếu không có quyền
           // navigate(`/script?id=${id}`);
         }
-  
       } catch (error) {
         console.error("Lỗi khi cập nhật:", error);
         toast.error("Đã xảy ra lỗi khi xử lý");
@@ -225,10 +229,10 @@ const PromptEditorUI = ({
       // Kiểm tra quyền trước khi chuyển trang khi không có thay đổi
       const userRaw = localStorage.getItem("user");
       const user = userRaw ? JSON.parse(userRaw) : null;
-      const userRole = script?.members.find(
-        (item) => item.username === user?.username
-      )?.functions || [];
-  
+      const userRole =
+        script?.members.find((item) => item.username === user?.username)
+          ?.functions || [];
+
       if (userRole.includes("gen_image")) {
         navigate(`/create-image?id=${id}`);
       } else {

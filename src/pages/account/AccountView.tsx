@@ -221,7 +221,7 @@ function AccountManager({
   return (
     <Box>
       <Box display='flex' justifyContent='flex-start' gap={2} mb={2}>
-        {JSON.parse(localStorage.getItem("user")).role == "admin" && (
+        {JSON.parse(localStorage.getItem("user"))?.result?.role == "admin" && (
           <Button
             variant='contained'
             onClick={() => setAction("add")}

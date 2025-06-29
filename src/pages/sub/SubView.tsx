@@ -43,17 +43,17 @@ const dynamicSteps = [
 const SubView = ({ model, genScript, setLoading, id }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [role,setRole] = useState([])
-  useEffect(()=>{
+  const [role, setRole] = useState([]);
+  useEffect(() => {
     let userRaw = localStorage.getItem("user");
     let user = userRaw ? JSON.parse(userRaw) : null;
-    let role = genScript?.members
-      .find((item) => item.username == user?.username)
-      ?.functions
-      if(role && role.length>0){
-        setRole(role)
-      }
-  },[genScript])
+    let role = genScript?.members.find(
+      (item) => item.username == user?.username
+    )?.functions;
+    if (role && role.length > 0) {
+      setRole(role);
+    }
+  }, [genScript]);
   return (
     <Box
       className='hidden-add-voice'
@@ -453,17 +453,42 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
       <Box mt={isMobile ? 2 : 6} textAlign='center'>
         <Button
           onClick={async () => {
+            // Lấy thông tin user từ localStorage
+            const userRaw = localStorage.getItem("user");
+            const user = userRaw ? JSON.parse(userRaw) : null;
+
+            // Kiểm tra quyền của user trong dự án
+            const userRole =
+              genScript?.members.find(
+                (item) => item.username === user?.username
+              )?.functions || [];
+
+            // Thứ tự các bước workflow
+            const workflowSteps = [
+              "gen_script",
+              "gen_image",
+              "gen_video",
+              "gen_voice",
+              "gen_audio_sub",
+              "complete",
+            ];
+
+            // 1. Kiểm tra quyền gen_audio_sub
+            if (!userRole.includes("gen_audio_sub")) {
+              toast.error("Bạn không có quyền chỉnh sửa âm thanh và phụ đề");
+              return;
+            }
+
             setLoading(true);
             try {
+              // 2. Xử lý upload audio background
               const updatedBackgroundMusics = await Promise.all(
                 backgroundMusics.map(async (music) => {
-                  // Check if the URL is a blob (from file upload)
                   if (music.url && music.url.startsWith("blob:")) {
                     if (!music.file) {
                       throw new Error("File data missing for uploaded audio");
                     }
 
-                    // Upload the audio file to server
                     const uploadResult = await upload({
                       file: music.file,
                       folder: "audios",
@@ -473,7 +498,6 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
                       throw new Error("Failed to upload audio file");
                     }
 
-                    // Return updated music data with server URL
                     return {
                       ...music,
                       start_time: Math.floor(music.start_time),
@@ -485,24 +509,19 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
                   return music;
                 })
               );
-              console.log("updatedBackgroundMusics", updatedBackgroundMusics);
+
+              // 3. Chuẩn bị dữ liệu cập nhật
               let body: any = {
                 audios: updatedBackgroundMusics,
               };
+
               if (active != 0) {
                 let position = null;
-                if (active == 1) {
-                  position = "bottom";
-                }
-                if (active == 2) {
-                  position = "middle";
-                }
-                if (active == 3) {
-                  position = "midtop";
-                }
-                if (active == 4) {
-                  position = "top";
-                }
+                if (active == 1) position = "bottom";
+                if (active == 2) position = "middle";
+                if (active == 3) position = "midtop";
+                if (active == 4) position = "top";
+
                 body.subtitles = {
                   font: fontFamily,
                   size: fontSize,
@@ -514,25 +533,42 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
                 };
               }
 
-              let result = await updateProject(id, {
+              // 4. Cập nhật dự án
+              const result = await updateProject(id, {
                 current_step: "gen_audio_sub",
                 script: {
                   ...genScript.script,
                   ...body,
                 },
               });
+
               if (result && result.name) {
                 localStorage.setItem("gen_script", JSON.stringify(result));
-                setTimeout(() => {
-                  navigate(`/success?id=${id}`);
-                }, 500);
+
+                // 5. Kiểm tra quyền trước khi chuyển trang
+                const nextStep = "complete";
+                const hasNextStepPermission = userRole.includes(nextStep);
+                const isNextStepInOrder =
+                  workflowSteps.indexOf(nextStep) >
+                  workflowSteps.indexOf("gen_audio_sub");
+
+                if (hasNextStepPermission && isNextStepInOrder) {
+                  setTimeout(() => {
+                    navigate(`/success?id=${id}`);
+                  }, 500);
+                } else {
+                  toast.success("Xử lý âm thanh và phụ đề thành công");
+                  // Giữ nguyên trang nếu không có quyền
+                }
               } else {
                 throw new Error("Cập nhật dự án thất bại");
               }
             } catch (error) {
-              console.log(error);
+              console.error("Lỗi khi xử lý:", error);
+              toast.error(error.message || "Xử lý âm thanh và phụ đề thất bại");
+            } finally {
+              setLoading(false);
             }
-            setLoading(false);
           }}
           variant='contained'
           sx={{

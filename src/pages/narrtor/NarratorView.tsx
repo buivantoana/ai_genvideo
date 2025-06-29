@@ -430,17 +430,17 @@ const dynamicSteps = [
 const NarratorView = ({ model, genScript, setLoading, id }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
-  const [role,setRole] = useState([])
-  useEffect(()=>{
+  const [role, setRole] = useState([]);
+  useEffect(() => {
     let userRaw = localStorage.getItem("user");
     let user = userRaw ? JSON.parse(userRaw) : null;
-    let role = genScript?.members
-      .find((item) => item.username == user?.username)
-      ?.functions
-      if(role && role.length>0){
-        setRole(role)
-      }
-  },[genScript])
+    let role = genScript?.members.find(
+      (item) => item.username == user?.username
+    )?.functions;
+    if (role && role.length > 0) {
+      setRole(role);
+    }
+  }, [genScript]);
   return (
     <Box
       className='hidden-add-voice'
@@ -525,7 +525,7 @@ const VoiceItem = ({
   const [selectedModel, setSelectedModel] = useState(
     values.find((item) => item.scene === scene)?.voice?.model ||
       model[0]?.id ||
-      "dia"
+      "kokoro"
   );
   const sceneData = values.find((v) => v.scene === scene);
   const [selectedCharacter, setSelectedCharacter] = useState(
@@ -573,6 +573,11 @@ const VoiceItem = ({
         })
     : [];
   console.log("character", character);
+  useEffect(() => {
+    if (voices.length > 0) {
+      setSelectedVoice(voices[0].id);
+    }
+  }, [selectedModel, voices]);
   const [loading, setLoading] = useState(false);
   useEffect(() => {
     const currentScene = values.find((item) => item.scene === scene);
@@ -1433,7 +1438,7 @@ const VoiceItemDialog = ({
 
   // State cho form inputs
   const [selectedModel, setSelectedModel] = useState(
-    dialogueData?.voice?.model || model[0]?.id || "dia"
+    dialogueData?.voice?.model || model[0]?.id || "kokoro"
   );
   const [selectedCharacter, setSelectedCharacter] = useState(
     dialogueData?.charactor || ""
@@ -1462,11 +1467,16 @@ const VoiceItemDialog = ({
     { id: dialogueData?.charactor, value: dialogueData?.charactor },
   ];
 
+  useEffect(() => {
+    if (voices.length > 0) {
+      setSelectedVoice(voices[0].id);
+    }
+  }, [selectedModel, voices]);
   console.log("selectedCharacter111111111", characters);
   // Cập nhật state khi dialogueData thay đổi
   useEffect(() => {
     if (dialogueData?.voice) {
-      setSelectedModel(dialogueData.voice.model || model[0]?.id || "dia");
+      setSelectedModel(dialogueData.voice.model || model[0]?.id || "kokoro");
       setSelectedVoice(dialogueData.voice.voice || "");
       setReadingSpeed(dialogueData.voice.speed || 1);
       setDuration(dialogueData.voice.delay || "0.5");
@@ -2217,27 +2227,35 @@ const VoiceScene = ({ model, genScript, setLoading, id }) => {
         <Button
           variant='contained'
           onClick={async () => {
+            // Lấy thông tin user từ localStorage
+            const userRaw = localStorage.getItem("user");
+            const user = userRaw ? JSON.parse(userRaw) : null;
+
+            // Kiểm tra quyền của user trong dự án
+            const userRole =
+              genScript?.members.find(
+                (item) => item.username === user?.username
+              )?.functions || [];
+
+            // Thứ tự các bước workflow
+            const workflowSteps = [
+              "gen_script",
+              "gen_image",
+              "gen_video",
+              "gen_voice",
+              "gen_audio_sub",
+              "complete",
+            ];
+
+            // 1. Kiểm tra quyền gen_voice
+            if (!userRole.includes("gen_voice")) {
+              toast.error("Bạn không có quyền chỉnh sửa giọng đọc");
+              return;
+            }
+
             setLoading(true);
             try {
-              // Kiểm tra xem có scene nào thiếu voice hoặc dialogue nào thiếu voice
-              // const hasMissingVoice = values.some((item) => {
-              //   // Kiểm tra voice của scene
-              //   if (!item.voice) {
-              //     return true;
-              //   }
-              //   // Kiểm tra voice của từng dialogue trong scene
-              //   if (item.dialogue && item.dialogue.length > 0) {
-              //     return item.dialogue.some((dialogue) => !dialogue.voice);
-              //   }
-              //   return false;
-              // });
-
-              // if (hasMissingVoice) {
-              //   toast.warning("Cần tạo đủ voice cho tất cả scene và dialogue");
-              //   setLoading(false);
-              //   return;
-              // }
-
+              // 2. Cập nhật dữ liệu
               const result = await updateProject(id, {
                 current_step: "gen_voice",
                 script: {
@@ -2245,27 +2263,42 @@ const VoiceScene = ({ model, genScript, setLoading, id }) => {
                   scenes: values.map((item) => ({
                     ...item,
                     voice: item.voice,
-                    dialogue: item.dialogue.map((ix) => {
-                      delete ix.text;
-                      return ix;
-                    }),
+                    dialogue:
+                      item.dialogue?.map((ix) => {
+                        delete ix.text;
+                        return ix;
+                      }) || [],
                   })),
                 },
               });
 
               if (result && result.name) {
                 localStorage.setItem("gen_script", JSON.stringify(result));
-                setTimeout(() => {
-                  navigate(`/sub?id=${id}`);
-                }, 500);
+
+                // 3. Kiểm tra quyền trước khi chuyển trang
+                const nextStep = "gen_audio_sub";
+                const hasNextStepPermission = userRole.includes(nextStep);
+                const isNextStepInOrder =
+                  workflowSteps.indexOf(nextStep) >
+                  workflowSteps.indexOf("gen_voice");
+
+                if (hasNextStepPermission && isNextStepInOrder) {
+                  setTimeout(() => {
+                    navigate(`/sub?id=${id}`);
+                  }, 500);
+                } else {
+                  toast.success("Cập nhật giọng đọc thành công");
+                  // Giữ nguyên trang nếu không có quyền
+                }
               } else {
                 throw new Error("Cập nhật dự án thất bại");
               }
             } catch (error) {
               console.error("Lỗi khi cập nhật dự án:", error);
-              toast.error("Cập nhật dự án thất bại");
+              toast.error(error.message || "Cập nhật dự án thất bại");
+            } finally {
+              setLoading(false);
             }
-            setLoading(false);
           }}
           sx={{
             background: "#6E00FF",
