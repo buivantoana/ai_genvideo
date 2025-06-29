@@ -543,7 +543,14 @@ const SubtitleSettings = ({ model, genScript, setLoading, id }) => {
               });
 
               if (result && result.name) {
-                localStorage.setItem("gen_script", JSON.stringify(result));
+                localStorage.setItem(
+                  "gen_script",
+                  JSON.stringify({
+                    ...JSON.parse(localStorage.getItem("gen_script")),
+                    script: result.script,
+                    current_step: result.current_step,
+                  })
+                );
 
                 // 5. Kiểm tra quyền trước khi chuyển trang
                 const nextStep = "complete";

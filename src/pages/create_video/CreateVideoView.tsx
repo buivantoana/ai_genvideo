@@ -2145,6 +2145,7 @@ function SceneEditor({ genScript, model, px, setLoading, id, effect }) {
                       JSON.stringify({
                         ...JSON.parse(localStorage.getItem("gen_script")),
                         script: result.script,
+                        current_step: result.current_step,
                       })
                     );
 

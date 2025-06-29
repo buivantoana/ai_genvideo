@@ -45,18 +45,29 @@ const StepComponent = ({ steps = [] }) => {
   const userPermissions = genScriptData?.members?.[0]?.functions || [];
 
   const currentStepIndex = workflowSteps.indexOf(currentStep);
+  const isCreateMode = id === null;
 
   // Gán trạng thái cho từng bước
   const processedSteps = steps.map((step, index) => {
     const stepPermission = stepPermissionMap[step.label];
 
-    // Luôn xử lý đặc biệt cho "Ý tưởng"
+    // Xử lý đặc biệt cho "Ý tưởng"
     if (step.label === "Ý tưởng") {
       return {
         ...step,
-        status: "completed",
+        status: isCreateMode ? "active" : "completed",
         permission: stepPermission,
         route: stepRouteMap[step.label],
+      };
+    }
+
+    // Nếu là chế độ tạo mới, tất cả các bước khác là pending
+    if (isCreateMode) {
+      return {
+        ...step,
+        status: "pending",
+        permission: stepPermission,
+        route: stepRouteMap[stepPermission],
       };
     }
 
@@ -81,12 +92,15 @@ const StepComponent = ({ steps = [] }) => {
   });
 
   const handleStepClick = (step) => {
-    if (typeof step.route === "undefined" || id === null) return;
+    if (typeof step.route === "undefined") return;
 
     if (step.label === "Ý tưởng") {
-      navigate(`/${step.route}?id=${id}`);
+      navigate(`/${step.route}${id ? `?id=${id}` : ""}`);
       return;
     }
+
+    // Trong chế độ tạo mới, chỉ cho phép click vào Ý tưởng
+    if (isCreateMode) return;
 
     const clickedStepIndex = workflowSteps.indexOf(step.permission);
     if (clickedStepIndex <= currentStepIndex) {
@@ -115,7 +129,10 @@ const StepComponent = ({ steps = [] }) => {
                 alignItems: "center",
                 gap: { xs: "4px", md: "6px" },
                 cursor:
-                  step.status !== "pending" || step.label === "Ý tưởng"
+                  (step.status !== "pending" || step.label === "Ý tưởng") &&
+                  !isCreateMode
+                    ? "pointer"
+                    : step.label === "Ý tưởng"
                     ? "pointer"
                     : "default",
               }}>
@@ -170,7 +187,7 @@ const StepComponent = ({ steps = [] }) => {
                   width: { xs: 16, md: 60 },
                   height: { xs: 11, md: 22 },
                   mx: { xs: 1, md: 2 },
-                  borderBottom:
+                  borderTop:
                     filteredSteps[index + 1].status === "pending"
                       ? "2px dashed #4A4C6B"
                       : "2px solid #00CE7C",

@@ -2376,6 +2376,7 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
                       JSON.stringify({
                         ...JSON.parse(localStorage.getItem("gen_script")),
                         script: result.script,
+                        current_step: result.current_step,
                       })
                     );
 
@@ -2425,25 +2426,24 @@ function SceneEditor({ genScript, model, px, setLoading, id }) {
             <Button
               variant='contained'
               onClick={() => {
-                //  for (let i = 0; i < values.length; i++) {
-                //    const element = values[i];
-                //    console.log(element);
-                //    if (
-                //      element.image &&
-                //      element.image.imageUrls &&
-                //      typeof element.image.selected == "number" &&
-                //      element.image.imageUrls[element.image.selected]
-                //    ) {
-                //      downloadImage({
-                //        imageUrl:
-                //          element.image.imageUrls[element.image.selected],
-                //      });
-                //    }
-                //  }
-                downloadImage({
-                  imageUrl:
-                    "https://dev.zeezoo.mobi:8082/results/images/219.jpg",
-                });
+                for (let i = 0; i < values.length; i++) {
+                  const element = values[i];
+                  console.log(element);
+                  if (
+                    element.image &&
+                    element.image.imageUrls &&
+                    typeof element.image.selected == "number" &&
+                    element.image.imageUrls[element.image.selected]
+                  ) {
+                    downloadImage({
+                      imageUrl: element.image.imageUrls[element.image.selected],
+                    });
+                  }
+                }
+                // downloadImage({
+                //   imageUrl:
+                //     "https://dev.zeezoo.mobi:8082/results/images/219.jpg",
+                // });
               }}
               sx={{
                 background: "white",
